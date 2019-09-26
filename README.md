@@ -1,2 +1,0 @@
-# StoreManagement
-Mange Store
