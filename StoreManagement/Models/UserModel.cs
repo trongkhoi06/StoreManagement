@@ -14,7 +14,7 @@ namespace StoreManagement.Models
 
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
-        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<SystemUser> SystemUsers { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

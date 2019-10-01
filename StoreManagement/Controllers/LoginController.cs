@@ -14,28 +14,46 @@ namespace StoreManagement.Controllers
     public class LoginController : ApiController
     {
         private UserModel db = new UserModel();
-
+        public class Device
+        {
+            public string DeviceName { get; set; }
+        }
         public class UserClient
         {
             public string Username { get; set; }
             public string Password { get; set; }
-            public string DeviceName { get; set; }
         }
 
         [Route("api/SystemLogin")]
         [HttpPost]
-        public IHttpActionResult login(UserClient userClient)
+        public IHttpActionResult SystemLogin(UserClient userClient)
         {
             try
             {
                 SqlParameter Username = new SqlParameter("@Username", userClient.Username);
                 SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                SqlParameter DeviceName = new SqlParameter("@DeviceName", userClient.DeviceName);
-                String role = db.Database.SqlQuery<String>("exec SystemLogin @Username, @Password, @DeviceName", Username,Password,DeviceName).FirstOrDefault();
+                String role = db.Database.SqlQuery<String>("exec SystemLogin @Username, @Password", Username,Password).FirstOrDefault();
                 if (role == null) return NotFound();
                 return Ok(role);
             }
             catch(Exception e)
+            {
+                return NotFound();
+            }
+        }
+
+        [Route("api/DeviceLogin")]
+        [HttpPost]
+        public IHttpActionResult DeviceLogin(Device device)
+        {
+            try
+            {
+                SqlParameter DeviceName = new SqlParameter("@DeviceName", device.DeviceName);
+                Boolean isActive = db.Database.SqlQuery<Boolean>("exec DeviceLogin @DeviceName", DeviceName).FirstOrDefault();
+                if (isActive == false) return Ok(false);
+                return Ok(true);
+            }
+            catch (Exception e)
             {
                 return NotFound();
             }

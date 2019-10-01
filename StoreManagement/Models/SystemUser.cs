@@ -1,10 +1,13 @@
 namespace StoreManagement.Models
 {
+    using System;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Data.Entity.Spatial;
 
-    [Table("User")]
-    public partial class User
+    [Table("SystemUser")]
+    public partial class SystemUser
     {
         [Key]
         [StringLength(50)]
@@ -15,7 +18,6 @@ namespace StoreManagement.Models
         public string Password { get; set; }
 
         public int RoleID { get; set; }
-
-        public int DeviceID { get; set; }
+        
     }
 }

@@ -9,10 +9,6 @@ namespace StoreManagement.Models
     [Table("Device")]
     public partial class Device
     {
-        public Device()
-        {
-        }
-
         public int DeviceID { get; set; }
 
         [Required]
