@@ -1,6 +1,7 @@
 ﻿using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ namespace StoreManagement.Controllers
     public class LoginController : ApiController
     {
         private UserModel db = new UserModel();
-        public class Device
+        public class DeviceClient
         {
             public string DeviceName { get; set; }
         }
@@ -44,19 +45,52 @@ namespace StoreManagement.Controllers
 
         [Route("api/DeviceLogin")]
         [HttpPost]
-        public IHttpActionResult DeviceLogin(Device device)
+        public IHttpActionResult DeviceLogin(DeviceClient device)
         {
             try
             {
                 SqlParameter DeviceName = new SqlParameter("@DeviceName", device.DeviceName);
-                Boolean isActive = db.Database.SqlQuery<Boolean>("exec DeviceLogin @DeviceName", DeviceName).FirstOrDefault();
-                if (isActive == false) return Ok(false);
+                String isActive = db.Database.SqlQuery<String>("exec DeviceLogin @DeviceName", DeviceName).FirstOrDefault();
+                if (isActive.Equals("false")) return Ok(false);
                 return Ok(true);
             }
             catch (Exception e)
             {
-                return NotFound();
+                return Ok("Exception! something was wrong");
             }
+        }
+
+        [Route("api/ActiveDevice")]
+        public IHttpActionResult ActiveDevice(Device device)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            db.Devices.Add(device);
+            try
+            {
+                db.SaveChanges();
+            }
+
+            catch (DbUpdateException)
+            {
+                if (DeviceExists(device.DeviceName))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok("Active Device successfully");
+        }
+
+        private bool DeviceExists(string name)
+        {
+            return db.Devices.Count(e => e.DeviceName == name) > 0;
         }
     }
 }
