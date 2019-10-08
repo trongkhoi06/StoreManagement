@@ -7,11 +7,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Web.Http.Description;
 using StoreManagement.Models;
 
 namespace StoreManagement.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class SystemUsersController : ApiController
     {
         private UserModel db = new UserModel();
@@ -67,7 +69,7 @@ namespace StoreManagement.Controllers
                 }
             }
 
-            return StatusCode(HttpStatusCode.NoContent);
+            return Ok("Update Successfully!");
         }
 
         // POST: api/SystemUsers
@@ -97,7 +99,7 @@ namespace StoreManagement.Controllers
                 }
             }
 
-            return CreatedAtRoute("DefaultApi", new { id = systemUser.Username }, systemUser);
+            return Ok("Insert Successfully!");
         }
 
         // DELETE: api/SystemUsers/5
@@ -113,7 +115,7 @@ namespace StoreManagement.Controllers
             db.SystemUsers.Remove(systemUser);
             db.SaveChanges();
 
-            return Ok(systemUser);
+            return Ok("Delete Successfully!");
         }
 
         protected override void Dispose(bool disposing)
