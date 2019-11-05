@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,17 +19,35 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        // GET: api/SystemUsers
-        public IQueryable<SystemUser> GetSystemUsers()
+        public class User
         {
-            return db.SystemUsers;
+            public string EmployeeCode { get; set; }
+            public int RoleID { get; set; }
+            public string Name { get; set; }
+            public DateTime DateCreated { get; set; }
+            public bool IsDeleted { get; set; }
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetSystemUsers()
+        {
+            try
+            {
+                List<User> systemUsers = db.Database.SqlQuery<User>("exec GetUsers").ToList();
+                return Ok(systemUsers);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict,e.Message);
+            }
         }
 
         // GET: api/SystemUsers/5
-        [ResponseType(typeof(SystemUser))]
-        public IHttpActionResult GetSystemUser(string id)
+        [Route("api/SystemUsers/ID")]
+        [HttpPost]
+        public IHttpActionResult GetSystemUser(string EmployeeCode)
         {
-            SystemUser systemUser = db.SystemUsers.Find(id);
+            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
             if (systemUser == null)
             {
                 return NotFound();
@@ -37,18 +56,17 @@ namespace StoreManagement.Controllers
             return Ok(systemUser);
         }
 
-        // PUT: api/SystemUsers/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult PutSystemUser(string id, SystemUser systemUser)
+        // PUT: api/SystemUsers
+        [HttpPut]
+        public IHttpActionResult UpdateSystemUser(User user)
         {
+            SystemUser systemUser = db.SystemUsers.Find(user.EmployeeCode);
+            systemUser.RoleID = user.RoleID;
+            systemUser.Name = user.Name;
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }
-
-            if (id != systemUser.Username)
-            {
-                return BadRequest();
             }
 
             db.Entry(systemUser).State = EntityState.Modified;
@@ -59,7 +77,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SystemUserExists(id))
+                if (!SystemUserExists(user.EmployeeCode))
                 {
                     return NotFound();
                 }
@@ -69,13 +87,87 @@ namespace StoreManagement.Controllers
                 }
             }
 
-            return Ok("Update Successfully!");
+            return Ok("CẬP NHẬT THÀNH CÔNG");
+        }
+
+        [Route("api/SystemUsers/ResetPassword")]
+        [HttpPut]
+        public IHttpActionResult ResetPassword(string EmployeeCode)
+        {
+            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
+            systemUser.Password = "PDG@123";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            db.Entry(systemUser).State = EntityState.Modified;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SystemUserExists(EmployeeCode))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok("RESET MẬT KHẨU THÀNH CÔNG!");
+        }
+
+        [Route("api/SystemUsers/Recover")]
+        [HttpPut]
+        public IHttpActionResult RecoverUser(string EmployeeCode)
+        {
+            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
+            systemUser.IsDeleted = false;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            db.Entry(systemUser).State = EntityState.Modified;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SystemUserExists(EmployeeCode))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok("HỒI PHỤC NHÂN VIÊN THÀNH CÔNG");
         }
 
         // POST: api/SystemUsers
-        [ResponseType(typeof(SystemUser))]
-        public IHttpActionResult PostSystemUser(SystemUser systemUser)
+        [HttpPost]
+        public IHttpActionResult InsertSystemUser(User user)
         {
+            if (user.RoleID <2 || user.RoleID > 7)
+            {
+                return Conflict();
+            }
+            SystemUser systemUser = new SystemUser();
+            systemUser.EmployeeCode = user.EmployeeCode;
+            systemUser.RoleID = user.RoleID;
+            systemUser.Name = user.Name;
+            systemUser.DateCreated = user.DateCreated;
+            systemUser.Password = "PDG@123";
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -89,7 +181,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateException)
             {
-                if (SystemUserExists(systemUser.Username))
+                if (SystemUserExists(systemUser.EmployeeCode))
                 {
                     return Conflict();
                 }
@@ -99,23 +191,24 @@ namespace StoreManagement.Controllers
                 }
             }
 
-            return Ok("Insert Successfully!");
+            return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
         }
 
         // DELETE: api/SystemUsers/5
-        [ResponseType(typeof(SystemUser))]
+        [HttpDelete]
         public IHttpActionResult DeleteSystemUser(string id)
         {
-            SystemUser systemUser = db.SystemUsers.Find(id);
-            if (systemUser == null)
+            try
             {
-                return NotFound();
+                SqlParameter employeeCode = new SqlParameter("@EmployeeCode", id);
+                // use execsqlcommand when there is 0 thing in return
+                db.Database.ExecuteSqlCommand("exec DeleteUsers @EmployeeCode", employeeCode);
+                return Ok("XÓA NHÂN VIÊN THÀNH CÔNG!");
             }
-
-            db.SystemUsers.Remove(systemUser);
-            db.SaveChanges();
-
-            return Ok("Delete Successfully!");
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, e.Message);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -129,7 +222,7 @@ namespace StoreManagement.Controllers
 
         private bool SystemUserExists(string id)
         {
-            return db.SystemUsers.Count(e => e.Username == id) > 0;
+            return db.SystemUsers.Count(e => e.EmployeeCode == id) > 0;
         }
     }
 }

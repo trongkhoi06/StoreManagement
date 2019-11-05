@@ -11,13 +11,21 @@ namespace StoreManagement.Models
     {
         [Key]
         [StringLength(50)]
-        public string Username { get; set; }
+        public string EmployeeCode { get; set; }
 
         [Required]
         [StringLength(50)]
         public string Password { get; set; }
 
         public int RoleID { get; set; }
-        
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime DateCreated { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

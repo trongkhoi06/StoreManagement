@@ -110,19 +110,50 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Class\Client_Accessory_OrderedQuantity_Comment.cs" />
+    <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\OrderedItemsController.cs" />
+    <Compile Include="Controllers\OrdersController.cs" />
+    <Compile Include="Controllers\PacksController.cs" />
+    <Compile Include="Controllers\ReceivingController.cs" />
+    <Compile Include="Controllers\SuppliersController.cs" />
     <Compile Include="Controllers\SystemUsersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Accessory.cs" />
+    <Compile Include="Models\ArrangingSession.cs" />
+    <Compile Include="Models\Box.cs" />
+    <Compile Include="Models\Conception.cs" />
+    <Compile Include="Models\Conception_Accessory.cs" />
+    <Compile Include="Models\Customer.cs" />
+    <Compile Include="Models\Demand.cs" />
+    <Compile Include="Models\DemandedItem.cs" />
     <Compile Include="Models\Device.cs" />
+    <Compile Include="Models\IdentifiedItem.cs" />
+    <Compile Include="Models\IdentifyingSession.cs" />
+    <Compile Include="Models\Model.cs" />
+    <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\OrderedItem.cs" />
+    <Compile Include="Models\Pack.cs" />
+    <Compile Include="Models\PackedItem.cs" />
+    <Compile Include="Class\PrimitiveType.cs" />
+    <Compile Include="Models\Request.cs" />
+    <Compile Include="Models\RequestedItem.cs" />
     <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\Season.cs" />
+    <Compile Include="Models\Size.cs" />
+    <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SystemUser.cs" />
+    <Compile Include="Models\UnstoredBox.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

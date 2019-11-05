@@ -16,5 +16,10 @@ namespace StoreManagement.Models
         public string DeviceName { get; set; }
 
         public string DeviceInformation { get; set; }
+
+        public bool IsDeleted { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime DateCreated { get; set; }
     }
 }

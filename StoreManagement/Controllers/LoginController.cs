@@ -31,15 +31,15 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                SqlParameter Username = new SqlParameter("@Username", userClient.Username);
+                SqlParameter EmployeeCode = new SqlParameter("@EmployeeCode", userClient.Username);
                 SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                String role = db.Database.SqlQuery<String>("exec SystemLogin @Username, @Password", Username,Password).FirstOrDefault();
+                String role = db.Database.SqlQuery<String>("exec SystemLogin @EmployeeCode, @Password", EmployeeCode, Password).FirstOrDefault();
                 if (role == null) return NotFound();
                 return Ok(role);
             }
             catch(Exception e)
             {
-                return NotFound();
+                return Content(HttpStatusCode.Conflict,e.Message);
             }
         }
 
@@ -56,7 +56,7 @@ namespace StoreManagement.Controllers
             }
             catch (Exception e)
             {
-                return Ok("Exception! something was wrong");
+                return Content(HttpStatusCode.Conflict,e.Message);
             }
         }
 
@@ -72,7 +72,6 @@ namespace StoreManagement.Controllers
             {
                 db.SaveChanges();
             }
-
             catch (DbUpdateException)
             {
                 if (DeviceExists(device.DeviceName))
@@ -84,8 +83,7 @@ namespace StoreManagement.Controllers
                     throw;
                 }
             }
-
-            return Ok("Active Device successfully");
+            return Ok("KÍCH HOẠT THIẾT BỊ THÀNH CÔNG!");
         }
 
         private bool DeviceExists(string name)
