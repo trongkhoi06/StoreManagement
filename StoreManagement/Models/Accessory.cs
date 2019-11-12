@@ -17,6 +17,8 @@ namespace StoreManagement.Models
         public int AccessoryPK { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string AccessoryID { get; set; }
+        [Required]
+        public string AccessoryName { get; set; }
     }
 }

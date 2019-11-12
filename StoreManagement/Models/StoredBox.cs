@@ -6,18 +6,19 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("IdentifyingSession")]
-    public partial class IdentifyingSession
+    [Table("StoredBox")]
+    public partial class StoredBox
     {
-        public IdentifyingSession()
+        public StoredBox()
         {
-            this.ExecutedDate = DateTime.Now;
+
         }
 
-        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int IdentifyingSessionPK { get; set; }
+        [Key]
+        public int StoredBoxPK { get; set; }
 
-        public DateTime ExecutedDate { get; set; }
+        public int BoxPK { get; set; }
+        
     }
 }

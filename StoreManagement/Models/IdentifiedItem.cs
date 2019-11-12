@@ -21,6 +21,18 @@ namespace StoreManagement.Models
 
         public int PackedItemPK { get; set; }
 
-        public int? IdentifyingSessionPK { get; set; }
+        public int IdentifyingSessionPK { get; set; }
+
+        public int UnstoredBoxPK { get; set; }
+
+        public IdentifiedItem(int actualQuantity, int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        {
+            this.ActualQuantity = actualQuantity;
+            this.PackedItemPK = packedItemPK;
+            this.IdentifyingSessionPK = identifyingSessionPK;
+            this.UnstoredBoxPK = unstoredBoxPK;
+            IsChecked = false;
+            IsCounted = false;
+        }
     }
 }

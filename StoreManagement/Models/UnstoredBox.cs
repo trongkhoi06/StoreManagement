@@ -19,5 +19,7 @@ namespace StoreManagement.Models
         public int UnstoredBoxPK { get; set; }
 
         public int BoxPK { get; set; }
+
+        public bool IsIdentified { get; set; }
     }
 }

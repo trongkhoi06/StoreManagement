@@ -19,7 +19,7 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public class User
+        public class Client_User
         {
             public string EmployeeCode { get; set; }
             public int RoleID { get; set; }
@@ -33,7 +33,7 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                List<User> systemUsers = db.Database.SqlQuery<User>("exec GetUsers").ToList();
+                List<Client_User> systemUsers = db.Database.SqlQuery<Client_User>("exec GetUsers").ToList();
                 return Ok(systemUsers);
             }
             catch (Exception e)
@@ -58,7 +58,7 @@ namespace StoreManagement.Controllers
 
         // PUT: api/SystemUsers
         [HttpPut]
-        public IHttpActionResult UpdateSystemUser(User user)
+        public IHttpActionResult UpdateSystemUser(Client_User user)
         {
             SystemUser systemUser = db.SystemUsers.Find(user.EmployeeCode);
             systemUser.RoleID = user.RoleID;
@@ -156,7 +156,7 @@ namespace StoreManagement.Controllers
 
         // POST: api/SystemUsers
         [HttpPost]
-        public IHttpActionResult InsertSystemUser(User user)
+        public IHttpActionResult InsertSystemUser(Client_User user)
         {
             if (user.RoleID <2 || user.RoleID > 7)
             {

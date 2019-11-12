@@ -13,6 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public Pack(string PackID, int OrderPK)
+        {
+            this.PackID = PackID;
+            this.OrderPK = OrderPK;
+            this.DateCreated = DateTime.Now;
+            this.IsOpened = true;
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PackPK { get; set; }
@@ -22,6 +30,8 @@ namespace StoreManagement.Models
         public string PackID { get; set; }
 
         public DateTime DateCreated { get; set; }
+
+        public bool IsOpened { get; set; }
 
         public int OrderPK { get; set; }
     }

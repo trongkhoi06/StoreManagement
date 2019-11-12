@@ -9,15 +9,13 @@ namespace StoreManagement.Models
     [Table("Device")]
     public partial class Device
     {
-        public int DeviceID { get; set; }
+        [Key]
+        public int DevicePK { get; set; }
 
         [Required]
-        [StringLength(50)]
+        public string DeviceCode { get; set; }
+        [Required]
         public string DeviceName { get; set; }
-
-        public string DeviceInformation { get; set; }
-
-        public bool IsDeleted { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime DateCreated { get; set; }

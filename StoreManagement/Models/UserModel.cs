@@ -36,6 +36,7 @@ namespace StoreManagement.Models
         public virtual DbSet<Supplier> Suppliers { get; set; }
         public virtual DbSet<SystemUser> SystemUsers { get; set; }
         public virtual DbSet<UnstoredBox> UnstoredBoxes { get; set; }
+        public virtual DbSet<StoredBox> StoredBoxes { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

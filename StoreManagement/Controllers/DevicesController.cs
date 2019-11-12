@@ -21,11 +21,8 @@ namespace StoreManagement.Controllers
 
         public partial class DeviceUser
         {
+            public int DevicePK { get; set; }
             public string DeviceName { get; set; }
-
-            public string DeviceInformation { get; set; }
-
-            public bool IsDeleted { get; set; }
             public DateTime DateCreated { get; set; }
         }
 
@@ -43,98 +40,105 @@ namespace StoreManagement.Controllers
             }
         }
 
-        // GET: api/Devices/5
-        [ResponseType(typeof(Device))]
-        public IHttpActionResult GetDevice(int id)
-        {
-            Device device = db.Devices.Find(id);
-            if (device == null)
-            {
-                return NotFound();
-            }
+        //// GET: api/Devices/5
+        //[ResponseType(typeof(Device))]
+        //public IHttpActionResult GetDevice(int id)
+        //{
+        //    Device device = db.Devices.Find(id);
+        //    if (device == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(device);
-        }
+        //    return Ok(device);
+        //}
 
-        // PUT: api/Devices/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult PutDevice(int id, Device device)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //// PUT: api/Devices/5
+        //[ResponseType(typeof(void))]
+        //public IHttpActionResult PutDevice(int id, Device device)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            if (id != device.DeviceID)
-            {
-                return BadRequest();
-            }
+        //    if (id != device.DevicePK)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            db.Entry(device).State = EntityState.Modified;
+        //    db.Entry(device).State = EntityState.Modified;
 
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DeviceExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        db.SaveChanges();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!DeviceExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return StatusCode(HttpStatusCode.NoContent);
-        }
+        //    return StatusCode(HttpStatusCode.NoContent);
+        //}
 
-        // POST: api/Devices
-        [ResponseType(typeof(Device))]
-        public IHttpActionResult PostDevice(Device device)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //// POST: api/Devices
+        //[ResponseType(typeof(Device))]
+        //public IHttpActionResult PostDevice(Device device)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            db.Devices.Add(device);
-            db.SaveChanges();
+        //    db.Devices.Add(device);
+        //    db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = device.DeviceID }, device);
-        }
+        //    return CreatedAtRoute("DefaultApi", new { id = device.DevicePK }, device);
+        //}
 
         // DELETE: api/Devices/5
         [HttpDelete]
-        public IHttpActionResult DeleteDevice(string id)
+        public IHttpActionResult DeleteDevice(int pk)
         {
             try
             {
-                SqlParameter DeviceName = new SqlParameter("@DeviceName", id);
-                // use execsqlcommand when there is 0 thing in return
-                db.Database.ExecuteSqlCommand("exec DeleteDevices @DeviceName", DeviceName);
-                return Ok("Delete Successfully!");
+                //SqlParameter DeviceParam = new SqlParameter("@DevicePK", pk);
+                //// use execsqlcommand when there is 0 thing in return
+                //db.Database.ExecuteSqlCommand("exec DeleteDevices @DevicePK", DeviceParam);
+                Device device = GetDeviceByPK(pk);
+                if (device == null)
+                {
+                    return Content(HttpStatusCode.NotFound, "KHÔNG TÌM THẤY THIẾT BỊ!");
+                }
+                else
+                {
+                    db.Devices.Remove(device);
+                    db.SaveChanges();
+                    return Ok("XÓA THIẾT BỊ THÀNH CÔNG!");
+                }
+
             }
             catch (Exception e)
             {
-                return Content(HttpStatusCode.Conflict,e.Message);
+                return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private Device GetDeviceByPK(int pk)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
+            return db.Devices.Find(pk);
         }
 
-        private bool DeviceExists(int id)
+        private bool DeviceExists(int pk)
         {
-            return db.Devices.Count(e => e.DeviceID == id) > 0;
+            return db.Devices.Count(e => e.DevicePK == pk) > 0;
         }
     }
 }

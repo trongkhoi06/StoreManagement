@@ -111,10 +111,16 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Class\Client_Accessory_OrderedQuantity_Comment.cs" />
+    <Compile Include="Class\Client_Order.cs" />
+    <Compile Include="Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
+    <Compile Include="Class\Client_PackItemPK_ActualQuantity.cs" />
+    <Compile Include="Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
+    <Compile Include="Controllers\IdentifyItemController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\OrderedItemsController.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
+    <Compile Include="Controllers\PackedItemsController.cs" />
     <Compile Include="Controllers\PacksController.cs" />
     <Compile Include="Controllers\ReceivingController.cs" />
     <Compile Include="Controllers\SuppliersController.cs" />
@@ -146,6 +152,7 @@
     <Compile Include="Models\Size.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SystemUser.cs" />
+    <Compile Include="Models\StoredBox.cs" />
     <Compile Include="Models\UnstoredBox.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
