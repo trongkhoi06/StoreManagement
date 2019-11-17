@@ -9,12 +9,7 @@ namespace StoreManagement.Models
     [Table("Supplier")]
     public partial class Supplier
     {
-        public Supplier()
-        {
-
-        }
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int SupplierPK { get; set; }
 
         [Required]

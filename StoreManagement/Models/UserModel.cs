@@ -37,10 +37,19 @@ namespace StoreManagement.Models
         public virtual DbSet<SystemUser> SystemUsers { get; set; }
         public virtual DbSet<UnstoredBox> UnstoredBoxes { get; set; }
         public virtual DbSet<StoredBox> StoredBoxes { get; set; }
+        public virtual DbSet<IdentifiedItem_ArrangingSession> IdentifiedItem_ArrangingSessions { get; set; }
+        public virtual DbSet<ClassifiedItem> ClassifiedItems { get; set; }
+        public virtual DbSet<ClassifyingSession> ClassifyingSessions { get; set; }
+        public virtual DbSet<CheckingSession> CheckingSessions { get; set; }
+        public virtual DbSet<CountingSession> CountingSessions { get; set; }
+        public virtual DbSet<PassedItem> PassedItems { get; set; }
+        public virtual DbSet<FailedItem> FailedItems { get; set; }
+        public virtual DbSet<ReturningSession> ReturningSessions { get; set; }
+
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            
+
         }
     }
 }

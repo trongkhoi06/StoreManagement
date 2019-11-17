@@ -13,11 +13,11 @@ namespace StoreManagement.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdentifiedItemPK { get; set; }
 
+        public int IdentifiedQuantity { get; set; }
+
         public bool IsChecked { get; set; }
 
         public bool IsCounted { get; set; }
-
-        public int ActualQuantity { get; set; }
 
         public int PackedItemPK { get; set; }
 
@@ -25,9 +25,13 @@ namespace StoreManagement.Models
 
         public int UnstoredBoxPK { get; set; }
 
-        public IdentifiedItem(int actualQuantity, int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        public IdentifiedItem()
         {
-            this.ActualQuantity = actualQuantity;
+        }
+
+        public IdentifiedItem(int identifiedQuantity, int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        {
+            this.IdentifiedQuantity = identifiedQuantity;
             this.PackedItemPK = packedItemPK;
             this.IdentifyingSessionPK = identifyingSessionPK;
             this.UnstoredBoxPK = unstoredBoxPK;

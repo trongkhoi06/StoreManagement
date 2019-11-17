@@ -9,16 +9,29 @@ namespace StoreManagement.Models
     [Table("Accessory")]
     public partial class Accessory
     {
-        public Accessory()
-        {
-        }
-
         [Key]
         public int AccessoryPK { get; set; }
 
         [Required]
         public string AccessoryID { get; set; }
+
         [Required]
-        public string AccessoryName { get; set; }
+        public string AccessoryDescription { get; set; }
+
+        public bool IsActive { get; set; }
+
+        [StringLength(50)]
+        public string Art { get; set; }
+
+        [StringLength(50)]
+        public string Model { get; set; }
+
+        [StringLength(50)]
+        public string Item { get; set; }
+
+        [StringLength(50)]
+        public string Comment { get; set; }
+
+        public string Image { get; set; }
     }
 }

@@ -33,6 +33,10 @@ namespace StoreManagement.Models
             PackPK = packPK;
         }
 
+        // sample calculate
+
+        // defect limit
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PackedItemPK { get; set; }
@@ -43,6 +47,8 @@ namespace StoreManagement.Models
 
         [Required]
         public string Comment { get; set; }
+
+        public string ContractNumber { get; set; }
 
         public int OrderedItemPK { get; set; }
 

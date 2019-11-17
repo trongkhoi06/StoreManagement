@@ -111,33 +111,45 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Class\Client_Accessory_OrderedQuantity_Comment.cs" />
+    <Compile Include="Class\Client_PackedItem.cs" />
+    <Compile Include="Class\Client_Pack.cs" />
     <Compile Include="Class\Client_Order.cs" />
     <Compile Include="Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
     <Compile Include="Class\Client_PackItemPK_ActualQuantity.cs" />
     <Compile Include="Class\Content_CatchInnerException.cs" />
-    <Compile Include="Controllers\DevicesController.cs" />
-    <Compile Include="Controllers\IdentifyItemController.cs" />
-    <Compile Include="Controllers\LoginController.cs" />
-    <Compile Include="Controllers\OrderedItemsController.cs" />
-    <Compile Include="Controllers\OrdersController.cs" />
-    <Compile Include="Controllers\PackedItemsController.cs" />
-    <Compile Include="Controllers\PacksController.cs" />
-    <Compile Include="Controllers\ReceivingController.cs" />
-    <Compile Include="Controllers\SuppliersController.cs" />
-    <Compile Include="Controllers\SystemUsersController.cs" />
+    <Compile Include="Controllers\Phase1\DevicesController.cs" />
+    <Compile Include="Controllers\Phase1\IdentifyItemController.cs" />
+    <Compile Include="Controllers\Phase2\CheckingController.cs" />
+    <Compile Include="Controllers\Phase1\LoginController.cs" />
+    <Compile Include="Controllers\Phase1\OrderedItemsController.cs" />
+    <Compile Include="Controllers\Phase1\OrdersController.cs" />
+    <Compile Include="Controllers\Phase1\PackedItemsController.cs" />
+    <Compile Include="Controllers\Phase1\PacksController.cs" />
+    <Compile Include="Controllers\Phase1\ReceivingController.cs" />
+    <Compile Include="Controllers\Phase1\SystemUsersController.cs" />
+    <Compile Include="Controllers\Phase2\ReturningItemController.cs" />
+    <Compile Include="Controllers\Phase2\ClassifyItemController.cs" />
+    <Compile Include="Controllers\Phase2\CheckingItemController.cs" />
+    <Compile Include="Controllers\Phase2\CountingItemController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Accessory.cs" />
     <Compile Include="Models\ArrangingSession.cs" />
     <Compile Include="Models\Box.cs" />
+    <Compile Include="Models\CheckingSession.cs" />
+    <Compile Include="Models\ClassifiedItem.cs" />
+    <Compile Include="Models\ClassifyingSession.cs" />
     <Compile Include="Models\Conception.cs" />
     <Compile Include="Models\Conception_Accessory.cs" />
+    <Compile Include="Models\CountingSession.cs" />
     <Compile Include="Models\Customer.cs" />
     <Compile Include="Models\Demand.cs" />
     <Compile Include="Models\DemandedItem.cs" />
     <Compile Include="Models\Device.cs" />
+    <Compile Include="Models\FailedItem.cs" />
     <Compile Include="Models\IdentifiedItem.cs" />
+    <Compile Include="Models\IdentifiedItem_ArrangingSession.cs" />
     <Compile Include="Models\IdentifyingSession.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\Order.cs" />
@@ -145,8 +157,10 @@
     <Compile Include="Models\Pack.cs" />
     <Compile Include="Models\PackedItem.cs" />
     <Compile Include="Class\PrimitiveType.cs" />
+    <Compile Include="Models\PassedItem.cs" />
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\RequestedItem.cs" />
+    <Compile Include="Models\ReturningSession.cs" />
     <Compile Include="Models\Role.cs" />
     <Compile Include="Models\Season.cs" />
     <Compile Include="Models\Size.cs" />
@@ -161,6 +175,8 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <None Include="Properties\PublishProfiles\StoreManagementDeploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -186,7 +202,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>52735</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:52736/</IISUrl>
+          <IISUrl>http://localhost:45455/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

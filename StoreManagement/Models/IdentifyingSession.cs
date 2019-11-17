@@ -11,7 +11,12 @@ namespace StoreManagement.Models
     {
         public IdentifyingSession()
         {
+        }
+
+        public IdentifyingSession(string employeeCode)
+        {
             this.ExecutedDate = DateTime.Now;
+            EmployeeCode = employeeCode;
         }
 
         [Key]
@@ -19,5 +24,7 @@ namespace StoreManagement.Models
         public int IdentifyingSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
+        [StringLength(50)]
+        public string EmployeeCode { get; set; }
     }
 }

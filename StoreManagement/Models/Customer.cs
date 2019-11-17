@@ -9,15 +9,23 @@ namespace StoreManagement.Models
     [Table("Customer")]
     public partial class Customer
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Customer()
-        {
-        }
+        [Key]
+        public int CustomerPK { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int CustomerID { get; set; }
-
-        [StringLength(30)]
+        [Required]
+        [StringLength(50)]
         public string CustomerName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string CustomerCode { get; set; }
+
+        public string Address { get; set; }
+
+        [StringLength(50)]
+        public string PhoneNumber { get; set; }
+
+        [StringLength(100)]
+        public string TaxID { get; set; }
     }
 }
