@@ -145,4 +145,3 @@ C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Debug\StoreManagement
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Debug\StoreManagement.csproj.CopyComplete
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Debug\StoreManagement.dll
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Debug\StoreManagement.pdb
-C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Debug\StoreManagement.csprojAssemblyReference.cache
