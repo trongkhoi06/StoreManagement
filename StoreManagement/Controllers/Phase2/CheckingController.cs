@@ -255,7 +255,7 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict,"ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                            return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
                         }
                     }
                     // nếu chưa có classify item của packitem thì tạo mới
@@ -313,7 +313,7 @@ namespace StoreManagement.Controllers
                 {
                     // delete
                     classifyingItemController.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
-                    classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK,classifiedItem.QualityState);
+                    classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
                     classifyingItemController.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
                     packedItem.IsClassified = false;
                     packedItemsController.isUpdatedPackedItem(packedItem);
@@ -334,7 +334,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/ReturnItemBusiness")]
         [HttpPost]
-        public IHttpActionResult ReturnItemBusiness(int packedItemPK, string comment, int qualityState, string employeeCode)
+        public IHttpActionResult ReturnItemBusiness(int failedItemPK, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
 
@@ -343,7 +343,9 @@ namespace StoreManagement.Controllers
             // chạy lệnh classify
             try
             {
-                returningItemController.crea
+                returningItemController.createReturningSession(failedItemPK, employeeCode);
+                returningItemController.updateFailedItemIsReturned(failedItemPK);
+                returningItemController.updateAllIdentifiedItemsToVirtualBox(failedItemPK);
             }
             catch (Exception e)
             {

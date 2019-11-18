@@ -13,10 +13,11 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public void createReturningSession(ReturningSession returningSession)
+        public void createReturningSession(int failedItemPK, string employeeCode)
         {
             try
             {
+                ReturningSession returningSession = new ReturningSession(failedItemPK,employeeCode);
                 db.ReturningSessions.Add(returningSession);
                 db.SaveChanges();
             }
@@ -26,11 +27,13 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateReturningSession(ReturningSession returningSession)
+        public void updateFailedItemIsReturned(int failedItemPK)
         {
             try
             {
-                db.Entry(returningSession).State = EntityState.Modified;
+                FailedItem failedItem = db.FailedItems.Find(failedItemPK);
+                failedItem.IsReturned = true;
+                db.Entry(failedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -39,12 +42,27 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void deleteReturningSession(int returningSessionPK)
+        public void updateAllIdentifiedItemsToVirtualBox(int failedItemPK)
         {
             try
             {
-                ReturningSession returningSession = db.ReturningSessions.Find(returningSessionPK);
-                db.ReturningSessions.Remove(returningSession);
+                FailedItem failedItem = db.FailedItems.Find(failedItemPK);
+                ClassifiedItem classifiedItem = db.ClassifiedItems.Find(failedItem.ClassifiedItemPK);
+                PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.PackedItemPK == packedItem.PackedItemPK
+                                                        select iI).ToList();
+                UnstoredBox virtualBox = (from uB in db.UnstoredBoxes
+                                           where uB.BoxPK == (from b in db.Boxes
+                                                              where b.BoxID == "InvisibleBox"
+                                                              select b).FirstOrDefault().BoxPK
+                                           select uB).FirstOrDefault();
+
+                foreach (var item in identifiedItems)
+                {
+                    item.UnstoredBoxPK = virtualBox.UnstoredBoxPK;
+                    db.Entry(item).State = EntityState.Modified;
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

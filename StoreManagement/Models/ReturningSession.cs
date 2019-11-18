@@ -16,7 +16,16 @@ namespace StoreManagement.Models
         public DateTime ExecutedDate { get; set; }
 
         public int FailedItemPK { get; set; }
+        public string EmployeeCode { get; set; }
+        public ReturningSession()
+        {
+        }
 
-        public virtual FailedItem FailedItem { get; set; }
+        public ReturningSession(int failedItemPK, string employeeCode)
+        {
+            FailedItemPK = failedItemPK;
+            EmployeeCode = employeeCode;
+            ExecutedDate = DateTime.Now;
+        }
     }
 }

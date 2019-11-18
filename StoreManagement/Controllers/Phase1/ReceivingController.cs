@@ -92,120 +92,157 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CreateOrderBusiness")]
         [HttpPost]
-        public IHttpActionResult CreateOrderBusiness(string OrderID, int SupplierPK, string EmployeeCode, [FromBody] List<Client_Accessory_OrderedQuantity_Comment> list)
+        public IHttpActionResult CreateOrderBusiness(string orderID, int supplierPK, string employeeCode, [FromBody] List<Client_Accessory_OrderedQuantity_Comment> list)
         {
-            OrdersController ordersController = new OrdersController();
-            Order order = null;
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 3)
             {
-                // create order
-                order = ordersController.CreateOrder(OrderID, SupplierPK, EmployeeCode);
-                // create order items
-                OrderedItemsController orderedItemsController = new OrderedItemsController();
-                if (!orderedItemsController.isOrderedItemCreated(order.OrderPK, list))
+                OrdersController ordersController = new OrdersController();
+                Order order = null;
+                try
+                {
+                    // create order
+                    order = ordersController.CreateOrder(orderID, supplierPK, employeeCode);
+                    // create order items
+                    OrderedItemsController orderedItemsController = new OrderedItemsController();
+                    if (!orderedItemsController.isOrderedItemCreated(order.OrderPK, list))
+                    {
+                        if (order != null)
+                        {
+                            ordersController.DeleteOrder(order.OrderPK);
+                        }
+                        return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                    }
+
+                }
+                catch (Exception e)
                 {
                     if (order != null)
                     {
                         ordersController.DeleteOrder(order.OrderPK);
                     }
-                    return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-
+                return Content(HttpStatusCode.OK, "TẠO ĐƠN HÀNG THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                if (order != null)
-                {
-                    ordersController.DeleteOrder(order.OrderPK);
-                }
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-            return Content(HttpStatusCode.OK, "TẠO ĐƠN HÀNG THÀNH CÔNG");
+
         }
 
         [Route("api/ReceivingController/UpdateOrderBusiness")]
         [HttpPut]
-        public IHttpActionResult UpdateOrderBusiness([FromBody] OrderedItem orderedItems)
+        public IHttpActionResult UpdateOrderBusiness([FromBody] OrderedItem orderedItems, string employeeCode)
         {
-            OrdersController ordersController = new OrdersController();
-            OrderedItemsController orderedItemsController = new OrderedItemsController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 3)
             {
-                if (ordersController.isContainPack(orderedItems.OrderPK))
+                OrdersController ordersController = new OrdersController();
+                OrderedItemsController orderedItemsController = new OrderedItemsController();
+                try
                 {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
-                }
-                else
-                {
-                    if (!orderedItemsController.isUpdatedOrderedItem(orderedItems))
+                    if (ordersController.isContainPack(orderedItems.OrderPK))
                     {
-                        return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
+                        return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
                     }
-                }
+                    else
+                    {
+                        if (!orderedItemsController.isUpdatedOrderedItem(orderedItems))
+                        {
+                            return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
+                        }
+                    }
 
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "UPDATE THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-            return Content(HttpStatusCode.OK, "UPDATE THÀNH CÔNG");
+
         }
 
         [Route("api/ReceivingController/DeleteOrderBusiness")]
         [HttpDelete]
         public IHttpActionResult DeleteOrderBusiness(int orderPK)
         {
-            List<OrderedItem> listOrderedItem;
-            OrdersController ordersController = new OrdersController();
-            OrderedItemsController orderedItemsController = new OrderedItemsController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 3)
             {
-                if (ordersController.isContainPack(orderPK))
+                List<OrderedItem> listOrderedItem;
+                OrdersController ordersController = new OrdersController();
+                OrderedItemsController orderedItemsController = new OrderedItemsController();
+                try
                 {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
+                    if (ordersController.isContainPack(orderPK))
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
+                    }
+                    else
+                    {
+                        Order order = ordersController.GetOrderByOrderPK(orderPK);
+                        IQueryable<OrderedItem> temp = orderedItemsController.GetOrderedItemsByOrderPK(order.OrderPK);
+                        listOrderedItem = temp.ToList();
+
+                        if (order == null || listOrderedItem == null)
+                        {
+                            return Content(HttpStatusCode.Conflict, "CÓ LỖI");
+                        }
+
+                        for (int i = 0; i < listOrderedItem.Count; i++)
+                        {
+                            orderedItemsController.DeleteOrderedItem(listOrderedItem[i].OrderedItemPK);
+                        }
+                        ordersController.DeleteOrder(order.OrderPK);
+                        return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Order order = ordersController.GetOrderByOrderPK(orderPK);
-                    IQueryable<OrderedItem> temp = orderedItemsController.GetOrderedItemsByOrderPK(order.OrderPK);
-                    listOrderedItem = temp.ToList();
-
-                    if (order == null || listOrderedItem == null)
-                    {
-                        return Content(HttpStatusCode.Conflict, "CÓ LỖI");
-                    }
-
-                    for (int i = 0; i < listOrderedItem.Count; i++)
-                    {
-                        orderedItemsController.DeleteOrderedItem(listOrderedItem[i].OrderedItemPK);
-                    }
-                    ordersController.DeleteOrder(order.OrderPK);
-                    return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-
         }
 
         [Route("api/ReceivingController/SwiftOrderState")]
         [HttpPut]
-        public IHttpActionResult SwiftOrderState(int orderPK)
+        public IHttpActionResult SwiftOrderState(int orderPK, string employeeCode)
         {
-            Order order = db.Orders.Find(orderPK);
-            OrdersController ordersController = new OrdersController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 3)
             {
-                ordersController.SwiftOrderState(orderPK);
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
+                Order order = db.Orders.Find(orderPK);
+                OrdersController ordersController = new OrdersController();
+                try
+                {
+                    ordersController.SwiftOrderState(orderPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
 
-            return Content(HttpStatusCode.OK, "SWIFT THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "SWIFT THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
         }
 
         // Pack
@@ -267,140 +304,180 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CreatePackBusiness")]
         [HttpPost]
-        public IHttpActionResult CreatePackBusiness(int OrderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list)
+        public IHttpActionResult CreatePackBusiness(int OrderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list, string employeeCode)
         {
-            Order order = db.Orders.Find(OrderPK);
-            int noPackID;
-            if (order.IsOpened)
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
             {
-                PacksController packsController = new PacksController();
-                Pack pack = null;
-                try
+                Order order = db.Orders.Find(OrderPK);
+                int noPackID;
+                if (order.IsOpened)
                 {
-                    // create pack
-                    // get last pack
-                    Pack lastPack = (from p in db.Packs.OrderByDescending(unit => unit.PackPK)
-                                     where p.PackID.Contains(order.OrderID)
-                                     select p).FirstOrDefault();
-                    if (lastPack == null)
+                    PacksController packsController = new PacksController();
+                    Pack pack = null;
+                    try
                     {
-                        noPackID = 1;
+                        // create pack
+                        // get last pack
+                        Pack lastPack = (from p in db.Packs.OrderByDescending(unit => unit.PackPK)
+                                         where p.PackID.Contains(order.OrderID)
+                                         select p).FirstOrDefault();
+                        if (lastPack == null)
+                        {
+                            noPackID = 1;
+                        }
+                        else
+                        {
+                            noPackID = Int32.Parse(lastPack.PackID.Substring(lastPack.PackID.Length - 2)) + 1;
+                        }
+                        // init packid
+                        string PackID = (noPackID >= 10) ? (order.OrderID + "#" + noPackID) : (order.OrderID + "#" + "0" + noPackID);
+                        pack = packsController.CreatePack(PackID, OrderPK);
+
+                        // create pack items
+                        PackedItemsController packedItemsController = new PackedItemsController();
+                        if (!packedItemsController.isPackedItemCreated(pack.PackPK, list))
+                        {
+                            if (pack != null)
+                            {
+                                packsController.DeletePack(pack.PackPK);
+                            }
+                            return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                        }
+
                     }
-                    else
-                    {
-                        noPackID = Int32.Parse(lastPack.PackID.Substring(lastPack.PackID.Length - 2)) + 1;
-                    }
-                    // init packid
-                    string PackID = (noPackID >= 10) ? (order.OrderID + "#" + noPackID) : (order.OrderID + "#" + "0" + noPackID);
-                    pack = packsController.CreatePack(PackID, OrderPK);
-                    // create pack items
-                    PackedItemsController packedItemsController = new PackedItemsController();
-                    if (!packedItemsController.isPackedItemCreated(pack.PackPK, list))
+                    catch (Exception e)
                     {
                         if (pack != null)
                         {
                             packsController.DeletePack(pack.PackPK);
                         }
-                        return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    }
+                    return Content(HttpStatusCode.OK, "TẠO PACK THÀNH CÔNG");
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ ĐÓNG NÊN KHÔNG TẠO ĐƯỢC PACK");
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
+
+        }
+
+        [Route("api/ReceivingController/UpdatePackBusiness")]
+        [HttpPut]
+        public IHttpActionResult UpdatePackBusiness([FromBody] PackedItem packedItem, string employeeCode)
+        {
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
+            {
+                PacksController packsController = new PacksController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                try
+                {
+                    if (packsController.isContainIdentifiedItem(packedItem.PackPK))
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
+                    }
+                    else
+                    {
+                        if (!packedItemsController.isUpdatedPackedItem(packedItem))
+                        {
+                            return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
+                        }
                     }
 
                 }
                 catch (Exception e)
                 {
-                    if (pack != null)
-                    {
-                        packsController.DeletePack(pack.PackPK);
-                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "TẠO PACK THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "UPDATE THÀNH CÔNG");
             }
             else
             {
-                return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ ĐÓNG NÊN KHÔNG TẠO ĐƯỢC PACK");
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-        }
 
-        [Route("api/ReceivingController/UpdatePackBusiness")]
-        [HttpPut]
-        public IHttpActionResult UpdatePackBusiness([FromBody] PackedItem packedItem)
-        {
-            PacksController packsController = new PacksController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            try
-            {
-                if (packsController.isContainIdentifiedItem(packedItem.PackPK))
-                {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
-                }
-                else
-                {
-                    if (!packedItemsController.isUpdatedPackedItem(packedItem))
-                    {
-                        return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-            return Content(HttpStatusCode.OK, "UPDATE THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/DeletePackBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeletePackBusiness(int packPK)
+        public IHttpActionResult DeletePackBusiness(int packPK, string employeeCode)
         {
-            List<PackedItem> listPackedItem;
-            PacksController packsController = new PacksController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
             {
-                Pack pack = packsController.GetPackByPackPK(packPK);
-
-                IQueryable<PackedItem> temp = packedItemsController.GetPackedItemsByPackPK(pack.PackPK);
-                listPackedItem = temp.ToList();
-
-                if (packsController.isContainIdentifiedItem(packPK))
+                List<PackedItem> listPackedItem;
+                PacksController packsController = new PacksController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                try
                 {
-                    return Content(HttpStatusCode.Conflict, "PACK ĐÃ CHỨA CLASSIFIED ITEM");
-                }
-                else if (pack == null || listPackedItem == null)
-                {
-                    return Content(HttpStatusCode.Conflict, "CÓ LỖI");
-                }
+                    Pack pack = packsController.GetPackByPackPK(packPK);
 
-                for (int i = 0; i < listPackedItem.Count; i++)
-                {
-                    packedItemsController.DeletePackedItem(listPackedItem[i].PackedItemPK);
+                    IQueryable<PackedItem> temp = packedItemsController.GetPackedItemsByPackPK(pack.PackPK);
+                    listPackedItem = temp.ToList();
+
+                    if (packsController.isContainIdentifiedItem(packPK))
+                    {
+                        return Content(HttpStatusCode.Conflict, "PACK ĐÃ CHỨA CLASSIFIED ITEM");
+                    }
+                    else if (pack == null || listPackedItem == null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "CÓ LỖI");
+                    }
+
+                    for (int i = 0; i < listPackedItem.Count; i++)
+                    {
+                        packedItemsController.DeletePackedItem(listPackedItem[i].PackedItemPK);
+                    }
+                    packsController.DeletePack(pack.PackPK);
+                    return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
                 }
-                packsController.DeletePack(pack.PackPK);
-                return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
         }
 
         [Route("api/ReceivingController/SwiftPackState")]
         [HttpPut]
-        public IHttpActionResult SwiftPackState(int packPK)
+        public IHttpActionResult SwiftPackState(int packPK, string employeeCode)
         {
-            Pack pack = db.Packs.Find(packPK);
-            PacksController packsController = new PacksController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
             {
-                packsController.SwiftPackState(packPK);
+                Pack pack = db.Packs.Find(packPK);
+                PacksController packsController = new PacksController();
+                try
+                {
+                    packsController.SwiftPackState(packPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "SWIFT THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "SWIFT THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/EditContractNumber")]
