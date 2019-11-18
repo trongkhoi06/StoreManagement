@@ -15,10 +15,6 @@ namespace StoreManagement.Controllers
     public class LoginController : ApiController
     {
         private UserModel db = new UserModel();
-        public class DeviceClient
-        {
-            public string DeviceName { get; set; }
-        }
         public class UserClient
         {
             public string Username { get; set; }
@@ -27,15 +23,18 @@ namespace StoreManagement.Controllers
 
         [Route("api/SystemLogin")]
         [HttpPost]
-        public IHttpActionResult SystemLogin(UserClient userClient)
+        public IHttpActionResult SystemLogin([FromBody] UserClient userClient)
         {
             try
             {
                 SqlParameter EmployeeCode = new SqlParameter("@EmployeeCode", userClient.Username);
                 SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                String role = db.Database.SqlQuery<String>("exec SystemLogin @EmployeeCode, @Password", EmployeeCode, Password).FirstOrDefault();
-                if (role == null) return NotFound();
-                return Ok(role);
+                int? roleID = db.Database.SqlQuery<int>("exec SystemLogin @EmployeeCode, @Password", EmployeeCode, Password).FirstOrDefault();
+                if (roleID == 0) return NotFound();
+                else
+                {
+                    return Ok(roleID);
+                }
             }
             catch(Exception e)
             {
@@ -45,12 +44,12 @@ namespace StoreManagement.Controllers
 
         [Route("api/DeviceLogin")]
         [HttpPost]
-        public IHttpActionResult DeviceLogin(DeviceClient device)
+        public IHttpActionResult DeviceLogin(string deviceCode)
         {
             try
             {
-                SqlParameter DeviceName = new SqlParameter("@DeviceName", device.DeviceName);
-                String isActive = db.Database.SqlQuery<String>("exec DeviceLogin @DeviceName", DeviceName).FirstOrDefault();
+                SqlParameter deviceCodeParam = new SqlParameter("@DeviceCode", deviceCode);
+                String isActive = db.Database.SqlQuery<String>("exec DeviceLogin @DeviceCode", deviceCodeParam).FirstOrDefault();
                 if (isActive.Equals("false")) return Ok(false);
                 return Ok(true);
             }
@@ -61,8 +60,9 @@ namespace StoreManagement.Controllers
         }
 
         [Route("api/ActiveDevice")]
-        public IHttpActionResult ActiveDevice(Device device)
+        public IHttpActionResult ActiveDevice(string deviceCode,string deviceName)
         {
+            Device device = new Device(deviceCode, deviceName);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

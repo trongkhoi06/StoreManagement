@@ -19,5 +19,16 @@ namespace StoreManagement.Models
 
         [Column(TypeName = "date")]
         public DateTime DateCreated { get; set; }
+
+        public Device()
+        {
+        }
+
+        public Device(string deviceCode, string deviceName)
+        {
+            DeviceCode = deviceCode;
+            DeviceName = deviceName;
+            DateCreated = DateTime.Now;
+        }
     }
 }

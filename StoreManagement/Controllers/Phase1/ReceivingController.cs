@@ -173,7 +173,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/DeleteOrderBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteOrderBusiness(int orderPK)
+        public IHttpActionResult DeleteOrderBusiness(int orderPK,string employeeCode)
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
