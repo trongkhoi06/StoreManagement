@@ -173,7 +173,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/DeleteOrderBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteOrderBusiness(int orderPK,string employeeCode)
+        public IHttpActionResult DeleteOrderBusiness(int orderPK, string employeeCode)
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
@@ -477,144 +477,182 @@ namespace StoreManagement.Controllers
             {
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-
         }
 
         [Route("api/ReceivingController/EditContractNumber")]
         [HttpPut]
-        public IHttpActionResult EditContractNumber(int packedItemPK, [FromBody] string contractNumber)
+        public IHttpActionResult EditContractNumber(int packedItemPK, [FromBody] string contractNumber, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
 
-            // Edit
-            PackedItemsController packedItemsController = new PackedItemsController();
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
             {
-                packedItemsController.changeContract(packedItemPK, contractNumber);
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
+                // Edit
+                PackedItemsController packedItemsController = new PackedItemsController();
+                try
+                {
+                    packedItemsController.changeContract(packedItemPK, contractNumber);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
 
-            return Content(HttpStatusCode.OK, "Edit Contract Number THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "Edit Contract Number THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
         }
 
         // Identify
         [Route("api/ReceivingController/IdentifyItemBusiness")]
         [HttpPost]
-        public IHttpActionResult IdentifyItemBusiness(string BoxID, string EmployeeCode, [FromBody] List<Client_PackItemPK_IdentifiedQuantity> list)
+        public IHttpActionResult IdentifyItemBusiness(string BoxID, string employeeCode, [FromBody] List<Client_PackItemPK_IdentifiedQuantity> list)
         {
             // kiểm trước khi chạy lệnh
-            IdentifyItemController identifyItemController = new IdentifyItemController();
-            // chạy lệnh identify
-            try
+
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                // kiếm Box by box ID
-                Box box = (from b in db.Boxes
-                           where b.BoxID == BoxID
-                           select b).FirstOrDefault();
-                // kiểm xem box đã store hay chưa
-                StoredBox sBox = (from sB in db.StoredBoxes
-                                  where sB.BoxPK == box.BoxPK
-                                  select sB).FirstOrDefault();
-                if (sBox != null)
+                IdentifyItemController identifyItemController = new IdentifyItemController();
+                // chạy lệnh identify
+                try
                 {
-                    return Content(HttpStatusCode.Conflict, "BOX ĐÃ ĐƯỢC STORE");
+                    // kiếm Box by box ID
+                    Box box = (from b in db.Boxes
+                               where b.BoxID == BoxID
+                               select b).FirstOrDefault();
+                    // kiểm xem box đã store hay chưa
+                    StoredBox sBox = (from sB in db.StoredBoxes
+                                      where sB.BoxPK == box.BoxPK
+                                      select sB).FirstOrDefault();
+                    if (sBox != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "BOX ĐÃ ĐƯỢC STORE");
+                    }
+                    // kiếm unstoredBox by box ID
+                    UnstoredBox uBox = (from uB in db.UnstoredBoxes
+                                        where uB.BoxPK == box.BoxPK
+                                        select uB).FirstOrDefault();
+                    // kiểm unstoredBox đã identified chưa
+                    if (uBox.IsIdentified == true)
+                    {
+                        return Content(HttpStatusCode.Conflict, "UNSTORED BOX ĐÃ ĐƯỢC IDENTIFY");
+                    }
+
+                    // chạy lệnh tạo n-indentifiedItem
+                    foreach (var el in list)
+                    {
+                        // querry lấy pack
+                        PackedItem packedItem = db.PackedItems.Find(el.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        // pack đang mở
+                        if (pack.IsOpened)
+                        {
+                            // tạo session
+                            IdentifyingSession iS = identifyItemController.createdIdentifyingSession(employeeCode);
+                            identifyItemController.createIndentifyItem(new IdentifiedItem(el.IdentifiedQuantity, el.PackedItemPK, iS.IdentifyingSessionPK, uBox.UnstoredBoxPK));
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                        }
+
+                    }
+                    // đổi state của unstoredBox
+                    identifyItemController.updateIsIdentifyUnstoreBox(uBox);
+
                 }
-                // kiếm unstoredBox by box ID
-                UnstoredBox uBox = (from uB in db.UnstoredBoxes
-                                    where uB.BoxPK == box.BoxPK
-                                    select uB).FirstOrDefault();
-                // kiểm unstoredBox đã identified chưa
-                if (uBox.IsIdentified == true)
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "UNSTORED BOX ĐÃ ĐƯỢC IDENTIFY");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                // chạy lệnh tạo n-indentifiedItem
-                foreach (var el in list)
+                return Content(HttpStatusCode.OK, "Identify THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
+
+        }
+
+        [Route("api/ReceivingController/EditIdentificationBusiness")]
+        [HttpPut]
+        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, int IdentifiedItemPK, int IdentifiedQuantity, string state, string employeeCode)
+        {
+            // kiểm trước khi chạy lệnh
+
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
+            {
+                // edit identification
+                IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
+                IdentifyItemController identifyItemController = new IdentifyItemController();
+                try
                 {
                     // querry lấy pack
-                    PackedItem packedItem = db.PackedItems.Find(el.PackedItemPK);
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(IdentifiedItemPK);
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                     Pack pack = db.Packs.Find(packedItem.PackPK);
                     // pack đang mở
                     if (pack.IsOpened)
                     {
-                        // tạo session
-                        IdentifyingSession iS = identifyItemController.createdIdentifyingSession(EmployeeCode);
-                        identifyItemController.createIndentifyItem(new IdentifiedItem(el.IdentifiedQuantity, el.PackedItemPK, iS.IdentifyingSessionPK, uBox.UnstoredBoxPK));
+                        // switch case xoa sua
+                        switch (state)
+                        {
+                            case "update":
+                                identifyItemController.updateIdentifiedItem(IdentifiedItemPK, IdentifiedQuantity);
+                                break;
+                            case "delete":
+                                identifyItemController.deleteIdentifiedItem(IdentifiedItemPK);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        identifyItemController.changeExecutedDate(identifyingSession);
                     }
                     else
                     {
                         return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
                     }
-
                 }
-                // đổi state của unstoredBox
-                identifyItemController.updateIsIdentifyUnstoreBox(uBox);
-
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-
-            return Content(HttpStatusCode.OK, "Identify THÀNH CÔNG");
-        }
-
-        [Route("api/ReceivingController/EditIdentificationBusiness")]
-        [HttpPut]
-        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, int IdentifiedItemPK, int IdentifiedQuantity, string state)
-        {
-            // kiểm trước khi chạy lệnh
-
-            // edit identification
-            IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
-            IdentifyItemController identifyItemController = new IdentifyItemController();
-            try
-            {
-                // querry lấy pack
-                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(IdentifiedItemPK);
-                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                Pack pack = db.Packs.Find(packedItem.PackPK);
-                // pack đang mở
-                if (pack.IsOpened)
+                catch (Exception e)
                 {
-                    // switch case xoa sua
-                    switch (state)
-                    {
-                        case "update":
-                            identifyItemController.updateIdentifiedItem(IdentifiedItemPK, IdentifiedQuantity);
-                            break;
-                        case "delete":
-                            identifyItemController.deleteIdentifiedItem(IdentifiedItemPK);
-                            break;
-                        default:
-                            break;
-                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
 
-                    identifyItemController.changeExecutedDate(identifyingSession);
-                }
-                else
-                {
-                    return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
-                }
+                return Content(HttpStatusCode.OK, "Edit Identification THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Edit Identification THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/DeleteIdentificationBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteIdentificationBusiness(int IdentifyingSessionPK)
+        public IHttpActionResult DeleteIdentificationBusiness(int IdentifyingSessionPK, int employeeCode)
         {
             // kiểm trước khi chạy lệnh
 
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
+            {
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
             // Delete
             IdentifyItemController identifyItemController = new IdentifyItemController();
             try
@@ -649,57 +687,63 @@ namespace StoreManagement.Controllers
         {
             // kiểm trước khi chạy lệnh
 
-
-            // Arrange
-            IdentifyItemController identifyItemController = new IdentifyItemController();
-            try
-            {
-                // take box
-                Box boxFrom = (from b in db.Boxes
-                               where b.BoxID == boxFromID
-                               select b).FirstOrDefault();
-
-                Box boxTo = (from b in db.Boxes
-                             where b.BoxID == boxToID
-                             select b).FirstOrDefault();
-                // select unstoredBox to check if box from really contain that item
-                UnstoredBox uBoxFrom = (from uB in db.UnstoredBoxes
-                                        where uB.BoxPK == boxFrom.BoxPK
-                                        select uB).FirstOrDefault();
-
-                // select unstoredBox to arrange
-                UnstoredBox uBoxTo = (from uB in db.UnstoredBoxes
-                                      where uB.BoxPK == boxTo.BoxPK
-                                      select uB).FirstOrDefault();
-                // Create arranging session
-                ArrangingSession arrangingSession = new ArrangingSession(DateTime.Now, boxFrom.BoxPK, boxTo.BoxPK, employeeCode);
-                arrangingSession = identifyItemController.createArrangingSession(arrangingSession);
-                // Arrange item
-                foreach (var item in listIdentifiedItemsPK)
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 2)
+            { 
+                // Arrange
+                IdentifyItemController identifyItemController = new IdentifyItemController();
+                try
                 {
-                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item);
-                    // check if box from really contain that item
-                    if (identifiedItem.UnstoredBoxPK == uBoxFrom.UnstoredBoxPK)
+                    // take box
+                    Box boxFrom = (from b in db.Boxes
+                                   where b.BoxID == boxFromID
+                                   select b).FirstOrDefault();
+
+                    Box boxTo = (from b in db.Boxes
+                                 where b.BoxID == boxToID
+                                 select b).FirstOrDefault();
+                    // select unstoredBox to check if box from really contain that item
+                    UnstoredBox uBoxFrom = (from uB in db.UnstoredBoxes
+                                            where uB.BoxPK == boxFrom.BoxPK
+                                            select uB).FirstOrDefault();
+
+                    // select unstoredBox to arrange
+                    UnstoredBox uBoxTo = (from uB in db.UnstoredBoxes
+                                          where uB.BoxPK == boxTo.BoxPK
+                                          select uB).FirstOrDefault();
+                    // Create arranging session
+                    ArrangingSession arrangingSession = new ArrangingSession(DateTime.Now, boxFrom.BoxPK, boxTo.BoxPK, employeeCode);
+                    arrangingSession = identifyItemController.createArrangingSession(arrangingSession);
+                    // Arrange item
+                    foreach (var item in listIdentifiedItemsPK)
                     {
-                        identifiedItem.UnstoredBoxPK = uBoxTo.UnstoredBoxPK;
-                        identifyItemController.ArrangeIndentifiedItem(identifiedItem);
-                        // Map session with item
-                        IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession = new IdentifiedItem_ArrangingSession();
-                        identifiedItem_ArrangingSession.IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
-                        identifiedItem_ArrangingSession.ArrangingSessionPK = arrangingSession.ArrangingSessionPK;
-                        identifyItemController.MapItemWithSession(identifiedItem_ArrangingSession);
+                        IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item);
+                        // check if box from really contain that item
+                        if (identifiedItem.UnstoredBoxPK == uBoxFrom.UnstoredBoxPK)
+                        {
+                            identifiedItem.UnstoredBoxPK = uBoxTo.UnstoredBoxPK;
+                            identifyItemController.ArrangeIndentifiedItem(identifiedItem);
+                            // Map session with item
+                            IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession = new IdentifiedItem_ArrangingSession();
+                            identifiedItem_ArrangingSession.IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
+                            identifiedItem_ArrangingSession.ArrangingSessionPK = arrangingSession.ArrangingSessionPK;
+                            identifyItemController.MapItemWithSession(identifiedItem_ArrangingSession);
+                        }
                     }
                 }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "Arrange THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Arrange THÀNH CÔNG");
         }
-
-
-
     }
 }
