@@ -13,12 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
-        public Pack(string PackID, int OrderPK)
+        public Pack(string packID, int orderPK, string employeeCode)
         {
-            this.PackID = PackID;
-            this.OrderPK = OrderPK;
-            this.DateCreated = DateTime.Now;
-            this.IsOpened = true;
+            PackID = PackID;
+            OrderPK = OrderPK;
+            DateCreated = DateTime.Now;
+            IsOpened = true;
+            EmployeeCode = employeeCode;
         }
 
         [Key]
@@ -34,5 +35,7 @@ namespace StoreManagement.Models
         public bool IsOpened { get; set; }
 
         public int OrderPK { get; set; }
+
+        public string EmployeeCode { get; set; }
     }
 }

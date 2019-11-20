@@ -17,13 +17,13 @@ namespace StoreManagement.Controllers
     public class PacksController
     {
         private UserModel db = new UserModel();
-        public Pack CreatePack(string PackID, int OrderPK)
+        public Pack CreatePack(string packID, int orderPK, string employeeCode)
         {
             PrimitiveType primitiveType = new PrimitiveType();
-            if (primitiveType.isPackID(PackID))
+            if (primitiveType.isPackID(packID))
             {
                 // Khởi tạo Pack
-                Pack Pack = new Pack(PackID, OrderPK);
+                Pack Pack = new Pack(packID, orderPK, employeeCode);
                 db.Packs.Add(Pack);
                 try
                 {

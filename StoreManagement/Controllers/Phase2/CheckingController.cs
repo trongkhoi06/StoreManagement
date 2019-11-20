@@ -20,100 +20,127 @@ namespace StoreManagement.Controllers
         public IHttpActionResult CountItemBusiness(int identifiedItemPK, int countedQuantity, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CountingItemController countingItemController = new CountingItemController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            // chạy lệnh counting
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 6)
             {
-                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                // kiểm state pack is closed
-                Pack pack = (from p in db.Packs
-                             where p.PackPK ==
-                                        (from pI in db.PackedItems
-                                         where pI.PackedItemPK == identifiedItem.PackedItemPK
-                                         select pI).FirstOrDefault().PackPK
-                             select p).FirstOrDefault();
-                if (pack.IsOpened == false)
+                // khởi tạo
+                CountingItemController countingItemController = new CountingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                // chạy lệnh counting
+                try
                 {
-                    // kiểm packeditem ứng với identified item đã classified chưa
-                    if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
+                    // kiểm state pack is closed
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK ==
+                                            (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault().PackPK
+                                 select p).FirstOrDefault();
+                    if (pack.IsOpened == false)
                     {
-                        // kiểm identified item đã được đếm hay chưa
-                        if (!identifiedItem.IsCounted)
+                        // kiểm packeditem ứng với identified item đã classified chưa
+                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
                         {
-                            // tạo session update và iscounted
-                            countingItemController.createCountingSession(new CountingSession(identifiedItemPK, countedQuantity, employeeCode));
-                            countingItemController.updateIsCountedOfIdentifiedItem(identifiedItemPK, true);
+                            // kiểm identified item đã được đếm hay chưa
+                            if (!identifiedItem.IsCounted)
+                            {
+                                // tạo session update và iscounted
+                                countingItemController.createCountingSession(new CountingSession(identifiedItemPK, countedQuantity, employeeCode));
+                                countingItemController.updateIsCountedOfIdentifiedItem(identifiedItemPK, true);
+                            }
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ ĐẾM RỒI, KHÔNG ĐẾM LẠI");
+                            }
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ ĐẾM RỒI, KHÔNG ĐẾM LẠI");
+                            return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
                         }
+
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
+                        return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
                     }
-
                 }
-                else
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
+
+                return Content(HttpStatusCode.OK, "Counting THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Counting THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/EditCountItemBusiness")]
         [HttpPut]
-        public IHttpActionResult EditCountItemBusiness(int countingSessionPK, int countedQuantity)
+        public IHttpActionResult EditCountItemBusiness(int countingSessionPK, int countedQuantity, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CountingItemController countingItemController = new CountingItemController();
-            // chạy lệnh edit counting
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                countingItemController.updateCountingSession(countingSessionPK, countedQuantity);
+                // khởi tạo
+                CountingItemController countingItemController = new CountingItemController();
+                // chạy lệnh edit counting
+                try
+                {
+                    countingItemController.updateCountingSession(countingSessionPK, countedQuantity);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "Edit Counting THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Edit Counting THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/DeleteCountItemBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteCountItemBusiness(int countingSessionPK)
+        public IHttpActionResult DeleteCountItemBusiness(int countingSessionPK, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CountingItemController countingItemController = new CountingItemController();
-            // chạy lệnh edit counting
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                CountingSession countingSession = db.CountingSessions.Find(countingSessionPK);
-                countingItemController.updateIsCountedOfIdentifiedItem(countingSession.IdentifiedItemPK, false);
-                countingItemController.deleteCountingSession(countingSessionPK);
+                // khởi tạo
+                CountingItemController countingItemController = new CountingItemController();
+                // chạy lệnh edit counting
+                try
+                {
+                    CountingSession countingSession = db.CountingSessions.Find(countingSessionPK);
+                    countingItemController.updateIsCountedOfIdentifiedItem(countingSession.IdentifiedItemPK, false);
+                    countingItemController.deleteCountingSession(countingSessionPK);
 
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "Delete Counting THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Delete Counting THÀNH CÔNG");
         }
 
         // Check
@@ -122,96 +149,123 @@ namespace StoreManagement.Controllers
         public IHttpActionResult CheckItemBusiness(int identifiedItemPK, int checkedQuantity, int unqualifiedQuantity, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CheckingItemController checkingItemController = new CheckingItemController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            // chạy lệnh checking
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                // kiểm state pack is closed
-                Pack pack = (from p in db.Packs
-                             where p.PackPK ==
-                                        (from pI in db.PackedItems
-                                         where pI.PackedItemPK == identifiedItem.PackedItemPK
-                                         select pI).FirstOrDefault().PackPK
-                             select p).FirstOrDefault();
-                if (pack.IsOpened == false)
+                // khởi tạo
+                CheckingItemController checkingItemController = new CheckingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                // chạy lệnh checking
+                try
                 {
-                    // kiểm packeditem ứng với identified item đã classified chưa
-                    if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
+                    // kiểm state pack is closed
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK ==
+                                            (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault().PackPK
+                                 select p).FirstOrDefault();
+                    if (pack.IsOpened == false)
                     {
-                        if (!identifiedItem.IsChecked)
+                        // kiểm packeditem ứng với identified item đã classified chưa
+                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
                         {
-                            // tạo session update và ischecked
-                            checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, employeeCode));
-                            checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
+                            if (!identifiedItem.IsChecked)
+                            {
+                                // tạo session update và ischecked
+                                checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, employeeCode));
+                                checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
+                            }
+
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
                         }
 
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
+                        return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
                     }
-
                 }
-                else
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
+
+                return Content(HttpStatusCode.OK, "Checking THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Checking THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/EditCheckItemBusiness")]
         [HttpPut]
-        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, int checkedQuantity, int unqualifiedQuantity)
+        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, int checkedQuantity, int unqualifiedQuantity, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CheckingItemController checkingItemController = new CheckingItemController();
-            // chạy lệnh edit checking
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity);
+                // khởi tạo
+                CheckingItemController checkingItemController = new CheckingItemController();
+                // chạy lệnh edit checking
+                try
+                {
+                    checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "Edit Checking THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Edit Checking THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/DeleteCheckItemBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteCheckItemBusiness(int checkingSessionPK)
+        public IHttpActionResult DeleteCheckItemBusiness(int checkingSessionPK, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            CheckingItemController checkingItemController = new CheckingItemController();
-            // chạy lệnh edit checking
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
-                checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
-                checkingItemController.deleteCheckingSession(checkingSessionPK);
+                // khởi tạo
+                CheckingItemController checkingItemController = new CheckingItemController();
+                // chạy lệnh edit checking
+                try
+                {
+                    CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
+                    checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
+                    checkingItemController.deleteCheckingSession(checkingSessionPK);
 
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "Delete Checking THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "Delete Checking THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/ClassifyItemBusiness")]
@@ -219,117 +273,135 @@ namespace StoreManagement.Controllers
         public IHttpActionResult ClassifyItemBusiness(int packedItemPK, string comment, int qualityState, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            IdentifyItemController identifyItemController = new IdentifyItemController();
-            ClassifyingItemController classifyingItemController = new ClassifyingItemController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            // chạy lệnh classify
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
-                Pack pack = db.Packs.Find(packedItem.PackPK);
-                // pack đang được đóng
-                if (!pack.IsOpened)
+                // khởi tạo
+                IdentifyItemController identifyItemController = new IdentifyItemController();
+                ClassifyingItemController classifyingItemController = new ClassifyingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                // chạy lệnh classify
+                try
                 {
-                    ClassifiedItem tempItem = (from cI in db.ClassifiedItems
-                                               where cI.PackedItemPK == packedItemPK
-                                               select cI).FirstOrDefault();
-
-
-                    // nếu có classify item của packitem thì edit
-                    if (tempItem != null)
+                    PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+                    // pack đang được đóng
+                    if (!pack.IsOpened)
                     {
-                        if (classifyingItemController.isNotStoredOrReturned(tempItem.ClassifiedItemPK))
+                        ClassifiedItem tempItem = (from cI in db.ClassifiedItems
+                                                   where cI.PackedItemPK == packedItemPK
+                                                   select cI).FirstOrDefault();
+
+
+                        // nếu có classify item của packitem thì edit
+                        if (tempItem != null)
                         {
-                            // tạo failed or passed item
-                            classifyingItemController.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
-                            // edit
-                            tempItem.QualityState = qualityState;
-                            ClassifyingSession tempSS = (from cS in db.ClassifyingSessions
-                                                         where cS.ClassifiedItemPK == tempItem.ClassifiedItemPK
-                                                         select cS).FirstOrDefault();
-                            tempSS.Comment = comment;
-                            classifyingItemController.updateClassifiedItem(tempItem);
-                            classifyingItemController.updateClassifyingSession(tempSS);
+                            if (classifyingItemController.isNotStoredOrReturned(tempItem.ClassifiedItemPK))
+                            {
+                                // tạo failed or passed item
+                                classifyingItemController.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
+                                // edit
+                                tempItem.QualityState = qualityState;
+                                ClassifyingSession tempSS = (from cS in db.ClassifyingSessions
+                                                             where cS.ClassifiedItemPK == tempItem.ClassifiedItemPK
+                                                             select cS).FirstOrDefault();
+                                tempSS.Comment = comment;
+                                classifyingItemController.updateClassifiedItem(tempItem);
+                                classifyingItemController.updateClassifyingSession(tempSS);
+                            }
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                            }
                         }
+                        // nếu chưa có classify item của packitem thì tạo mới
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                            int finalQuantity = identifyItemController.GenerateFinalQuantity(packedItemPK);
+                            ClassifiedItem classifiedItem = new ClassifiedItem(qualityState, finalQuantity, packedItemPK);
+
+                            // tạo classified item
+                            classifiedItem = classifyingItemController.createClassifiedItem(classifiedItem);
+
+                            // tạo classifying session
+                            classifyingItemController.createClassifyingSession(new ClassifyingSession(comment, classifiedItem.ClassifiedItemPK, employeeCode));
+
+                            // đổi IsClassified của pack item
+                            packedItem.IsClassified = true;
+                            packedItemsController.isUpdatedPackedItem(packedItem);
+
+                            // tạo failed or passed item
+                            classifyingItemController.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
                         }
+
                     }
-                    // nếu chưa có classify item của packitem thì tạo mới
                     else
                     {
-                        int finalQuantity = identifyItemController.GenerateFinalQuantity(packedItemPK);
-                        ClassifiedItem classifiedItem = new ClassifiedItem(qualityState, finalQuantity, packedItemPK);
-
-                        // tạo classified item
-                        classifiedItem = classifyingItemController.createClassifiedItem(classifiedItem);
-
-                        // tạo classifying session
-                        classifyingItemController.createClassifyingSession(new ClassifyingSession(comment, classifiedItem.ClassifiedItemPK, employeeCode));
-
-                        // đổi IsClassified của pack item
-                        packedItem.IsClassified = true;
-                        packedItemsController.isUpdatedPackedItem(packedItem);
-
-                        // tạo failed or passed item
-                        classifyingItemController.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
+                        return Content(HttpStatusCode.Conflict, "PACK CHƯA ĐÓNG, KHÔNG THỂ CLASSIFY");
                     }
-
                 }
-                else
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "PACK CHƯA ĐÓNG, KHÔNG THỂ CLASSIFY");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
+
+                return Content(HttpStatusCode.OK, "CLASSIFY THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "CLASSIFY THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/DeleteClassifyItemBusiness")]
         [HttpDelete]
-        public IHttpActionResult DeleteClassifyBusiness(int classifyingSessionPK)
+        public IHttpActionResult DeleteClassifyBusiness(int classifyingSessionPK, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            ClassifyingItemController classifyingItemController = new ClassifyingItemController();
-            PackedItemsController packedItemsController = new PackedItemsController();
-            // chạy lệnh delete classify
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                // init
-                ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
-                ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifyingSession.ClassifiedItemPK);
-                PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
-
-                if (classifyingItemController.isNotStoredOrReturned(classifiedItem.ClassifiedItemPK))
+                // khởi tạo
+                ClassifyingItemController classifyingItemController = new ClassifyingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
+                // chạy lệnh delete classify
+                try
                 {
-                    // delete
-                    classifyingItemController.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
-                    classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
-                    classifyingItemController.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
-                    packedItem.IsClassified = false;
-                    packedItemsController.isUpdatedPackedItem(packedItem);
+                    // init
+                    ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
+                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifyingSession.ClassifiedItemPK);
+                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+
+                    if (classifyingItemController.isNotStoredOrReturned(classifiedItem.ClassifiedItemPK))
+                    {
+                        // delete
+                        classifyingItemController.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
+                        classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
+                        classifyingItemController.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
+                        packedItem.IsClassified = false;
+                        packedItemsController.isUpdatedPackedItem(packedItem);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                    }
+
                 }
-                else
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
+                return Content(HttpStatusCode.OK, "DELETE CLASSIFY THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "DELETE CLASSIFY THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/ReturnItemBusiness")]
@@ -337,22 +409,31 @@ namespace StoreManagement.Controllers
         public IHttpActionResult ReturnItemBusiness(int failedItemPK, string employeeCode)
         {
             // kiểm trước khi chạy lệnh
-
-            // khởi tạo
-            ReturningItemController returningItemController = new ReturningItemController();
-            // chạy lệnh classify
-            try
+            SystemUser systemUser = db.SystemUsers.Find(employeeCode);
+            // check role of system user
+            if (systemUser.RoleID == 4)
             {
-                returningItemController.createReturningSession(failedItemPK, employeeCode);
-                returningItemController.updateFailedItemIsReturned(failedItemPK);
-                returningItemController.updateAllIdentifiedItemsToVirtualBox(failedItemPK);
+                // khởi tạo
+                ReturningItemController returningItemController = new ReturningItemController();
+                // chạy lệnh classify
+                try
+                {
+                    returningItemController.createReturningSession(failedItemPK, employeeCode);
+                    returningItemController.updateFailedItemIsReturned(failedItemPK);
+                    returningItemController.updateAllIdentifiedItemsToVirtualBox(failedItemPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+                return Content(HttpStatusCode.OK, "RETURN THÀNH CÔNG");
             }
-            catch (Exception e)
+            else
             {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
-            return Content(HttpStatusCode.OK, "RETURN THÀNH CÔNG");
         }
 
 

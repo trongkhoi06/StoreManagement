@@ -53,12 +53,11 @@ namespace StoreManagement.Controllers
         }
 
         // Order
-        [Route("api/ReceivingController/GetOrder")]
+        [Route("api/ReceivingController/GetOrderWithFilter")]
         [HttpGet]
         public IHttpActionResult GetOrderWithFilter(DateTime start, DateTime end)
         {
             List<Order> orders;
-            List<Client_Order> client_Orders = new List<Client_Order>();
             // make it one more day to make sure < end will be right answer
             end = end.AddDays(1);
             try
@@ -76,18 +75,13 @@ namespace StoreManagement.Controllers
                     orders = (from o in db.Orders.OrderByDescending(unit => unit.OrderPK)
                               select o).ToList();
                 }
-
-                foreach (var order in orders)
-                {
-                    client_Orders.Add(new Client_Order(order));
-                }
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
-            return Content(HttpStatusCode.OK, client_Orders);
+            return Content(HttpStatusCode.OK, orders);
         }
 
         [Route("api/ReceivingController/CreateOrderBusiness")]
@@ -274,6 +268,46 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_Packs);
         }
 
+        [Route("api/ReceivingController/GetPackWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetPackWithFilter(DateTime start, DateTime end)
+        {
+            List<Pack> packs;
+            List<Client_Pack_Angular> client_Pack_Angulars = new List<Client_Pack_Angular>();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    packs = (from o in db.Packs.OrderByDescending(unit => unit.PackPK)
+                             where o.DateCreated >= start && o.DateCreated < end
+                             select o).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    packs = (from o in db.Packs.OrderByDescending(unit => unit.PackPK)
+                             select o).ToList();
+                }
+
+                foreach (var pack in packs)
+                {
+                    Order order = db.Orders.Find(pack.OrderPK);
+                    string supplierName = db.Suppliers.Find(order.SupplierPK).SupplierName;
+                    client_Pack_Angulars.Add(new Client_Pack_Angular(pack, supplierName));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_Pack_Angulars);
+        }
+
+
         [Route("api/ReceivingController/GetPackedItemsByPackPK")]
         [HttpGet]
         public IHttpActionResult GetPackedItemsByPackPK(int PackPK)
@@ -304,13 +338,13 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CreatePackBusiness")]
         [HttpPost]
-        public IHttpActionResult CreatePackBusiness(int OrderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list, string employeeCode)
+        public IHttpActionResult CreatePackBusiness(int orderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list, string employeeCode)
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
             if (systemUser.RoleID == 2)
             {
-                Order order = db.Orders.Find(OrderPK);
+                Order order = db.Orders.Find(orderPK);
                 int noPackID;
                 if (order.IsOpened)
                 {
@@ -332,8 +366,8 @@ namespace StoreManagement.Controllers
                             noPackID = Int32.Parse(lastPack.PackID.Substring(lastPack.PackID.Length - 2)) + 1;
                         }
                         // init packid
-                        string PackID = (noPackID >= 10) ? (order.OrderID + "#" + noPackID) : (order.OrderID + "#" + "0" + noPackID);
-                        pack = packsController.CreatePack(PackID, OrderPK);
+                        string packID = (noPackID >= 10) ? (order.OrderID + "#" + noPackID) : (order.OrderID + "#" + "0" + noPackID);
+                        pack = packsController.CreatePack(packID, orderPK, employeeCode);
 
                         // create pack items
                         PackedItemsController packedItemsController = new PackedItemsController();
@@ -509,6 +543,106 @@ namespace StoreManagement.Controllers
         }
 
         // Identify
+        [Route("api/ReceivingController/GetPackedIdentifyItemByBoxID")]
+        [HttpGet]
+        public IHttpActionResult GetPackedIdentifyItemByBoxID(string boxID)
+        {
+            List<IdentifiedItem> identifiedItems;
+            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            try
+            {
+                Box box = (from b in db.Boxes
+                           where b.BoxID == boxID
+                           select b).FirstOrDefault();
+                UnstoredBox uBox = (from uB in db.UnstoredBoxes
+                                    where uB.BoxPK == box.BoxPK
+                                    select uB).FirstOrDefault();
+                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                   select iI).ToList();
+
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+        }
+
+        [Route("api/ReceivingController/GetPackedIdentifyItemByBoxIDCounted")]
+        [HttpGet]
+        public IHttpActionResult GetPackedIdentifyItemByBoxIDCounted(string boxID)
+        {
+            List<IdentifiedItem> identifiedItems;
+            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            try
+            {
+                Box box = (from b in db.Boxes
+                           where b.BoxID == boxID
+                           select b).FirstOrDefault();
+                UnstoredBox uBox = (from uB in db.UnstoredBoxes
+                                    where uB.BoxPK == box.BoxPK
+                                    select uB).FirstOrDefault();
+                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK && iI.IsCounted == true
+                                   select iI).ToList();
+
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+        }
+
         [Route("api/ReceivingController/IdentifyItemBusiness")]
         [HttpPost]
         public IHttpActionResult IdentifyItemBusiness(string BoxID, string employeeCode, [FromBody] List<Client_PackItemPK_IdentifiedQuantity> list)
@@ -648,37 +782,36 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser.RoleID == 4)
             {
+                // Delete
+                IdentifyItemController identifyItemController = new IdentifyItemController();
+                try
+                {
+                    // querry lấy pack
+                    IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
+                                                     where iI.IdentifyingSessionPK == IdentifyingSessionPK
+                                                     select iI).FirstOrDefault();
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+                    // pack đang mở
+                    if (pack.IsOpened)
+                    {
+                        identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "Delete Identification THÀNH CÔNG");
             }
             else
             {
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
-            // Delete
-            IdentifyItemController identifyItemController = new IdentifyItemController();
-            try
-            {
-                // querry lấy pack
-                IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
-                                                 where iI.IdentifyingSessionPK == IdentifyingSessionPK
-                                                 select iI).FirstOrDefault();
-                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                Pack pack = db.Packs.Find(packedItem.PackPK);
-                // pack đang mở
-                if (pack.IsOpened)
-                {
-                    identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
-                }
-                else
-                {
-                    return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
-                }
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-
-            return Content(HttpStatusCode.OK, "Delete Identification THÀNH CÔNG");
         }
 
         [Route("api/ReceivingController/ArrangeIdentifiedItemsBusiness")]
@@ -690,7 +823,7 @@ namespace StoreManagement.Controllers
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
             if (systemUser.RoleID == 2)
-            { 
+            {
                 // Arrange
                 IdentifyItemController identifyItemController = new IdentifyItemController();
                 try
