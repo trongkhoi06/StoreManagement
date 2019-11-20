@@ -15,8 +15,8 @@ namespace StoreManagement.Models
 
         public Pack(string packID, int orderPK, string employeeCode)
         {
-            PackID = PackID;
-            OrderPK = OrderPK;
+            PackID = packID;
+            OrderPK = orderPK;
             DateCreated = DateTime.Now;
             IsOpened = true;
             EmployeeCode = employeeCode;
