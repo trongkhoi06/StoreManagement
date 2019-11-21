@@ -336,13 +336,62 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_packedItems);
         }
 
+        [Route("api/ReceivingController/GetPackedItemsByPackPKAngular")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemsByPackPKAngular(int PackPK)
+        {
+            List<PackedItem> packedItems;
+            List<Client_PackedItemAngular> client_PackedItemAngulars = new List<Client_PackedItemAngular>();
+            try
+            {
+                packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
+                               where pI.PackPK == PackPK
+                               select pI).ToList();
+                foreach (var packedItem in packedItems)
+                {
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem));
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_PackedItemAngulars);
+        }
+
+        [Route("api/ReceivingController/GetPackByPackPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackByPackPK(int PackPK)
+        {
+            Client_Pack_Angular client_Pack_Angular;
+            try
+            {
+                Pack pack = db.Packs.Find(PackPK);
+                Order order = db.Orders.Find(pack.OrderPK);
+                string supplierName = db.Suppliers.Find(order.SupplierPK).SupplierName;
+                SystemUser systemUser = db.SystemUsers.Find(pack.EmployeeCode);
+                client_Pack_Angular = (new Client_Pack_Angular(pack, supplierName, systemUser));
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_Pack_Angular);
+        }
+
         [Route("api/ReceivingController/CreatePackBusiness")]
         [HttpPost]
         public IHttpActionResult CreatePackBusiness(int orderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list, string employeeCode)
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
                 Order order = db.Orders.Find(orderPK);
                 int noPackID;
@@ -409,7 +458,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
                 PacksController packsController = new PacksController();
                 PackedItemsController packedItemsController = new PackedItemsController();
@@ -447,8 +496,9 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
+
                 List<PackedItem> listPackedItem;
                 PacksController packsController = new PacksController();
                 PackedItemsController packedItemsController = new PackedItemsController();
@@ -492,7 +542,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
                 Pack pack = db.Packs.Find(packPK);
                 PacksController packsController = new PacksController();
@@ -521,7 +571,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
                 // Edit
                 PackedItemsController packedItemsController = new PackedItemsController();
@@ -822,7 +872,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 2)
+            if (systemUser !=null && systemUser.RoleID == 2)
             {
                 // Arrange
                 IdentifyItemController identifyItemController = new IdentifyItemController();

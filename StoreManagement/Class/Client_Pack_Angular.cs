@@ -23,6 +23,18 @@ namespace StoreManagement.Class
             EmployeeCode = pack.EmployeeCode;
         }
 
+        public Client_Pack_Angular(Pack pack, string supplierName, SystemUser systemUser)
+        {
+            SupplierName = supplierName;
+            PackPK = pack.PackPK;
+            PackID = pack.PackID;
+            DateCreated = pack.DateCreated;
+            IsOpened = pack.IsOpened;
+            OrderPK = pack.OrderPK;
+            EmployeeCode = pack.EmployeeCode;
+            SystemUserName = systemUser.Name;
+        }
+
         public int PackPK { get; set; }
 
         public string PackID { get; set; }
@@ -34,6 +46,8 @@ namespace StoreManagement.Class
         public int OrderPK { get; set; }
 
         public string EmployeeCode { get; set; }
+
+        public string SystemUserName { get; set; }
 
         public string SupplierName { get; set; }
 
