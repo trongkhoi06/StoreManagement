@@ -22,7 +22,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 6)
+            if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
                 CountingItemController countingItemController = new CountingItemController();
@@ -87,7 +87,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
                 CountingItemController countingItemController = new CountingItemController();
@@ -117,7 +117,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
                 CountingItemController countingItemController = new CountingItemController();
@@ -151,7 +151,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 CheckingItemController checkingItemController = new CheckingItemController();
@@ -212,7 +212,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 CheckingItemController checkingItemController = new CheckingItemController();
@@ -242,7 +242,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 CheckingItemController checkingItemController = new CheckingItemController();
@@ -268,6 +268,7 @@ namespace StoreManagement.Controllers
 
         }
 
+        // Classify
         [Route("api/ReceivingController/ClassifyItemBusiness")]
         [HttpPost]
         public IHttpActionResult ClassifyItemBusiness(int packedItemPK, string comment, int qualityState, string employeeCode)
@@ -275,7 +276,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 IdentifyItemController identifyItemController = new IdentifyItemController();
@@ -362,7 +363,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 ClassifyingItemController classifyingItemController = new ClassifyingItemController();
@@ -411,7 +412,7 @@ namespace StoreManagement.Controllers
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
                 ReturningItemController returningItemController = new ReturningItemController();

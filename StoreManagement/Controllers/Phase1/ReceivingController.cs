@@ -90,7 +90,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 3)
+            if (systemUser != null && systemUser.RoleID == 3)
             {
                 OrdersController ordersController = new OrdersController();
                 Order order = null;
@@ -133,7 +133,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 3)
+            if (systemUser != null && systemUser.RoleID == 3)
             {
                 OrdersController ordersController = new OrdersController();
                 OrderedItemsController orderedItemsController = new OrderedItemsController();
@@ -171,7 +171,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 3)
+            if (systemUser != null && systemUser.RoleID == 3)
             {
                 List<OrderedItem> listOrderedItem;
                 OrdersController ordersController = new OrdersController();
@@ -218,7 +218,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 3)
+            if (systemUser != null && systemUser.RoleID == 3)
             {
                 Order order = db.Orders.Find(orderPK);
                 OrdersController ordersController = new OrdersController();
@@ -391,7 +391,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 2)
             {
                 Order order = db.Orders.Find(orderPK);
                 int noPackID;
@@ -458,7 +458,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 2)
             {
                 PacksController packsController = new PacksController();
                 PackedItemsController packedItemsController = new PackedItemsController();
@@ -496,7 +496,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 2)
             {
 
                 List<PackedItem> listPackedItem;
@@ -542,7 +542,7 @@ namespace StoreManagement.Controllers
         {
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 2)
             {
                 Pack pack = db.Packs.Find(packPK);
                 PacksController packsController = new PacksController();
@@ -571,7 +571,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 2)
             {
                 // Edit
                 PackedItemsController packedItemsController = new PackedItemsController();
@@ -701,7 +701,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser !=null && systemUser.RoleID == 4)
             {
                 IdentifyItemController identifyItemController = new IdentifyItemController();
                 // chạy lệnh identify
@@ -774,7 +774,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser !=null && systemUser.RoleID == 4)
             {
                 // edit identification
                 IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
@@ -830,7 +830,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser.RoleID == 4)
+            if (systemUser !=null && systemUser.RoleID == 4)
             {
                 // Delete
                 IdentifyItemController identifyItemController = new IdentifyItemController();
@@ -872,7 +872,7 @@ namespace StoreManagement.Controllers
 
             SystemUser systemUser = db.SystemUsers.Find(employeeCode);
             // check role of system user
-            if (systemUser !=null && systemUser.RoleID == 2)
+            if (systemUser != null && systemUser.RoleID == 4)
             {
                 // Arrange
                 IdentifyItemController identifyItemController = new IdentifyItemController();
