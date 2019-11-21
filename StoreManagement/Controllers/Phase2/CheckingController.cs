@@ -15,6 +15,58 @@ namespace StoreManagement.Controllers
         private UserModel db = new UserModel();
 
         // Count
+
+
+        [Route("api/ReceivingController/GetPackedIdentifyItemByBoxIDCounted")]
+        [HttpGet]
+        public IHttpActionResult GetPackedIdentifyItemByBoxIDCounted(string boxID)
+        {
+            List<IdentifiedItem> identifiedItems;
+            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            try
+            {
+                Box box = (from b in db.Boxes
+                           where b.BoxID == boxID
+                           select b).FirstOrDefault();
+                UnstoredBox uBox = (from uB in db.UnstoredBoxes
+                                    where uB.BoxPK == box.BoxPK
+                                    select uB).FirstOrDefault();
+                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK && iI.IsCounted == true
+                                   select iI).ToList();
+
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+        }
+
         [Route("api/ReceivingController/CountItemBusiness")]
         [HttpPost]
         public IHttpActionResult CountItemBusiness(int identifiedItemPK, int countedQuantity, string employeeCode)
