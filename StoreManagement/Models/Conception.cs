@@ -9,35 +9,21 @@ namespace StoreManagement.Models
     [Table("Conception")]
     public partial class Conception
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Conception()
         {
-            Conception_Accessory = new HashSet<Conception_Accessory>();
-            Models = new HashSet<Model>();
-            Sizes = new HashSet<Size>();
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public int ConceptionPK { get; set; }
+
         public int ConceptionCode { get; set; }
-
-        public int? CustomerID { get; set; }
-
-        public int? SeasonID { get; set; }
 
         public string Description { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Conception_Accessory> Conception_Accessory { get; set; }
+        public int Year { get; set; }
 
-        public virtual Customer Customer { get; set; }
-
-        public virtual Season Season { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Model> Models { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Size> Sizes { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string Season { get; set; }
     }
 }

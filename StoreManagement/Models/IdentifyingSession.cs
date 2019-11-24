@@ -13,10 +13,10 @@ namespace StoreManagement.Models
         {
         }
 
-        public IdentifyingSession(string employeeCode)
+        public IdentifyingSession(string userID)
         {
             this.ExecutedDate = DateTime.Now;
-            EmployeeCode = employeeCode;
+            UserID = userID;
         }
 
         [Key]
@@ -25,6 +25,6 @@ namespace StoreManagement.Models
 
         public DateTime ExecutedDate { get; set; }
         [StringLength(50)]
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
     }
 }

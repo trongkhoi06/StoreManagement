@@ -20,18 +20,18 @@ namespace StoreManagement.Models
         public int DestinationBoxPK { get; set; }
 
         [StringLength(50)]
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
 
         public ArrangingSession()
         {
         }
 
-        public ArrangingSession(DateTime executedDate, int startBoxPK, int destinationBoxPK, string employeeCode)
+        public ArrangingSession(DateTime executedDate, int startBoxPK, int destinationBoxPK, string userID)
         {
             ExecutedDate = executedDate;
             StartBoxPK = startBoxPK;
             DestinationBoxPK = destinationBoxPK;
-            EmployeeCode = employeeCode;
+            UserID = userID;
         }
     }
 }

@@ -19,17 +19,17 @@ namespace StoreManagement.Models
 
         public int IdentifiedItemPK { get; set; }
 
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
         public CountingSession()
         {
         }
 
-        public CountingSession(int identifiedItemPK, int countedQuantity, string employeeCode)
+        public CountingSession(int identifiedItemPK, int countedQuantity, string userID)
         {
             CountedQuantity = countedQuantity;
             ExecutedDate = DateTime.Now;
             IdentifiedItemPK = identifiedItemPK;
-            this.EmployeeCode = employeeCode;
+            this.UserID = userID;
         }
     }
 }

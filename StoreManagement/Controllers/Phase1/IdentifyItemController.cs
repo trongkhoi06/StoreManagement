@@ -45,22 +45,6 @@ namespace StoreManagement.Controllers
 
         }
 
-        public void updateIsIdentifyUnstoreBox(UnstoredBox uBox)
-        {
-            try
-            {
-                uBox.IsIdentified = true;
-                db.Entry(uBox).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-
-                throw e;
-            }
-
-        }
-
         public void changeExecutedDate(IdentifyingSession session)
         {
             try
@@ -224,5 +208,7 @@ namespace StoreManagement.Controllers
             }
             return result;
         }
+
+       
     }
 }

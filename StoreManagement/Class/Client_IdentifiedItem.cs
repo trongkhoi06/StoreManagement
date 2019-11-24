@@ -16,7 +16,7 @@ namespace StoreManagement.Class
 
         public string Art { get; set; }
 
-        public string Model { get; set; }
+        public string Color { get; set; }
 
         public string Item { get; set; }
 
@@ -30,7 +30,7 @@ namespace StoreManagement.Class
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
-            Model = accessory.Model;
+            Color = accessory.Color;
             Item = accessory.Item;
             IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
             PackID = packID;

@@ -48,11 +48,6 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Pack GetPackByPackPK(int packPK)
-        {
-            return db.Packs.Find(packPK);
-        }
-
         internal bool isContainIdentifiedItem(int packPK)
         {
             bool result = false;
@@ -128,6 +123,15 @@ namespace StoreManagement.Controllers
             }
         }
 
-
+        public Supplier GetSupplierByPack(Pack pack)
+        {
+            Order order = (from o in db.Orders
+                           where o.OrderPK == pack.OrderPK
+                           select o).FirstOrDefault();
+            Supplier supplier = (from sup in db.Suppliers
+                                 where sup.SupplierPK == order.SupplierPK
+                                 select sup).FirstOrDefault();
+            return supplier;
+        }
     }
 }

@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("Accessory")]
     public partial class Accessory
     {
+        public Accessory()
+        {
+        }
+
         [Key]
         public int AccessoryPK { get; set; }
 
@@ -20,18 +24,20 @@ namespace StoreManagement.Models
 
         public bool IsActive { get; set; }
 
-        [StringLength(50)]
-        public string Art { get; set; }
-
-        [StringLength(50)]
-        public string Model { get; set; }
-
+        [Required]
         [StringLength(50)]
         public string Item { get; set; }
 
         [StringLength(50)]
+        public string Art { get; set; }
+
+        [StringLength(50)]
+        public string Color { get; set; }
+
         public string Comment { get; set; }
 
         public string Image { get; set; }
+
+        public int AccessoryTypePK { get; set; }
     }
 }

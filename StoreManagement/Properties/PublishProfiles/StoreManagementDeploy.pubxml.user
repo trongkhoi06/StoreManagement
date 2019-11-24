@@ -163,10 +163,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/21/2019 19:06:18</publishTime>
     </File>
     <File Include="bin/StoreManagement.dll">
-      <publishTime>11/21/2019 19:14:26</publishTime>
+      <publishTime>11/24/2019 10:51:53</publishTime>
     </File>
     <File Include="bin/StoreManagement.pdb">
-      <publishTime>11/21/2019 19:14:26</publishTime>
+      <publishTime>11/24/2019 10:51:53</publishTime>
     </File>
     <File Include="bin/Swashbuckle.Core.dll">
       <publishTime>11/21/2019 19:06:18</publishTime>
@@ -193,7 +193,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/21/2019 19:06:18</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>11/21/2019 19:06:18</publishTime>
+      <publishTime>11/24/2019 10:16:24</publishTime>
     </File>
   </ItemGroup>
 </Project>

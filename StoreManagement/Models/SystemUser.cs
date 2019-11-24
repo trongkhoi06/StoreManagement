@@ -11,7 +11,7 @@ namespace StoreManagement.Models
     {
         [Key]
         [StringLength(50)]
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
 
         [Required]
         [StringLength(50)]

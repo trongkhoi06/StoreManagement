@@ -19,17 +19,17 @@ namespace StoreManagement.Models
 
         public int ClassifiedItemPK { get; set; }
 
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
 
         public ClassifyingSession()
         {
         }
 
-        public ClassifyingSession(string comment, int classifiedItemPK, string employeeCode)
+        public ClassifyingSession(string comment, int classifiedItemPK, string userID)
         {
             Comment = comment;
             ClassifiedItemPK = classifiedItemPK;
-            EmployeeCode = employeeCode;
+            UserID = userID;
             ExecutedDate = DateTime.Now;
         }
     }

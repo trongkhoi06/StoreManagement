@@ -12,9 +12,9 @@ namespace StoreManagement.Models
         public Order()
         {
         }
-        public Order(string OrderID, int SupplierPK,string EmployeeCode)
+        public Order(string OrderID, int SupplierPK,string userID)
         {
-            this.EmployeeCode = EmployeeCode;
+            this.UserID = userID;
             this.OrderID = OrderID;
             this.SupplierPK = SupplierPK;
             this.DateCreated = DateTime.Now;
@@ -37,6 +37,6 @@ namespace StoreManagement.Models
         public int SupplierPK { get; set; }
 
         [StringLength(50)]
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
     }
 }

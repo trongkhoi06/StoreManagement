@@ -6,13 +6,13 @@ using System.Web;
 
 namespace StoreManagement.Class
 {
-    public class Client_PackedItemAngular
+    public class Client_CountingSession
     {
-        public Client_PackedItemAngular()
+        public Client_CountingSession()
         {
         }
 
-        public Client_PackedItemAngular(Accessory accessory, PackedItem packedItem)
+        public Client_CountingSession(Accessory accessory, PackedItem packedItem)
         {
 
             PackedItemPK = packedItem.PackedItemPK;

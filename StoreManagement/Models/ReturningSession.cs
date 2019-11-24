@@ -16,15 +16,15 @@ namespace StoreManagement.Models
         public DateTime ExecutedDate { get; set; }
 
         public int FailedItemPK { get; set; }
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
         public ReturningSession()
         {
         }
 
-        public ReturningSession(int failedItemPK, string employeeCode)
+        public ReturningSession(int failedItemPK, string userID)
         {
             FailedItemPK = failedItemPK;
-            EmployeeCode = employeeCode;
+            UserID = userID;
             ExecutedDate = DateTime.Now;
         }
     }

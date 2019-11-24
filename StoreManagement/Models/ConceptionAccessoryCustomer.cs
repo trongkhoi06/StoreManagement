@@ -6,18 +6,22 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class Conception_Accessory
+    [Table("ConceptionAccessoryCustomer")]
+    public partial class ConceptionAccessoryCustomer
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int C_A_RelationshipID { get; set; }
+        public int ConceptionAccessoryPK { get; set; }
 
-        public int ConceptionCode { get; set; }
+        public int? ConceptionPK { get; set; }
 
-        public int AccessoryID { get; set; }
+        public int? AccessoryPK { get; set; }
+
+        public int CustomerPK { get; set; }
 
         public virtual Accessory Accessory { get; set; }
 
         public virtual Conception Conception { get; set; }
+
+        public virtual Customer Customer { get; set; }
     }
 }

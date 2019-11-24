@@ -20,7 +20,7 @@ namespace StoreManagement.Class
             DateCreated = pack.DateCreated;
             IsOpened = pack.IsOpened;
             OrderPK = pack.OrderPK;
-            EmployeeCode = pack.EmployeeCode;
+            UserID = pack.UserID;
         }
 
         public Client_Pack_Angular(Pack pack, string supplierName, SystemUser systemUser)
@@ -31,7 +31,7 @@ namespace StoreManagement.Class
             DateCreated = pack.DateCreated;
             IsOpened = pack.IsOpened;
             OrderPK = pack.OrderPK;
-            EmployeeCode = pack.EmployeeCode;
+            UserID = pack.UserID;
             SystemUserName = systemUser.Name;
         }
 
@@ -45,7 +45,7 @@ namespace StoreManagement.Class
 
         public int OrderPK { get; set; }
 
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
 
         public string SystemUserName { get; set; }
 
@@ -68,7 +68,7 @@ namespace StoreManagement.Class
             DateCreated = pack.DateCreated;
             IsOpened = pack.IsOpened;
             OrderPK = pack.OrderPK;
-            EmployeeCode = pack.EmployeeCode;
+            EmployeeCode = pack.UserID;
         }
 
         public int PackPK { get; set; }

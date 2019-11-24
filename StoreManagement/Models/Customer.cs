@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("Customer")]
     public partial class Customer
     {
+        public Customer()
+        {
+        }
+
         [Key]
         public int CustomerPK { get; set; }
 

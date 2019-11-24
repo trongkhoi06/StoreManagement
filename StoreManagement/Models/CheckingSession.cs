@@ -21,20 +21,20 @@ namespace StoreManagement.Models
 
         public int IdentifiedItemPK { get; set; }
 
-        public string EmployeeCode { get; set; }
+        public string UserID { get; set; }
 
         public CheckingSession()
         {
             ExecutedDate = DateTime.Now;
         }
 
-        public CheckingSession(int checkedQuantity, int unqualifiedQuantity, int identifiedItemPK, string employeeCode)
+        public CheckingSession(int checkedQuantity, int unqualifiedQuantity, int identifiedItemPK, string userID)
         {
             CheckedQuantity = checkedQuantity;
             UnqualifiedQuantity = unqualifiedQuantity;
             ExecutedDate = DateTime.Now;
             IdentifiedItemPK = identifiedItemPK;
-            EmployeeCode = employeeCode;
+            UserID = userID;
         }
     }
 }

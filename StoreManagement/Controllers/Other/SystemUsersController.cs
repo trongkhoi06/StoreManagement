@@ -38,7 +38,7 @@ namespace StoreManagement.Controllers
             }
             catch (Exception e)
             {
-                return Content(HttpStatusCode.Conflict,e.Message);
+                return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
 
@@ -158,12 +158,12 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult InsertSystemUser(Client_User user)
         {
-            if (user.RoleID <2 || user.RoleID > 7)
+            if (user.RoleID < 2 || user.RoleID > 7)
             {
                 return Conflict();
             }
             SystemUser systemUser = new SystemUser();
-            systemUser.EmployeeCode = user.EmployeeCode;
+            systemUser.UserID = user.EmployeeCode;
             systemUser.RoleID = user.RoleID;
             systemUser.Name = user.Name;
             systemUser.DateCreated = user.DateCreated;
@@ -181,7 +181,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateException)
             {
-                if (SystemUserExists(systemUser.EmployeeCode))
+                if (SystemUserExists(systemUser.UserID))
                 {
                     return Conflict();
                 }
@@ -222,7 +222,7 @@ namespace StoreManagement.Controllers
 
         private bool SystemUserExists(string id)
         {
-            return db.SystemUsers.Count(e => e.EmployeeCode == id) > 0;
+            return db.SystemUsers.Count(e => e.UserID == id) > 0;
         }
     }
 }

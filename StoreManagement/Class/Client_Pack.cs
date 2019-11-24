@@ -26,8 +26,6 @@ namespace StoreManagement.Class
 
         public DateTime DateCreated { get; set; }
 
-        public string EmployeeCode { get; set; }
-
         public string SupplierName { get; set; }
     }
 }
