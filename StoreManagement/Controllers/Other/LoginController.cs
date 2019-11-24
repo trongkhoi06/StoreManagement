@@ -27,9 +27,9 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                SqlParameter EmployeeCode = new SqlParameter("@EmployeeCode", userClient.Username);
+                SqlParameter userID = new SqlParameter("@userID", userClient.Username);
                 SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                int? roleID = db.Database.SqlQuery<int>("exec SystemLogin @EmployeeCode, @Password", EmployeeCode, Password).FirstOrDefault();
+                int? roleID = db.Database.SqlQuery<int>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
                 if (roleID == 0) return NotFound();
                 else
                 {

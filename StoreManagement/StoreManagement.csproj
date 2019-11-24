@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Class\Client_IdentifiedItemPK_IdentifiedQuantity.cs" />
     <Compile Include="Class\Client_Accessory_OrderedQuantity_Comment.cs" />
     <Compile Include="Class\Client_IdentifyingSession.cs" />
     <Compile Include="Class\Client_IdentifiedItem.cs" />
@@ -121,7 +122,7 @@
     <Compile Include="Class\Client_PackedItem.cs" />
     <Compile Include="Class\Client_Pack.cs" />
     <Compile Include="Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
-    <Compile Include="Class\Client_PackItemPK_IdentifiedQuantity.cs" />
+    <Compile Include="Class\Client_PackedItemPK_IdentifiedQuantity.cs" />
     <Compile Include="Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />
     <Compile Include="Controllers\Other\BoxController.cs" />

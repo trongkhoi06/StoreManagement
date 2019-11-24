@@ -310,32 +310,23 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/GetPackedItemsByPackPK")]
         [HttpGet]
-        public IHttpActionResult GetPackedItemsByPackPK(int packPK, string boxID)
+        public IHttpActionResult GetPackedItemsByPackPK(int packPK)
         {
             List<PackedItem> packedItems;
             List<Client_PackedItem> client_packedItems = new List<Client_PackedItem>();
             BoxController boxController = new BoxController();
             try
             {
-                // check box coi có phải mới hay ko
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox unstoredBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (unstoredBox.IsIdentified == false)
+                packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
+                               where pI.PackPK == packPK
+                               select pI).ToList();
+                foreach (var packedItem in packedItems)
                 {
-                    packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                   where pI.PackPK == packPK
-                                   select pI).ToList();
-                    foreach (var packedItem in packedItems)
-                    {
-
-
-                        // get packedItem
-                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-                        Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                        client_packedItems.Add(new Client_PackedItem(accessory, packedItem));
-                    }
+                    // get packedItem
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    client_packedItems.Add(new Client_PackedItem(accessory, packedItem));
                 }
-
 
             }
             catch (Exception e)
@@ -607,7 +598,7 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetIdentifyingSessionByUserID(string userID)
         {
-            List<Client_IdentifyingSession> client_IdentifiedItems = new List<Client_IdentifyingSession>();
+            List<Client_IdentifyingSession> client_IdentifyingSessions = new List<Client_IdentifyingSession>();
             BoxController boxController = new BoxController();
             PacksController packsController = new PacksController();
             try
@@ -627,7 +618,44 @@ namespace StoreManagement.Controllers
                                  where p.PackPK == packedItem.PackPK
                                  select p).FirstOrDefault();
                     Supplier supplier = packsController.GetSupplierByPack(pack);
-                    client_IdentifiedItems.Add(new Client_IdentifyingSession(supplier,pack,identifyingSession));
+                    client_IdentifyingSessions.Add(new Client_IdentifyingSession(supplier, pack, identifyingSession));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifyingSessions);
+        }
+
+        [Route("api/ReceivingController/GetIdentifiedItemByIdentifyingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetIdentifiedItemByIdentifyingSessionPK(int identifyingSessionPK)
+        {
+            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            BoxController boxController = new BoxController();
+            PacksController packsController = new PacksController();
+            try
+            {
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.IdentifyingSessionPK == identifyingSessionPK
+                                                        select iI).ToList();
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory));
                 }
             }
             catch (Exception e)
@@ -638,9 +666,9 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
-        [Route("api/ReceivingController/GetPackedIdentifyItemByBoxID")]
+        [Route("api/ReceivingController/GetIdentifyItemByBoxID")]
         [HttpGet]
-        public IHttpActionResult GetPackedIdentifyItemByBoxID(string boxID)
+        public IHttpActionResult GetIdentifyItemByBoxID(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
@@ -686,7 +714,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/IdentifyItemBusiness")]
         [HttpPost]
-        public IHttpActionResult IdentifyItemBusiness(string boxID, string userID, [FromBody] List<Client_PackItemPK_IdentifiedQuantity> list)
+        public IHttpActionResult IdentifyItemBusiness(string boxID, string userID, [FromBody] List<Client_PackedItemPK_IdentifiedQuantity> list)
         {
             // kiểm trước khi chạy lệnh
 
@@ -755,7 +783,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditIdentificationBusiness")]
         [HttpPut]
-        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, int IdentifiedItemPK, int IdentifiedQuantity, string state, string userID)
+        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, string userID, List<Client_IdentifiedItemPK_IdentifiedQuantity> list)
         {
             // kiểm trước khi chạy lệnh
 
@@ -768,31 +796,33 @@ namespace StoreManagement.Controllers
                 IdentifyItemController identifyItemController = new IdentifyItemController();
                 try
                 {
-                    // querry lấy pack
-                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(IdentifiedItemPK);
-                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                    Pack pack = db.Packs.Find(packedItem.PackPK);
-                    // pack đang mở
-                    if (pack.IsOpened)
+                    foreach (var el in list)
                     {
-                        // switch case xoa sua
-                        switch (state)
+                        // querry lấy pack
+                        IdentifiedItem identifiedItem = db.IdentifiedItems.Find(el.IdentifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        // pack đang mở
+                        if (pack.IsOpened)
                         {
-                            case "update":
-                                identifyItemController.updateIdentifiedItem(IdentifiedItemPK, IdentifiedQuantity);
-                                break;
-                            case "delete":
-                                identifyItemController.deleteIdentifiedItem(IdentifiedItemPK);
-                                break;
-                            default:
-                                break;
-                        }
+                            // switch case xoa sua
+                            switch (el.IdentifiedQuantity)
+                            {
 
-                        identifyItemController.changeExecutedDate(identifyingSession);
-                    }
-                    else
-                    {
-                        return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                                case 0:
+                                    identifyItemController.deleteIdentifiedItem(el.IdentifiedItemPK);
+                                    break;
+                                default:
+                                    identifyItemController.updateIdentifiedItem(el.IdentifiedItemPK, el.IdentifiedQuantity);
+                                    break;
+                            }
+
+                            identifyItemController.changeExecutedDate(identifyingSession);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                        }
                     }
                 }
                 catch (Exception e)
@@ -936,6 +966,46 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
+        }
+
+        [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
+        [HttpGet]
+        public IHttpActionResult GetIsBoxStoredOrIdentified(string boxID)
+        {
+            BoxController boxController = new BoxController();
+            bool result = false;
+            try
+            {
+                Box box = boxController.GetBoxByBoxID(boxID);
+                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                if (boxController.isStored(box.BoxPK)) result = true;
+                if (uBox.IsIdentified == true) result = true;
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
+        [HttpGet]
+        public IHttpActionResult GetIsBoxStored(string boxID)
+        {
+            BoxController boxController = new BoxController();
+            bool result = false;
+            try
+            {
+                Box box = boxController.GetBoxByBoxID(boxID);
+                if (boxController.isStored(box.BoxPK)) result = true;
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
         }
     }
 }

@@ -35,5 +35,16 @@ namespace StoreManagement.Class
             IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
             PackID = packID;
         }
+
+        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory)
+        {
+            IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
+            IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
+        }
     }
 }

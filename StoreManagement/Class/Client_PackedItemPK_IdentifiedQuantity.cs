@@ -5,7 +5,7 @@ using System.Web;
 
 namespace StoreManagement.Class
 {
-    public class Client_PackItemPK_IdentifiedQuantity
+    public class Client_PackedItemPK_IdentifiedQuantity
     {
         public int IdentifiedQuantity { get; set; }
 
