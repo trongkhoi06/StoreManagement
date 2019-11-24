@@ -989,7 +989,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
-        [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
+        [Route("api/ReceivingController/GetIsBoxStored")]
         [HttpGet]
         public IHttpActionResult GetIsBoxStored(string boxID)
         {

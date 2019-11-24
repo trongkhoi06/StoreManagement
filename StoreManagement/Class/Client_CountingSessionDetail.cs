@@ -6,16 +6,18 @@ using System.Web;
 
 namespace StoreManagement.Class
 {
-    public class Client_CountingSession
+    public class Client_CountingSessionDetail
     {
-        public Client_CountingSession()
+        public Client_CountingSessionDetail()
         {
         }
 
-        public Client_CountingSession(Accessory accessory, Pack pack, CountingSession countingSession)
+        public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem)
         {
             CountingSessionPK = countingSession.CountingSessionPK;
             DateCreated = countingSession.ExecutedDate;
+            CountedQuantity = countingSession.CountedQuantity;
+            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
@@ -39,5 +41,10 @@ namespace StoreManagement.Class
         public string PackID { get; set; }
 
         public DateTime DateCreated { get; set; }
+
+        public int CountedQuantity { get; set; }
+
+        public int IdentifiedQuantity { get; set; }
+
     }
 }

@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Class\Client_CountingSessionDetail.cs" />
     <Compile Include="Class\Client_IdentifiedItemPK_IdentifiedQuantity.cs" />
     <Compile Include="Class\Client_Accessory_OrderedQuantity_Comment.cs" />
     <Compile Include="Class\Client_IdentifyingSession.cs" />
