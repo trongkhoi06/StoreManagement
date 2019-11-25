@@ -104,7 +104,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/GetCountingSessionByCountingSessionPK")]
         [HttpGet]
-        public IHttpActionResult GetCountingSessionByCountingSessionPK(string countingSessionPK)
+        public IHttpActionResult GetCountingSessionByCountingSessionPK(int countingSessionPK)
         {
             List<Client_CountingSessionDetail> client_CountingSessions = new List<Client_CountingSessionDetail>();
 
@@ -308,6 +308,84 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
+        [Route("api/ReceivingController/GetCheckingSessionByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetCheckingSessionByUserID(string userID)
+        {
+            List<Client_CheckingSession> client_CheckingSessions = new List<Client_CheckingSession>();
+
+            try
+            {
+                List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
+                                                          where ss.UserID == userID
+                                                          select ss).ToList();
+                foreach (var checkingSession in checkingSessions)
+                {
+                    IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
+                                                      where iI.IdentifiedItemPK == checkingSession.IdentifiedItemPK
+                                                      select iI).FirstOrDefault();
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItems.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+                    client_CheckingSessions.Add(new Client_CheckingSession(accessory, pack, checkingSession));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_CheckingSessions);
+        }
+
+        [Route("api/ReceivingController/GetCheckingSessionByCheckingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetCheckingSessionByCheckingSessionPK(int checkingSessionPK)
+        {
+            List<Client_CheckingSessionDetail> client_CheckingSessions = new List<Client_CheckingSessionDetail>();
+
+            try
+            {
+                CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
+                IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
+                                                  where iI.IdentifiedItemPK == checkingSession.IdentifiedItemPK
+                                                  select iI).FirstOrDefault();
+                PackedItem packedItem = (from pI in db.PackedItems
+                                         where pI.PackedItemPK == identifiedItems.PackedItemPK
+                                         select pI).FirstOrDefault();
+                Pack pack = (from p in db.Packs
+                             where p.PackPK == packedItem.PackPK
+                             select p).FirstOrDefault();
+                // lấy phụ liệu tương ứng
+                OrderedItem orderedItem = (from oI in db.OrderedItems
+                                           where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                           select oI).FirstOrDefault();
+
+                Accessory accessory = (from a in db.Accessories
+                                       where a.AccessoryPK == orderedItem.AccessoryPK
+                                       select a).FirstOrDefault();
+                client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession));
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_CheckingSessions);
+        }
+
         [Route("api/ReceivingController/CheckItemBusiness")]
         [HttpPost]
         public IHttpActionResult CheckItemBusiness(int identifiedItemPK, int checkedQuantity, int unqualifiedQuantity, string userID)
@@ -433,6 +511,50 @@ namespace StoreManagement.Controllers
         }
 
         // Classify
+        [Route("api/ReceivingController/GetPackedItemByBoxID")]
+        public IHttpActionResult GetPackedItemByBoxID(string boxID)
+        {
+            List<IdentifiedItem> identifiedItems;
+            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            BoxController boxController = new BoxController();
+            try
+            {
+                Box box = boxController.GetBoxByBoxID(boxID);
+                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK && iI.IsCounted == true
+                                   select iI).ToList();
+
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+        }
+
         [Route("api/ReceivingController/ClassifyItemBusiness")]
         [HttpPost]
         public IHttpActionResult ClassifyItemBusiness(int packedItemPK, string comment, int qualityState, string userID)

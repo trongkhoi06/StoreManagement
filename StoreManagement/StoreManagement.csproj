@@ -112,6 +112,8 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Class\Client_CheckingSession.cs" />
+    <Compile Include="Class\Client_CheckingSessionDetail.cs" />
     <Compile Include="Class\Client_CountingSessionDetail.cs" />
     <Compile Include="Class\Client_IdentifiedItemChecking.cs" />
     <Compile Include="Class\Client_IdentifiedItemPK_IdentifiedQuantity.cs" />

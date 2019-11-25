@@ -15,7 +15,7 @@ namespace StoreManagement.Class
         public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem)
         {
             CountingSessionPK = countingSession.CountingSessionPK;
-            DateCreated = countingSession.ExecutedDate;
+            ExecutedDate = countingSession.ExecutedDate;
             CountedQuantity = countingSession.CountedQuantity;
             IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
             AccessoryID = accessory.AccessoryID;
@@ -40,7 +40,7 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
-        public DateTime DateCreated { get; set; }
+        public DateTime ExecutedDate { get; set; }
 
         public int CountedQuantity { get; set; }
 

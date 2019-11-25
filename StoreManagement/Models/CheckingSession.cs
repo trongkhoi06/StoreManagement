@@ -23,6 +23,8 @@ namespace StoreManagement.Models
 
         public string UserID { get; set; }
 
+        public string Comment { get; set; }
+
         public CheckingSession()
         {
             ExecutedDate = DateTime.Now;
