@@ -677,32 +677,38 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
-                                   select iI).ToList();
-
-                foreach (var identifiedItem in identifiedItems)
+                if (!(boxController.isStored(box.BoxPK) || uBox.IsIdentified == false))
                 {
-                    PackedItem packedItem = (from pI in db.PackedItems
-                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
-                                             select pI).FirstOrDefault();
-                    // lấy pack ID
-                    Pack pack = (from p in db.Packs
-                                 where p.PackPK == packedItem.PackPK
-                                 select p).FirstOrDefault();
+                    identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                       where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                       select iI).ToList();
 
-                    // lấy phụ liệu tương ứng
-                    OrderedItem orderedItem = (from oI in db.OrderedItems
-                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
-                                               select oI).FirstOrDefault();
+                    foreach (var identifiedItem in identifiedItems)
+                    {
+                        PackedItem packedItem = (from pI in db.PackedItems
+                                                 where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                                 select pI).FirstOrDefault();
+                        // lấy pack ID
+                        Pack pack = (from p in db.Packs
+                                     where p.PackPK == packedItem.PackPK
+                                     select p).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                        // lấy phụ liệu tương ứng
+                        OrderedItem orderedItem = (from oI in db.OrderedItems
+                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                                   select oI).FirstOrDefault();
 
-                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                        Accessory accessory = (from a in db.Accessories
+                                               where a.AccessoryPK == orderedItem.AccessoryPK
+                                               select a).FirstOrDefault();
+
+                        client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                    }
                 }
-
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "Box đã được store hoặc chưa identified");
+                }
             }
             catch (Exception e)
             {

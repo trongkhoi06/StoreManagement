@@ -53,8 +53,7 @@ namespace StoreManagement.Controllers
             bool result = false;
             try
             {
-                //SqlParameter OrderParam = new SqlParameter("@Pack", orderPK);
-                //result = (db.Database.SqlQuery<string>("exec isContainPack @OrderPK", OrderParam).FirstOrDefault()).Equals("True");
+                
                 List<PackedItem> packedItems = (from pi in db.PackedItems
                                                 where pi.PackPK == packPK
                                                 select pi).ToList();
@@ -132,6 +131,32 @@ namespace StoreManagement.Controllers
                                  where sup.SupplierPK == order.SupplierPK
                                  select sup).FirstOrDefault();
             return supplier;
+        }
+
+        public int SampleCalculate(int identifiedQuantity)
+        {
+            return (int)(identifiedQuantity/10);
+        }
+
+        public int DefectLimit(int identifiedQuantity)
+        {
+            return (int)(identifiedQuantity/10);
+        }
+
+        public int SumOfCheckedQuantity(int packedItemPK)
+        {
+            int result = 0;
+            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                    where iI.IsChecked == true && iI.PackedItemPK == packedItemPK
+                                                    select iI).ToList();
+            foreach (var item in identifiedItems)
+            {
+                CheckingSession checkingSession = (from checkss in db.CheckingSessions
+                                                   where checkss.IdentifiedItemPK == item.IdentifiedItemPK
+                                                   select checkss).FirstOrDefault();
+                result += checkingSession.CheckedQuantity;
+            }
+            return result;
         }
     }
 }
