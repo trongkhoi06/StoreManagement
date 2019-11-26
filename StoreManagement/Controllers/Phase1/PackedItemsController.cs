@@ -16,6 +16,18 @@ namespace StoreManagement.Controllers
     public class PackedItemsController
     {
         private UserModel db = new UserModel();
+        public int Sample { get; set; }
+
+        public int DefectLimit { get; set; }
+
+        public int SumOfCheckedQuantity { get; set; }
+
+        public int SumOfUnqualifiedQuantity { get; set; }
+
+        public int SumOfCountedQuantity { get; set; }
+
+        public int SumOfIdentifiedQuantity { get; set; }
+
         public bool isPackedItemCreated(int PackPK, List<Client_OrderedItemPK_PackedQuantity_Comment> list)
         {
             for (int i = 0; i < list.Count; i++)
@@ -50,7 +62,7 @@ namespace StoreManagement.Controllers
                 return packedItem.IsClassified;
             }
             catch (Exception e)
-            {   
+            {
                 throw e;
             }
         }
@@ -111,6 +123,41 @@ namespace StoreManagement.Controllers
                 db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException e)
+            {
+                throw e;
+            }
+
+            return true;
+        }
+
+        public bool isInitAllCalculate(int packedItemPK)
+        {
+            try
+            {
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.IsChecked == true && iI.PackedItemPK == packedItemPK
+                                                        select iI).ToList();
+                foreach (var item in identifiedItems)
+                {
+                    // init session
+                    CountingSession countingSession = (from countss in db.CountingSessions
+                                                       where countss.IdentifiedItemPK == item.IdentifiedItemPK
+                                                       select countss).FirstOrDefault();
+                    CheckingSession checkingSession = (from checkss in db.CheckingSessions
+                                                       where checkss.IdentifiedItemPK == item.IdentifiedItemPK
+                                                       select checkss).FirstOrDefault();
+
+                    // assign value to variable
+                    Sample += item.IdentifiedQuantity / 10;
+                    DefectLimit += item.IdentifiedQuantity / 10;
+                    SumOfIdentifiedQuantity += item.IdentifiedQuantity;
+                    SumOfCountedQuantity += countingSession.CountedQuantity;
+                    SumOfUnqualifiedQuantity += checkingSession.UnqualifiedQuantity;
+                    SumOfCheckedQuantity += checkingSession.CheckedQuantity;
+                }
+
+            }
+            catch (Exception e)
             {
                 throw e;
             }

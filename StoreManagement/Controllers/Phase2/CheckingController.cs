@@ -275,7 +275,7 @@ namespace StoreManagement.Controllers
         {
             List<Client_IdentifiedItemChecking> client_IdentifiedItems = new List<Client_IdentifiedItemChecking>();
             BoxController boxController = new BoxController();
-            PacksController packsController = new PacksController();
+            PackedItemsController packedItemsController = new PackedItemsController();
             try
             {
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
@@ -295,9 +295,9 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-
+                packedItemsController.isInitAllCalculate(packedItem.PackedItemPK);
                 client_IdentifiedItems.Add(new Client_IdentifiedItemChecking(identifiedItem, accessory, pack.PackID,
-                    packsController.SampleCalculate(identifiedItem.IdentifiedQuantity), packsController.SumOfCheckedQuantity(packedItem.PackedItemPK)));
+                    packedItemsController.Sample, packedItemsController.SumOfCheckedQuantity));
 
             }
             catch (Exception e)
@@ -512,7 +512,8 @@ namespace StoreManagement.Controllers
 
         // Classify
         [Route("api/ReceivingController/GetPackedItemByBoxIDUserID")]
-        public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID,string userID)
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID, string userID)
         {
             List<Client_PackedItemClassified> client_PackedItemClassifieds = new List<Client_PackedItemClassified>();
             BoxController boxController = new BoxController();
@@ -521,8 +522,8 @@ namespace StoreManagement.Controllers
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
-                                   select iI).ToList();
+                                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                                        select iI).ToList();
                 // get packed items distinct from identified item
                 HashSet<PackedItem> packedItems = new HashSet<PackedItem>();
                 foreach (var identifiedItem in identifiedItems)
@@ -566,11 +567,57 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory,pack,packedItem));
+                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem));
                     }
-                    
+
                 }
-                
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_PackedItemClassifieds);
+        }
+
+        [Route("api/ReceivingController/GetPackedItemByPackedItemPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByPackedItemPK(int packedItemPK)
+        {
+            List<Client_PackedItemClassified2> client_PackedItemClassifieds = new List<Client_PackedItemClassified2>();
+            BoxController boxController = new BoxController();
+            PackedItemsController packedItemsController = new PackedItemsController();
+            try
+            {
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                // lấy pack ID
+                Pack pack = (from p in db.Packs
+                             where p.PackPK == packedItem.PackPK
+                             select p).FirstOrDefault();
+
+                // lấy phụ liệu tương ứng
+                OrderedItem orderedItem = (from oI in db.OrderedItems
+                                           where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                           select oI).FirstOrDefault();
+
+                Accessory accessory = (from a in db.Accessories
+                                       where a.AccessoryPK == orderedItem.AccessoryPK
+                                       select a).FirstOrDefault();
+
+                // lấy sum identified quantity, sample, defectlimit
+                // lấy sum counted quantity, sum checked quantity
+                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                {
+                    client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
+                    packedItemsController.Sample, packedItemsController.DefectLimit,
+                    packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
+                }
             }
             catch (Exception e)
             {

@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
-using System.Web.Http.Description;
 using StoreManagement.Class;
 using StoreManagement.Models;
 
@@ -53,7 +48,7 @@ namespace StoreManagement.Controllers
             bool result = false;
             try
             {
-                
+
                 List<PackedItem> packedItems = (from pi in db.PackedItems
                                                 where pi.PackPK == packPK
                                                 select pi).ToList();
@@ -133,30 +128,5 @@ namespace StoreManagement.Controllers
             return supplier;
         }
 
-        public int SampleCalculate(int identifiedQuantity)
-        {
-            return (int)(identifiedQuantity/10);
-        }
-
-        public int DefectLimit(int identifiedQuantity)
-        {
-            return (int)(identifiedQuantity/10);
-        }
-
-        public int SumOfCheckedQuantity(int packedItemPK)
-        {
-            int result = 0;
-            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
-                                                    where iI.IsChecked == true && iI.PackedItemPK == packedItemPK
-                                                    select iI).ToList();
-            foreach (var item in identifiedItems)
-            {
-                CheckingSession checkingSession = (from checkss in db.CheckingSessions
-                                                   where checkss.IdentifiedItemPK == item.IdentifiedItemPK
-                                                   select checkss).FirstOrDefault();
-                result += checkingSession.CheckedQuantity;
-            }
-            return result;
-        }
     }
 }
