@@ -932,8 +932,7 @@ namespace StoreManagement.Controllers
                         }
 
                         // Create arranging session
-                        ArrangingSession arrangingSession = new ArrangingSession(DateTime.Now, boxFrom.BoxPK, boxTo.BoxPK, userID);
-                        arrangingSession = identifyItemController.createArrangingSession(arrangingSession);
+                        ArrangingSession arrangingSession = identifyItemController.createArrangingSession(uBoxFrom.UnstoredBoxPK, uBoxTo.UnstoredBoxPK, userID);
 
                         // Arrange item
                         foreach (var item in listIdentifiedItemsPK)

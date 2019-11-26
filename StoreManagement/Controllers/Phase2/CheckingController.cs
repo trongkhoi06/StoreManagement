@@ -511,29 +511,34 @@ namespace StoreManagement.Controllers
         }
 
         // Classify
-        [Route("api/ReceivingController/GetPackedItemByBoxID")]
-        public IHttpActionResult GetPackedItemByBoxID(string boxID)
+        [Route("api/ReceivingController/GetPackedItemByBoxIDUserID")]
+        public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID,string userID)
         {
-            List<IdentifiedItem> identifiedItems;
-            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            List<Client_PackedItemClassified> client_PackedItemClassifieds = new List<Client_PackedItemClassified>();
             BoxController boxController = new BoxController();
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK && iI.IsCounted == true
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                    select iI).ToList();
-
+                // get packed items distinct from identified item
+                HashSet<PackedItem> packedItems = new HashSet<PackedItem>();
                 foreach (var identifiedItem in identifiedItems)
                 {
                     PackedItem packedItem = (from pI in db.PackedItems
                                              where pI.PackedItemPK == identifiedItem.PackedItemPK
                                              select pI).FirstOrDefault();
+                    packedItems.Add(packedItem);
+                }
+                foreach (var packedItem in packedItems)
+                {
                     // lấy pack ID
                     Pack pack = (from p in db.Packs
                                  where p.PackPK == packedItem.PackPK
                                  select p).FirstOrDefault();
+
                     // lấy phụ liệu tương ứng
                     OrderedItem orderedItem = (from oI in db.OrderedItems
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
@@ -543,16 +548,36 @@ namespace StoreManagement.Controllers
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
 
-                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                    // lấy classifiedItem
+                    ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                     where cI.PackedItemPK == packedItem.PackedItemPK
+                                                     select cI).FirstOrDefault();
+                    if (classifiedItem != null)
+                    {
+                        ClassifyingSession classifyingSession = (from Css in db.ClassifyingSessions
+                                                                 where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                                 select Css).FirstOrDefault();
+                        bool isEditable = false;
+                        if (classifyingSession.UserID == userID)
+                        {
+                            isEditable = true;
+                        }
+                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem, isEditable, classifiedItem));
+                    }
+                    else
+                    {
+                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory,pack,packedItem));
+                    }
+                    
                 }
-
+                
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
-            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+            return Content(HttpStatusCode.OK, client_PackedItemClassifieds);
         }
 
         [Route("api/ReceivingController/ClassifyItemBusiness")]
@@ -581,7 +606,7 @@ namespace StoreManagement.Controllers
                                                    select cI).FirstOrDefault();
 
 
-                        // nếu có classify item của packitem thì edit
+                        // nếu có classify item của packeditem thì edit
                         if (tempItem != null)
                         {
                             ClassifyingSession tempSS = (from cS in db.ClassifyingSessions

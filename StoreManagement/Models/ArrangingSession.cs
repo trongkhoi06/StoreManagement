@@ -26,9 +26,9 @@ namespace StoreManagement.Models
         {
         }
 
-        public ArrangingSession(DateTime executedDate, int startBoxPK, int destinationBoxPK, string userID)
+        public ArrangingSession(int startBoxPK, int destinationBoxPK, string userID)
         {
-            ExecutedDate = executedDate;
+            ExecutedDate = DateTime.Now;
             StartBoxPK = startBoxPK;
             DestinationBoxPK = destinationBoxPK;
             UserID = userID;

@@ -124,9 +124,9 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public ArrangingSession createArrangingSession(ArrangingSession arrangingSession)
+        public ArrangingSession createArrangingSession(int boxFromPK, int boxToPK,string userID)
         {
-
+            ArrangingSession arrangingSession = new ArrangingSession(boxFromPK,boxToPK,userID); 
             db.ArrangingSessions.Add(arrangingSession);
             try
             {

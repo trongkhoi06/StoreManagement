@@ -121,6 +121,7 @@
     <Compile Include="Class\Client_IdentifyingSession.cs" />
     <Compile Include="Class\Client_IdentifiedItem.cs" />
     <Compile Include="Class\Client_CountingSession.cs" />
+    <Compile Include="Class\Client_PackedItemClassified.cs" />
     <Compile Include="Class\Client_PackedItemAngular.cs" />
     <Compile Include="Class\Client_Pack_Angular.cs" />
     <Compile Include="Class\Client_PackedItem.cs" />
