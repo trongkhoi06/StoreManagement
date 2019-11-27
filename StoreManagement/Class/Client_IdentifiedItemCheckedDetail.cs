@@ -6,7 +6,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Class
 {
-    public class Client_IdentifiedItemChecking
+    public class Client_IdentifiedItemCheckedDetail
     {
         public int IdentifiedItemPK { get; set; }
 
@@ -28,7 +28,7 @@ namespace StoreManagement.Class
 
         public int SumCheckedQuantity { get; set; }
 
-        public Client_IdentifiedItemChecking(IdentifiedItem identifiedItem, Accessory accessory, string packID, int sample, int sumCheckedQuantity)
+        public Client_IdentifiedItemCheckedDetail(IdentifiedItem identifiedItem, Accessory accessory, string packID, int sample, int sumCheckedQuantity)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;

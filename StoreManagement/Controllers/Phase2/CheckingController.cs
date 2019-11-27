@@ -21,7 +21,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByBoxIDCounted(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
-            List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
+            List<Client_IdentifiedItemCounted> client_IdentifiedItems = new List<Client_IdentifiedItemCounted>();
             BoxController boxController = new BoxController();
             try
             {
@@ -49,7 +49,7 @@ namespace StoreManagement.Controllers
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
 
-                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, pack.PackID));
+                    client_IdentifiedItems.Add(new Client_IdentifiedItemCounted(identifiedItem, accessory, pack.PackID));
                 }
 
             }
@@ -268,12 +268,63 @@ namespace StoreManagement.Controllers
         }
 
         // Check
+        [Route("api/ReceivingController/GetIdentifyItemByBoxIDChecked")]
+        [HttpGet]
+        public IHttpActionResult GetIdentifyItemByBoxIDChecked(string boxID)
+        {
+            List<IdentifiedItem> identifiedItems;
+            List<Client_IdentifiedItemChecked> client_IdentifiedItems = new List<Client_IdentifiedItemChecked>();
+            BoxController boxController = new BoxController();
+            try
+            {
+                Box box = boxController.GetBoxByBoxID(boxID);
+                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                if (!(boxController.isStored(box.BoxPK) || uBox.IsIdentified == false))
+                {
+                    identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                       where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                       select iI).ToList();
+
+                    foreach (var identifiedItem in identifiedItems)
+                    {
+                        PackedItem packedItem = (from pI in db.PackedItems
+                                                 where pI.PackedItemPK == identifiedItem.PackedItemPK
+                                                 select pI).FirstOrDefault();
+                        // lấy pack ID
+                        Pack pack = (from p in db.Packs
+                                     where p.PackPK == packedItem.PackPK
+                                     select p).FirstOrDefault();
+
+                        // lấy phụ liệu tương ứng
+                        OrderedItem orderedItem = (from oI in db.OrderedItems
+                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                                   select oI).FirstOrDefault();
+
+                        Accessory accessory = (from a in db.Accessories
+                                               where a.AccessoryPK == orderedItem.AccessoryPK
+                                               select a).FirstOrDefault();
+
+                        client_IdentifiedItems.Add(new Client_IdentifiedItemChecked(identifiedItem, accessory, pack.PackID));
+                    }
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "Box đã được store hoặc chưa identified");
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+        }
 
         [Route("api/ReceivingController/GetIdentifyItemByPK")]
         [HttpGet]
         public IHttpActionResult GetIdentifyItemByPK(int identifiedItemPK)
         {
-            List<Client_IdentifiedItemChecking> client_IdentifiedItems = new List<Client_IdentifiedItemChecking>();
+            List<Client_IdentifiedItemCheckedDetail> client_IdentifiedItems = new List<Client_IdentifiedItemCheckedDetail>();
             BoxController boxController = new BoxController();
             PackedItemsController packedItemsController = new PackedItemsController();
             try
@@ -296,7 +347,7 @@ namespace StoreManagement.Controllers
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
                 packedItemsController.isInitAllCalculate(packedItem.PackedItemPK);
-                client_IdentifiedItems.Add(new Client_IdentifiedItemChecking(identifiedItem, accessory, pack.PackID,
+                client_IdentifiedItems.Add(new Client_IdentifiedItemCheckedDetail(identifiedItem, accessory, pack.PackID,
                     packedItemsController.Sample, packedItemsController.SumOfCheckedQuantity));
 
             }

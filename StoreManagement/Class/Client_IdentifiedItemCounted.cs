@@ -6,7 +6,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Class
 {
-    public class Client_IdentifiedItem
+    public class Client_IdentifiedItemCounted
     {
         public int IdentifiedItemPK { get; set; }
 
@@ -24,7 +24,9 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
-        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory, string packID)
+        public bool IsCounted { get; set; }
+
+        public Client_IdentifiedItemCounted(IdentifiedItem identifiedItem,Accessory accessory,string packID)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -34,17 +36,7 @@ namespace StoreManagement.Class
             Item = accessory.Item;
             IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
             PackID = packID;
-        }
-
-        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory)
-        {
-            IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
-            AccessoryID = accessory.AccessoryID;
-            AccessoryDescription = accessory.AccessoryDescription;
-            Art = accessory.Art;
-            Color = accessory.Color;
-            Item = accessory.Item;
-            IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
+            IsCounted = identifiedItem.IsCounted;
         }
     }
 }
