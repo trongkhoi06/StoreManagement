@@ -28,7 +28,7 @@ namespace StoreManagement.Controllers
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
                 identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK && iI.IsCounted == true
+                                   where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                    select iI).ToList();
 
                 foreach (var identifiedItem in identifiedItems)
@@ -702,7 +702,6 @@ namespace StoreManagement.Controllers
                             // tạo failed or passed item
                             classifyingItemController.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
                         }
-
                     }
                     else
                     {
@@ -721,6 +720,101 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
 
+        }
+
+        [Route("api/ReceivingController/GetClassifyingSessionsByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetClassifyingSessionsByUserID(string userID)
+        {
+            List<Client_ClassifyingSession> client_ClassifyingSessions = new List<Client_ClassifyingSession>();
+
+            try
+            {
+                List<ClassifyingSession> classifyingSessions = (from Css in db.ClassifyingSessions
+                                                                where Css.UserID == userID
+                                                                select Css).ToList();
+                foreach (var classifyingSession in classifyingSessions)
+                {
+                    // lấy classifiedItem
+                    ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                     where cI.ClassifiedItemPK == classifyingSession.ClassifiedItemPK
+                                                     select cI).FirstOrDefault();
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == classifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+                    client_ClassifyingSessions.Add(new Client_ClassifyingSession(accessory, pack, classifyingSession, classifiedItem));
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, client_ClassifyingSessions);
+        }
+
+        [Route("api/ReceivingController/GetClassifyingSessionsByPK")]
+        [HttpGet]
+        public IHttpActionResult GetClassifyingSessionsByPK(int classifyingSessionPK)
+        {
+            List<Client_ClassifyingSessionDetail> client_ClassifyingSessions = new List<Client_ClassifyingSessionDetail>();
+            PackedItemsController packedItemsController = new PackedItemsController();
+            try
+            {
+                ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
+                // lấy classifiedItem
+                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                 where cI.ClassifiedItemPK == classifyingSession.ClassifiedItemPK
+                                                 select cI).FirstOrDefault();
+                PackedItem packedItem = (from pI in db.PackedItems
+                                         where pI.PackedItemPK == classifiedItem.PackedItemPK
+                                         select pI).FirstOrDefault();
+                // lấy pack ID
+                Pack pack = (from p in db.Packs
+                             where p.PackPK == packedItem.PackPK
+                             select p).FirstOrDefault();
+
+                // lấy phụ liệu tương ứng
+                OrderedItem orderedItem = (from oI in db.OrderedItems
+                                           where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                           select oI).FirstOrDefault();
+
+                Accessory accessory = (from a in db.Accessories
+                                       where a.AccessoryPK == orderedItem.AccessoryPK
+                                       select a).FirstOrDefault();
+                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                {
+                    client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
+                    packedItemsController.Sample, packedItemsController.DefectLimit,
+                    packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_ClassifyingSessions);
         }
 
         [Route("api/ReceivingController/DeleteClassifyItemBusiness")]

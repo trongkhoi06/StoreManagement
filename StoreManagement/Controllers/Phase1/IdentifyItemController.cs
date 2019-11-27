@@ -124,9 +124,9 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public ArrangingSession createArrangingSession(int boxFromPK, int boxToPK,string userID)
+        public ArrangingSession createArrangingSession(int boxFromPK, int boxToPK, string userID)
         {
-            ArrangingSession arrangingSession = new ArrangingSession(boxFromPK,boxToPK,userID); 
+            ArrangingSession arrangingSession = new ArrangingSession(boxFromPK, boxToPK, userID);
             db.ArrangingSessions.Add(arrangingSession);
             try
             {
@@ -152,6 +152,56 @@ namespace StoreManagement.Controllers
             {
                 throw e;
             }
+        }
+
+        public int ActualQuantity(int identifiedItemPK)
+        {
+            int result = 0;
+            int numCase = 0;
+            try
+            {
+                IdentifiedItem item = db.IdentifiedItems.Find(identifiedItemPK);
+                CheckingSession checkingSession = (from checkss in db.CheckingSessions
+                                                   where checkss.IdentifiedItemPK == item.IdentifiedItemPK
+                                                   select checkss).FirstOrDefault();
+                CountingSession countingSession = (from countss in db.CountingSessions
+                                                   where countss.IdentifiedItemPK == item.IdentifiedItemPK
+                                                   select countss).FirstOrDefault();
+                if (item.IsChecked == false && item.IsCounted == false) numCase = 1;
+                if (item.IsChecked == false && item.IsCounted == true) numCase = 2;
+                if (item.IsChecked == true && item.IsCounted == false) numCase = 3;
+                if (item.IsChecked == true && item.IsCounted == true)
+                {
+
+                    if (checkingSession.ExecutedDate < countingSession.ExecutedDate) numCase = 4;
+                    else numCase = 5;
+                }
+                switch (numCase)
+                {
+                    case 1:
+                        result += item.IdentifiedQuantity;
+                        break;
+                    case 2:
+                        result += countingSession.CountedQuantity;
+                        break;
+                    case 3:
+                        result += item.IdentifiedQuantity - checkingSession.UnqualifiedQuantity;
+                        break;
+                    case 4:
+                        result += countingSession.CountedQuantity;
+                        break;
+                    case 5:
+                        result += countingSession.CountedQuantity - checkingSession.UnqualifiedQuantity;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
         }
 
         public int GenerateFinalQuantity(int packedItemPK)
@@ -209,6 +259,6 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-       
+
     }
 }

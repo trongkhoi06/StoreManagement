@@ -24,6 +24,8 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
+        public bool IsCounted { get; set; }
+
         public Client_IdentifiedItem(IdentifiedItem identifiedItem,Accessory accessory,string packID)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
@@ -34,6 +36,7 @@ namespace StoreManagement.Class
             Item = accessory.Item;
             IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
             PackID = packID;
+            IsCounted = identifiedItem.IsCounted;
         }
 
         public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory)

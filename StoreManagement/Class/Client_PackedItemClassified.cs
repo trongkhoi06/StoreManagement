@@ -21,24 +21,24 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
+            QualityState = null;
+            IsEditable = null;
         }
 
         public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem, bool isEditable, ClassifiedItem classifiedItem)
         {
             PackedItemPK = packedItem.PackedItemPK;
-            QualityState = classifiedItem.QualityState;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
+            QualityState = classifiedItem.QualityState;
             IsEditable = isEditable;
         }
 
         public int PackedItemPK { get; set; }
-
-        public int QualityState { get; set; }
 
         public string AccessoryID { get; set; }
 
@@ -52,6 +52,8 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
-        public bool IsEditable { get; set; }
+        public int? QualityState { get; set; }
+
+        public bool? IsEditable { get; set; }
     }
 }
