@@ -112,6 +112,8 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Class\Client_FailedItemDetail.cs" />
+    <Compile Include="Class\Client_FailedItem.cs" />
     <Compile Include="Class\Client_ClassifyingSessionDetail.cs" />
     <Compile Include="Class\Client_ClassifyingSession.cs" />
     <Compile Include="Class\Client_CheckingSession.cs" />

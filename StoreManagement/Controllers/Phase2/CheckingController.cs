@@ -923,6 +923,124 @@ namespace StoreManagement.Controllers
 
         }
 
+        [Route("api/ReceivingController/GetFailedItem")]
+        [HttpGet]
+        public IHttpActionResult GetFailedItem()
+        {
+            List<Client_FailedItem> client_FailedItems = new List<Client_FailedItem>();
+            PackedItemsController packedItemsController = new PackedItemsController();
+            try
+            {
+
+                List<FailedItem> failedItems = db.FailedItems.ToList();
+
+                foreach (var failedItem in failedItems)
+                {
+                    // lấy classifiedItem
+                    ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                     where cI.ClassifiedItemPK == failedItem.ClassifiedItemPK
+                                                     select cI).FirstOrDefault();
+                    ClassifyingSession classifyingSession = (from Css in db.ClassifyingSessions
+                                                             where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                             select Css).FirstOrDefault();
+                    PackedItem packedItem = (from pI in db.PackedItems
+                                             where pI.PackedItemPK == classifiedItem.PackedItemPK
+                                             select pI).FirstOrDefault();
+                    IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
+                                                     where iI.PackedItemPK == packedItem.PackedItemPK
+                                                     select iI).FirstOrDefault();
+                    // lấy pack ID
+                    Pack pack = (from p in db.Packs
+                                 where p.PackPK == packedItem.PackPK
+                                 select p).FirstOrDefault();
+
+                    // lấy phụ liệu tương ứng
+                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                               select oI).FirstOrDefault();
+
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                           select a).FirstOrDefault();
+                    if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                    {
+                        client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, identifiedItem, failedItem));
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_FailedItems);
+        }
+
+        [Route("api/ReceivingController/GetFailedItemByFailedItemPK")]
+        [HttpGet]
+        public IHttpActionResult GetFailedItemByFailedItemPK(int FailedItemPK)
+        {
+            List<Client_FailedItemDetail> client_FailedItems = new List<Client_FailedItemDetail>();
+            PackedItemsController packedItemsController = new PackedItemsController();
+            try
+            {
+
+                FailedItem failedItem = db.FailedItems.Find(FailedItemPK);
+                // lấy classifiedItem
+                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                 where cI.ClassifiedItemPK == failedItem.ClassifiedItemPK
+                                                 select cI).FirstOrDefault();
+                ClassifyingSession classifyingSession = (from Css in db.ClassifyingSessions
+                                                         where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                         select Css).FirstOrDefault();
+                // lấy user
+                SystemUser systemUser = db.SystemUsers.Find(classifyingSession.UserID);
+
+                // lấy packed item
+                PackedItem packedItem = (from pI in db.PackedItems
+                                         where pI.PackedItemPK == classifiedItem.PackedItemPK
+                                         select pI).FirstOrDefault();
+                IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
+                                                 where iI.PackedItemPK == packedItem.PackedItemPK
+                                                 select iI).FirstOrDefault();
+                // lấy pack ID
+                Pack pack = (from p in db.Packs
+                             where p.PackPK == packedItem.PackPK
+                             select p).FirstOrDefault();
+
+                // lấy phụ liệu tương ứng
+                OrderedItem orderedItem = (from oI in db.OrderedItems
+                                           where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                           select oI).FirstOrDefault();
+
+                Accessory accessory = (from a in db.Accessories
+                                       where a.AccessoryPK == orderedItem.AccessoryPK
+                                       select a).FirstOrDefault();
+                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                {
+                    client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItem, failedItem, systemUser,
+                        packedItem, packedItemsController.Sample, packedItemsController.DefectLimit,
+                        packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                        packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, client_FailedItems);
+        }
+
         [Route("api/ReceivingController/ReturnItemBusiness")]
         [HttpPost]
         public IHttpActionResult ReturnItemBusiness(int failedItemPK, string userID)
