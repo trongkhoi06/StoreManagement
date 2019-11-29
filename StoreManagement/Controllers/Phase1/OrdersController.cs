@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -17,10 +18,12 @@ namespace StoreManagement.Controllers
         {
             return db.Orders;
         }
+
         public Order GetOrderByOrderPK(int orderPK)
         {
             return db.Orders.Find(orderPK);
         }
+
         public Order GetOrderByOrderID(string orderID)
         {
             try
@@ -35,13 +38,13 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Order CreateOrder(string OrderID, int SupplierPK, string EmployeeCode)
+        public Order CreateOrder(string orderID, int supplierPK, string userID)
         {
             PrimitiveType primitiveType = new PrimitiveType();
-            if (primitiveType.isOrderID(OrderID))
+            if (primitiveType.isOrderID(orderID))
             {
                 // Khởi tạo order
-                Order order = new Order(OrderID, SupplierPK, EmployeeCode);
+                Order order = new Order(orderID, supplierPK, userID);
                 db.Orders.Add(order);
                 try
                 {
@@ -82,7 +85,7 @@ namespace StoreManagement.Controllers
             return db.Orders.Count(e => e.OrderID == id) > 0;
         }
 
-        public bool isContainPack(int orderPK)
+        public bool IsContainPack(int orderPK)
         {
             bool result = false;
             try
@@ -110,6 +113,19 @@ namespace StoreManagement.Controllers
             {
                 throw e;
             }
+        }
+
+        public bool CheckAccessoryAndSupplier(int SupplierPK, List<Client_Accessory_OrderedQuantity_Comment> list)
+        {
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return true;
         }
     }
 }

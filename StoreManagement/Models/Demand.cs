@@ -9,24 +9,28 @@ namespace StoreManagement.Models
     [Table("Demand")]
     public partial class Demand
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Demand()
         {
-            DemandedItems = new HashSet<DemandedItem>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int DemandID { get; set; }
+        [Key]
+        public int DemandPK { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string DemandID { get; set; }
 
         public int StartWeek { get; set; }
 
         public int EndWeek { get; set; }
 
-        public int DemandedQuantity { get; set; }
+        public int TotalDemand { get; set; }
 
         public DateTime DateCreated { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DemandedItem> DemandedItems { get; set; }
+        public int ConceptionPK { get; set; }
+
+        [Required]
+        public string ReceiveDivision { get; set; }
     }
 }

@@ -14,38 +14,22 @@ namespace StoreManagement.Models
         {
         }
 
-        public PackedItem(int PackPK, Client_OrderedItemPK_PackedQuantity_Comment temp)
+        public PackedItem(int packPK, Client_OrderedItemPK_PackedQuantity_Comment temp)
         {
-            this.PackPK = PackPK;
-            this.PackedQuantity = temp.PackedQuantity;
-            this.Comment = temp.Comment;
-            this.OrderedItemPK = temp.OrderedItemPK;
+            PackedQuantity = temp.PackedQuantity;
             IsClassified = false;
-        }
-
-        public PackedItem(int packedItemPK, int packedQuantity, bool isClassified, string comment, int orderedItemPK, int packPK)
-        {
-            PackedItemPK = packedItemPK;
-            PackedQuantity = packedQuantity;
-            IsClassified = isClassified;
-            Comment = comment;
-            OrderedItemPK = orderedItemPK;
+            Comment = temp.Comment;
+            OrderedItemPK = temp.OrderedItemPK;
             PackPK = packPK;
         }
 
-        // sample calculate
-
-        // defect limit
-
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PackedItemPK { get; set; }
 
         public int PackedQuantity { get; set; }
 
         public bool IsClassified { get; set; }
 
-        [Required]
         public string Comment { get; set; }
 
         public string ContractNumber { get; set; }

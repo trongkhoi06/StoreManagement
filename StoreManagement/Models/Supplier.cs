@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("Supplier")]
     public partial class Supplier
     {
+        public Supplier()
+        {
+        }
+
         [Key]
         public int SupplierPK { get; set; }
 

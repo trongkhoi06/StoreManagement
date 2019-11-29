@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("SystemUser")]
     public partial class SystemUser
     {
+        public SystemUser()
+        {
+        }
+
         [Key]
         [StringLength(50)]
         public string UserID { get; set; }

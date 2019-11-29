@@ -6,26 +6,26 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("IdentifyingSession")]
-    public partial class IdentifyingSession
+    [Table("Verification")]
+    public partial class Verification
     {
-        public IdentifyingSession()
+        public Verification()
         {
-        }
-
-        public IdentifyingSession(string userID)
-        {
-            UserID = userID;
-            ExecutedDate = DateTime.Now;
         }
 
         [Key]
-        public int IdentifyingSessionPK { get; set; }
+        public int VerificationPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
+
+        public bool IsApproved { get; set; }
 
         [Required]
         [StringLength(50)]
         public string UserID { get; set; }
+
+        public bool IsDiscard { get; set; }
+
+        public int SessionPK { get; set; }
     }
 }

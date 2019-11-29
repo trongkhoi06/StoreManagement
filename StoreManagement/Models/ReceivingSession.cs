@@ -6,21 +6,15 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("IdentifyingSession")]
-    public partial class IdentifyingSession
+    [Table("ReceivingSession")]
+    public partial class ReceivingSession
     {
-        public IdentifyingSession()
+        public ReceivingSession()
         {
-        }
-
-        public IdentifyingSession(string userID)
-        {
-            UserID = userID;
-            ExecutedDate = DateTime.Now;
         }
 
         [Key]
-        public int IdentifyingSessionPK { get; set; }
+        public int ReceivingSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
 

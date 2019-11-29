@@ -13,7 +13,7 @@ namespace StoreManagement.Class
 
         }
 
-        public Client_FailedItemDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, IdentifiedItem identifiedItem , FailedItem failedItem,SystemUser systemUser, PackedItem packedItem, int sample, int defectLimit, int sumIdentifiedQuantity, int sumCountedQuantity, int sumCheckedQuantity, int sumUnqualifiedQuantity)
+        public Client_FailedItemDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, IdentifiedItem identifiedItem, FailedItem failedItem, SystemUser systemUser, PackedItem packedItem, int sample, int defectLimit, int sumIdentifiedQuantity, int sumCountedQuantity, int sumCheckedQuantity, int sumUnqualifiedQuantity, HashSet<string> boxIDs)
         {
             FailedItemPK = failedItem.FailedItemPK;
             ExecutedDate = classifyingSession.ExecutedDate;
@@ -33,6 +33,7 @@ namespace StoreManagement.Class
             SumCountedQuantity = sumCountedQuantity;
             SumCheckedQuantity = sumCheckedQuantity;
             SumUnqualifiedQuantity = sumUnqualifiedQuantity;
+            BoxIDs = boxIDs;
         }
 
         public int FailedItemPK { get; set; }
@@ -70,5 +71,7 @@ namespace StoreManagement.Class
         public int SumCheckedQuantity { get; set; }
 
         public int SumUnqualifiedQuantity { get; set; }
+
+        public HashSet<string> BoxIDs { get; set; }
     }
 }

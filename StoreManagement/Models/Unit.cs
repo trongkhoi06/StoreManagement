@@ -6,17 +6,16 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class IdentifiedItem_ArrangingSession
+    [Table("Unit")]
+    public partial class Unit
     {
-        public IdentifiedItem_ArrangingSession()
+        public Unit()
         {
         }
 
         [Key]
-        public int IdentifiedItem_ArrangingSessionPK { get; set; }
+        public int UnitPK { get; set; }
 
-        public int IdentifiedItemPK { get; set; }
-
-        public int ArrangingSessionPK { get; set; }
+        public string UnitName { get; set; }
     }
 }

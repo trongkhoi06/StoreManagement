@@ -16,14 +16,13 @@ namespace StoreManagement.Models
         public Pack(string packID, int orderPK, string userID)
         {
             PackID = packID;
-            OrderPK = orderPK;
             DateCreated = DateTime.Now;
-            IsOpened = true;
+            IsOpened = false;
+            OrderPK = orderPK;
             UserID = userID;
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PackPK { get; set; }
 
         [Required]
@@ -36,6 +35,8 @@ namespace StoreManagement.Models
 
         public int OrderPK { get; set; }
 
+        [Required]
+        [StringLength(50)]
         public string UserID { get; set; }
     }
 }

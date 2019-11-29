@@ -9,8 +9,21 @@ namespace StoreManagement.Models
     [Table("IdentifiedItem")]
     public partial class IdentifiedItem
     {
+        public IdentifiedItem()
+        {
+        }
+
+        public IdentifiedItem(int identifiedQuantity,int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        {
+            IdentifiedQuantity = identifiedQuantity;
+            IsChecked = false;
+            IsCounted = false;
+            PackedItemPK = packedItemPK;
+            IdentifyingSessionPK = identifyingSessionPK;
+            UnstoredBoxPK = unstoredBoxPK;
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdentifiedItemPK { get; set; }
 
         public int IdentifiedQuantity { get; set; }
@@ -24,19 +37,5 @@ namespace StoreManagement.Models
         public int IdentifyingSessionPK { get; set; }
 
         public int UnstoredBoxPK { get; set; }
-
-        public IdentifiedItem()
-        {
-        }
-
-        public IdentifiedItem(int identifiedQuantity, int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
-        {
-            this.IdentifiedQuantity = identifiedQuantity;
-            this.PackedItemPK = packedItemPK;
-            this.IdentifyingSessionPK = identifyingSessionPK;
-            this.UnstoredBoxPK = unstoredBoxPK;
-            IsChecked = false;
-            IsCounted = false;
-        }
     }
 }

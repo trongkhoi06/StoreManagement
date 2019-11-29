@@ -13,9 +13,9 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public IdentifyingSession createdIdentifyingSession(string EmployeeCode)
+        public IdentifyingSession createdIdentifyingSession(string userID)
         {
-            IdentifyingSession identifyingSession = new IdentifyingSession(EmployeeCode);
+            IdentifyingSession identifyingSession = new IdentifyingSession(userID);
             db.IdentifyingSessions.Add(identifyingSession);
             try
             {
@@ -143,7 +143,7 @@ namespace StoreManagement.Controllers
 
         public void MapItemWithSession(IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession)
         {
-            db.IdentifiedItem_ArrangingSessions.Add(identifiedItem_ArrangingSession);
+            db.IdentifiedItem_ArrangingSession.Add(identifiedItem_ArrangingSession);
             try
             {
                 db.SaveChanges();

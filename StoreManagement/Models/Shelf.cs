@@ -6,24 +6,20 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("AccessoryType")]
-    public partial class AccessoryType
+    [Table("Shelf")]
+    public partial class Shelf
     {
-        public AccessoryType()
+        public Shelf()
         {
         }
 
         [Key]
-        public int AccessoryTypePK { get; set; }
+        public int ShelfPK { get; set; }
 
         [Required]
         [StringLength(50)]
-        public string Name { get; set; }
+        public string ShelfName { get; set; }
 
-        [Required]
-        [StringLength(2)]
-        public string Abbreviation { get; set; }
-
-        public bool IsTextile { get; set; }
+        public int? Row { get; set; }
     }
 }

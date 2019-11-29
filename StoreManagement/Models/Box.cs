@@ -14,7 +14,6 @@ namespace StoreManagement.Models
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int BoxPK { get; set; }
 
         [Required]

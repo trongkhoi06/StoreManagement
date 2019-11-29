@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("ConceptionAccessoryCustomer")]
     public partial class ConceptionAccessoryCustomer
     {
+        public ConceptionAccessoryCustomer()
+        {
+        }
+
         [Key]
         public int ConceptionAccessoryPK { get; set; }
 
@@ -17,11 +21,5 @@ namespace StoreManagement.Models
         public int? AccessoryPK { get; set; }
 
         public int CustomerPK { get; set; }
-
-        public virtual Accessory Accessory { get; set; }
-
-        public virtual Conception Conception { get; set; }
-
-        public virtual Customer Customer { get; set; }
     }
 }

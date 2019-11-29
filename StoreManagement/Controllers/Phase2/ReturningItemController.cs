@@ -13,11 +13,11 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public void createReturningSession(int failedItemPK, string employeeCode)
+        public void createReturningSession(int failedItemPK, string userID)
         {
             try
             {
-                ReturningSession returningSession = new ReturningSession(failedItemPK,employeeCode);
+                ReturningSession returningSession = new ReturningSession(failedItemPK, userID);
                 db.ReturningSessions.Add(returningSession);
                 db.SaveChanges();
             }

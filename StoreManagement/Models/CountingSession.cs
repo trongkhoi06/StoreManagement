@@ -9,8 +9,20 @@ namespace StoreManagement.Models
     [Table("CountingSession")]
     public partial class CountingSession
     {
+        public CountingSession()
+        {
+
+        }
+
+        public CountingSession(int countedQuantity,int identifiedItemPK, string userID)
+        {
+            CountedQuantity = countedQuantity;
+            ExecutedDate = DateTime.Now;
+            IdentifiedItemPK = identifiedItemPK;
+            UserID = userID;
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CountingSessionPK { get; set; }
 
         public int CountedQuantity { get; set; }
@@ -19,17 +31,8 @@ namespace StoreManagement.Models
 
         public int IdentifiedItemPK { get; set; }
 
+        [Required]
+        [StringLength(50)]
         public string UserID { get; set; }
-        public CountingSession()
-        {
-        }
-
-        public CountingSession(int identifiedItemPK, int countedQuantity, string userID)
-        {
-            CountedQuantity = countedQuantity;
-            ExecutedDate = DateTime.Now;
-            IdentifiedItemPK = identifiedItemPK;
-            this.UserID = userID;
-        }
     }
 }

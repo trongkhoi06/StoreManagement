@@ -13,7 +13,7 @@ namespace StoreManagement.Class
 
         }
 
-        public Client_FailedItem(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, IdentifiedItem identifiedItem , FailedItem failedItem)
+        public Client_FailedItem(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, FailedItem failedItem,int sumIdentifiedQuantity)
         {
             FailedItemPK = failedItem.FailedItemPK;
             ExecutedDate = classifyingSession.ExecutedDate;
@@ -23,7 +23,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
-            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
+            SumIdentifiedQuantity = sumIdentifiedQuantity;
         }
 
         public int FailedItemPK { get; set; }
@@ -40,7 +40,7 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
-        public int IdentifiedQuantity { get; set; }
+        public int SumIdentifiedQuantity { get; set; }
 
         public DateTime ExecutedDate { get; set; }
     }

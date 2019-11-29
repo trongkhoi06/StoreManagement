@@ -39,5 +39,7 @@ namespace StoreManagement.Models
         public string Image { get; set; }
 
         public int AccessoryTypePK { get; set; }
+
+        public int SupplierPK { get; set; }
     }
 }

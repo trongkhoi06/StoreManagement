@@ -946,6 +946,7 @@ namespace StoreManagement.Controllers
                     PackedItem packedItem = (from pI in db.PackedItems
                                              where pI.PackedItemPK == classifiedItem.PackedItemPK
                                              select pI).FirstOrDefault();
+                    // Tùng chưa chốt
                     IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
                                                      where iI.PackedItemPK == packedItem.PackedItemPK
                                                      select iI).FirstOrDefault();
@@ -964,7 +965,7 @@ namespace StoreManagement.Controllers
                                            select a).FirstOrDefault();
                     if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
                     {
-                        client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, identifiedItem, failedItem));
+                        client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, failedItem, packedItemsController.SumOfIdentifiedQuantity));
                     }
                     else
                     {
@@ -1004,9 +1005,9 @@ namespace StoreManagement.Controllers
                 PackedItem packedItem = (from pI in db.PackedItems
                                          where pI.PackedItemPK == classifiedItem.PackedItemPK
                                          select pI).FirstOrDefault();
-                IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
-                                                 where iI.PackedItemPK == packedItem.PackedItemPK
-                                                 select iI).FirstOrDefault();
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.PackedItemPK == packedItem.PackedItemPK
+                                                        select iI).ToList();
                 // lấy pack ID
                 Pack pack = (from p in db.Packs
                              where p.PackPK == packedItem.PackPK
@@ -1022,10 +1023,23 @@ namespace StoreManagement.Controllers
                                        select a).FirstOrDefault();
                 if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
                 {
-                    client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItem, failedItem, systemUser,
+                    HashSet<string> boxIDs = new HashSet<string>();
+                    foreach (var identifiedItem in identifiedItems)
+                    {
+                        UnstoredBox unstoredBox = (from uBox in db.UnstoredBoxes
+                                                   where uBox.UnstoredBoxPK == identifiedItem.UnstoredBoxPK
+                                                   select uBox).FirstOrDefault();
+
+                        Box boxk = (from box in db.Boxes
+                                    where box.BoxPK == unstoredBox.BoxPK
+                                    select box).FirstOrDefault();
+                        boxIDs.Add(boxk.BoxID);
+                    }
+                    client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItems[0], failedItem, systemUser,
                         packedItem, packedItemsController.Sample, packedItemsController.DefectLimit,
                         packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                        packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                        packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity, boxIDs));
+
                 }
                 else
                 {
@@ -1072,6 +1086,5 @@ namespace StoreManagement.Controllers
             }
 
         }
-
     }
 }

@@ -6,17 +6,17 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class IdentifiedItem_ArrangingSession
+    [Table("KindRole")]
+    public partial class KindRole
     {
-        public IdentifiedItem_ArrangingSession()
+        public KindRole()
         {
         }
 
         [Key]
-        public int IdentifiedItem_ArrangingSessionPK { get; set; }
+        [StringLength(100)]
+        public string KindRoleName { get; set; }
 
-        public int IdentifiedItemPK { get; set; }
-
-        public int ArrangingSessionPK { get; set; }
+        public bool Sign { get; set; }
     }
 }

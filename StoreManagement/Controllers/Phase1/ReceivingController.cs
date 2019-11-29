@@ -94,29 +94,36 @@ namespace StoreManagement.Controllers
             {
                 OrdersController ordersController = new OrdersController();
                 Order order = null;
-                try
+                if (ordersController.CheckAccessoryAndSupplier(supplierPK,list))
                 {
-                    // create order
-                    order = ordersController.CreateOrder(orderID, supplierPK, userID);
-                    // create order items
-                    OrderedItemsController orderedItemsController = new OrderedItemsController();
-                    if (!orderedItemsController.isOrderedItemCreated(order.OrderPK, list))
+                    try
+                    {
+                        // create order
+                        order = ordersController.CreateOrder(orderID, supplierPK, userID);
+                        // create order items
+                        OrderedItemsController orderedItemsController = new OrderedItemsController();
+                        if (!orderedItemsController.isOrderedItemCreated(order.OrderPK, list))
+                        {
+                            if (order != null)
+                            {
+                                ordersController.DeleteOrder(order.OrderPK);
+                            }
+                            return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                        }
+
+                    }
+                    catch (Exception e)
                     {
                         if (order != null)
                         {
                             ordersController.DeleteOrder(order.OrderPK);
                         }
-                        return Content(HttpStatusCode.Conflict, "Something is wrong!");
+                        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                     }
-
                 }
-                catch (Exception e)
+                else
                 {
-                    if (order != null)
-                    {
-                        ordersController.DeleteOrder(order.OrderPK);
-                    }
-                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+
                 }
                 return Content(HttpStatusCode.OK, "TẠO ĐƠN HÀNG THÀNH CÔNG");
             }
@@ -139,7 +146,7 @@ namespace StoreManagement.Controllers
                 OrderedItemsController orderedItemsController = new OrderedItemsController();
                 try
                 {
-                    if (ordersController.isContainPack(orderedItems.OrderPK))
+                    if (ordersController.IsContainPack(orderedItems.OrderPK))
                     {
                         return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
                     }
@@ -178,7 +185,7 @@ namespace StoreManagement.Controllers
                 OrderedItemsController orderedItemsController = new OrderedItemsController();
                 try
                 {
-                    if (ordersController.isContainPack(orderPK))
+                    if (ordersController.IsContainPack(orderPK))
                     {
                         return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
                     }
@@ -465,7 +472,7 @@ namespace StoreManagement.Controllers
                 PackedItemsController packedItemsController = new PackedItemsController();
                 try
                 {
-                    if (packsController.isContainIdentifiedItem(packedItem.PackPK))
+                    if (packsController.isIdentifiedOrClassified(packedItem.PackPK))
                     {
                         return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
                     }
@@ -510,7 +517,7 @@ namespace StoreManagement.Controllers
                     IQueryable<PackedItem> temp = packedItemsController.GetPackedItemsByPackPK(pack.PackPK);
                     listPackedItem = temp.ToList();
 
-                    if (packsController.isContainIdentifiedItem(packPK))
+                    if (packsController.isIdentifiedOrClassified(packPK))
                     {
                         return Content(HttpStatusCode.Conflict, "PACK ĐÃ CHỨA CLASSIFIED ITEM");
                     }

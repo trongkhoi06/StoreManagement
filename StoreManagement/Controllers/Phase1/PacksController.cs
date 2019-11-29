@@ -12,13 +12,13 @@ namespace StoreManagement.Controllers
     public class PacksController
     {
         private UserModel db = new UserModel();
-        public Pack CreatePack(string packID, int orderPK, string employeeCode)
+        public Pack CreatePack(string packID, int orderPK, string userID)
         {
             PrimitiveType primitiveType = new PrimitiveType();
             if (primitiveType.isPackID(packID))
             {
                 // Khởi tạo Pack
-                Pack Pack = new Pack(packID, orderPK, employeeCode);
+                Pack Pack = new Pack(packID, orderPK, userID);
                 db.Packs.Add(Pack);
                 try
                 {
@@ -43,7 +43,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        internal bool isContainIdentifiedItem(int packPK)
+        internal bool isCheckedOrCountedOrClassified(int packPK)
         {
             bool result = false;
             try
@@ -58,10 +58,12 @@ namespace StoreManagement.Controllers
                     List<IdentifiedItem> temp = (from ii in db.IdentifiedItems
                                                  where ii.PackedItemPK == packedItem.PackedItemPK
                                                  select ii).ToList();
-                    if (temp.Count != 0)
+                    foreach (var item in temp)
                     {
-                        return true;
+                        if (item.IsChecked) result = true;
+                        if (item.IsCounted) result = true;
                     }
+                    if (packedItem.IsClassified) result = true;
                 }
             }
             catch (Exception e)
@@ -70,6 +72,34 @@ namespace StoreManagement.Controllers
             }
             return result;
         }
+
+        internal bool isIdentifiedOrClassified(int packPK)
+        {
+            bool result = false;
+            try
+            {
+
+                List<PackedItem> packedItems = (from pi in db.PackedItems
+                                                where pi.PackPK == packPK
+                                                select pi).ToList();
+
+                foreach (var packedItem in packedItems)
+                {
+                    List<IdentifiedItem> temp = (from ii in db.IdentifiedItems
+                                                 where ii.PackedItemPK == packedItem.PackedItemPK
+                                                 select ii).ToList();
+                    if (temp.Count > 0) result = true;
+                    if (packedItem.IsClassified) result = true;
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
+        }
+
+        
 
         private bool PackExists(string id)
         {
@@ -97,13 +127,13 @@ namespace StoreManagement.Controllers
             }
             else
             {
-                if (!isContainIdentifiedItem(packPK))
+                if (!isCheckedOrCountedOrClassified(packPK))
                 {
                     pack.IsOpened = !pack.IsOpened;
                 }
                 else
                 {
-                    throw new Exception("PACK ĐÃ CHỨA CLASSIFIED ITEM");
+                    throw new Exception("PACK ĐÃ CHECK HOẶC COUNT HOẶC CLASSIFY");
                 }
             }
             db.Entry(pack).State = EntityState.Modified;

@@ -9,8 +9,19 @@ namespace StoreManagement.Models
     [Table("ClassifyingSession")]
     public partial class ClassifyingSession
     {
+        public ClassifyingSession()
+        {
+        }
+
+        public ClassifyingSession(string comment, int classifiedItemPK, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            Comment = comment;
+            ClassifiedItemPK = classifiedItemPK;
+            UserID = userID;
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ClassifyingSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
@@ -19,18 +30,8 @@ namespace StoreManagement.Models
 
         public int ClassifiedItemPK { get; set; }
 
+        [Required]
+        [StringLength(50)]
         public string UserID { get; set; }
-
-        public ClassifyingSession()
-        {
-        }
-
-        public ClassifyingSession(string comment, int classifiedItemPK, string userID)
-        {
-            Comment = comment;
-            ClassifiedItemPK = classifiedItemPK;
-            UserID = userID;
-            ExecutedDate = DateTime.Now;
-        }
     }
 }

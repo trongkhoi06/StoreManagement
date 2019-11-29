@@ -6,18 +6,22 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("UnstoredBox")]
-    public partial class UnstoredBox
+    [Table("StoringSession")]
+    public partial class StoringSession
     {
-        public UnstoredBox()
+        public StoringSession()
         {
         }
 
         [Key]
-        public int UnstoredBoxPK { get; set; }
+        public int StoringSessionPK { get; set; }
+
+        public DateTime? ExecutedDate { get; set; }
 
         public int BoxPK { get; set; }
 
-        public bool IsIdentified { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string UserID { get; set; }
     }
 }

@@ -6,23 +6,15 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("ArrangingSession")]
-    public partial class ArrangingSession
+    [Table("TransferringSession")]
+    public partial class TransferringSession
     {
-        public ArrangingSession()
+        public TransferringSession()
         {
-        }
-
-        public ArrangingSession(int startBoxPK, int destinationBoxPK, string userID)
-        {
-            ExecutedDate = DateTime.Now;
-            StartBoxPK = startBoxPK;
-            DestinationBoxPK = destinationBoxPK;
-            UserID = userID;
         }
 
         [Key]
-        public int ArrangingSessionPK { get; set; }
+        public int TransferingSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
 
