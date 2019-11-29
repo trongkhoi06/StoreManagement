@@ -442,7 +442,7 @@ namespace StoreManagement.Controllers
 
                         // create pack items
                         PackedItemsController packedItemsController = new PackedItemsController();
-                        if (!packedItemsController.isPackedItemCreated(pack.PackPK, list))
+                        if (!packedItemsController.IsPackedItemCreated(pack.PackPK, list))
                         {
                             if (pack != null)
                             {
@@ -495,7 +495,7 @@ namespace StoreManagement.Controllers
                         Pack pack = db.Packs.Find(packedItem.PackPK);
                         if (pack.UserID == userID)
                         {
-                            if (!packedItemsController.isUpdatedPackedItem(packedItem))
+                            if (!packedItemsController.IsUpdatedPackedItem(packedItem))
                             {
                                 return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
                             }
@@ -622,7 +622,7 @@ namespace StoreManagement.Controllers
                     PackedItemsController packedItemsController = new PackedItemsController();
                     try
                     {
-                        packedItemsController.changeContract(packedItemPK, contractNumber);
+                        packedItemsController.ChangeContract(packedItemPK, contractNumber);
                     }
                     catch (Exception e)
                     {
@@ -726,7 +726,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxController.isStored(box.BoxPK) || uBox.IsIdentified == false))
+                if (!(boxController.IsStored(box.BoxPK) || uBox.IsIdentified == false))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
@@ -786,7 +786,7 @@ namespace StoreManagement.Controllers
                     Box box = boxController.GetBoxByBoxID(boxID);
 
                     // kiểm xem box đã store hay chưa
-                    if (boxController.isStored(box.BoxPK))
+                    if (boxController.IsStored(box.BoxPK))
                     {
                         return Content(HttpStatusCode.Conflict, "BOX ĐÃ ĐƯỢC STORE");
                     }
@@ -819,7 +819,7 @@ namespace StoreManagement.Controllers
 
                         }
                         // đổi state của unstoredBox thành true
-                        boxController.updateIsIdentifyUnstoreBox(uBox, true);
+                        boxController.UpdateIsIdentifyUnstoreBox(uBox, true);
                     }
                 }
                 catch (Exception e)
@@ -930,7 +930,7 @@ namespace StoreManagement.Controllers
                         if (pack.IsOpened)
                         {
                             identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
-                            boxController.updateIsIdentifyUnstoreBox(db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK), false);
+                            boxController.UpdateIsIdentifyUnstoreBox(db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK), false);
                         }
                         else
                         {
@@ -974,7 +974,7 @@ namespace StoreManagement.Controllers
                     Box boxTo = boxController.GetBoxByBoxID(boxToID);
 
                     // check xem box đã store hay chưa
-                    if (boxController.isStored(boxFrom.BoxPK) || boxController.isStored(boxTo.BoxPK))
+                    if (boxController.IsStored(boxFrom.BoxPK) || boxController.IsStored(boxTo.BoxPK))
                     {
                         return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO, KHÔNG THỂ CHUYỂN ĐỔI");
                     }
@@ -993,7 +993,7 @@ namespace StoreManagement.Controllers
                         // Nếu box mới thì chuyển thành box cũ
                         if (uBoxTo.IsIdentified == false)
                         {
-                            boxController.updateIsIdentifyUnstoreBox(uBoxTo, true);
+                            boxController.UpdateIsIdentifyUnstoreBox(uBoxTo, true);
                         }
 
                         // Create arranging session
@@ -1048,7 +1048,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (boxController.isStored(box.BoxPK)) result = true;
+                if (boxController.IsStored(box.BoxPK)) result = true;
                 if (uBox.IsIdentified == true) result = true;
             }
             catch (Exception e)
@@ -1068,7 +1068,7 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
-                if (boxController.isStored(box.BoxPK)) result = true;
+                if (boxController.IsStored(box.BoxPK)) result = true;
             }
             catch (Exception e)
             {

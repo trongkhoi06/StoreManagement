@@ -171,7 +171,7 @@ namespace StoreManagement.Controllers
                     if (!pack.IsOpened)
                     {
                         // kiểm packeditem ứng với identified item đã classified chưa
-                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        if (!packedItemsController.IsPackedItemClassified(identifiedItem))
                         {
                             // kiểm identified item đã được đếm hay chưa
                             if (!identifiedItem.IsCounted)
@@ -318,7 +318,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxController.isStored(box.BoxPK) || uBox.IsIdentified == false))
+                if (!(boxController.IsStored(box.BoxPK) || uBox.IsIdentified == false))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
@@ -385,7 +385,7 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-                packedItemsController.isInitAllCalculate(packedItem.PackedItemPK);
+                packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                 client_IdentifiedItems.Add(new Client_IdentifiedItemCheckedDetail(identifiedItem, accessory, pack.PackID,
                     packedItemsController.Sample, packedItemsController.SumOfCheckedQuantity));
 
@@ -433,7 +433,7 @@ namespace StoreManagement.Controllers
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
                     PackedItemsController packedItemsController = new PackedItemsController();
-                    if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                    if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                     {
                         client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
                     }
@@ -507,11 +507,11 @@ namespace StoreManagement.Controllers
                     if (pack.IsOpened == false)
                     {
                         // kiểm packeditem ứng với identified item đã classified chưa
-                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        if (!packedItemsController.IsPackedItemClassified(identifiedItem))
                         {
                             if (!identifiedItem.IsChecked)
                             {
-                                packedItemsController.isInitAllCalculate(packedItem.PackedItemPK);
+                                packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                                 if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
                                 {
                                     // tạo session update và ischecked
@@ -571,7 +571,7 @@ namespace StoreManagement.Controllers
                     IdentifiedItem identifiedItem = db.IdentifiedItems.Find(checkingSession.IdentifiedItemPK);
                     if (checkingSession.UserID == userID)
                     {
-                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        if (!packedItemsController.IsPackedItemClassified(identifiedItem))
                         {
                             if (!identifiedItem.IsChecked)
                             {
@@ -626,7 +626,7 @@ namespace StoreManagement.Controllers
                     IdentifiedItem identifiedItem = db.IdentifiedItems.Find(checkingSession.IdentifiedItemPK);
                     if (checkingSession.UserID == userID)
                     {
-                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        if (!packedItemsController.IsPackedItemClassified(identifiedItem))
                         {
                             checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
                             checkingItemController.deleteCheckingSession(checkingSessionPK);
@@ -744,7 +744,7 @@ namespace StoreManagement.Controllers
 
                 // lấy sum identified quantity, sample, defectlimit
                 // lấy sum counted quantity, sum checked quantity
-                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                 {
                     client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
                     packedItemsController.Sample, packedItemsController.DefectLimit,
@@ -834,7 +834,7 @@ namespace StoreManagement.Controllers
 
                             // đổi IsClassified của pack item
                             packedItem.IsClassified = true;
-                            packedItemsController.isUpdatedPackedItem(packedItem);
+                            packedItemsController.IsUpdatedPackedItem(packedItem);
 
                             // tạo failed or passed item
                             classifyingItemController.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
@@ -947,7 +947,7 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                 {
                     client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
                     packedItemsController.Sample, packedItemsController.DefectLimit,
@@ -998,7 +998,7 @@ namespace StoreManagement.Controllers
                             classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
                             classifyingItemController.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
                             packedItem.IsClassified = false;
-                            packedItemsController.isUpdatedPackedItem(packedItem);
+                            packedItemsController.IsUpdatedPackedItem(packedItem);
                         }
                         else
                         {
@@ -1064,7 +1064,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = (from a in db.Accessories
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
-                    if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                    if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                     {
                         client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, failedItem, packedItemsController.SumOfIdentifiedQuantity));
                     }
@@ -1122,7 +1122,7 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-                if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                 {
                     HashSet<string> boxIDs = new HashSet<string>();
                     foreach (var identifiedItem in identifiedItems)
