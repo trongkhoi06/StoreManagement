@@ -9,7 +9,7 @@ namespace StoreManagement.Class
     {
         public int OrderedItemPK { get; set; }
 
-        public int PackedQuantity { get; set; }
+        public double PackedQuantity { get; set; }
 
         public string Comment { get; set; }
     }

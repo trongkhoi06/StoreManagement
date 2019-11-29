@@ -14,7 +14,7 @@ namespace StoreManagement.Models
 
         }
 
-        public CountingSession(int identifiedItemPK, int countedQuantity, string userID)
+        public CountingSession(int identifiedItemPK, double countedQuantity, string userID)
         {
             CountedQuantity = countedQuantity;
             ExecutedDate = DateTime.Now;

@@ -13,7 +13,7 @@ namespace StoreManagement.Models
         {
         }
 
-        public IdentifiedItem(int identifiedQuantity,int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        public IdentifiedItem(double identifiedQuantity,int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
         {
             IdentifiedQuantity = identifiedQuantity;
             IsChecked = false;

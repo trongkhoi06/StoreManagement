@@ -16,17 +16,17 @@ namespace StoreManagement.Controllers
     public class PackedItemsController
     {
         private UserModel db = new UserModel();
-        public int Sample { get; set; }
+        public double Sample { get; set; }
 
-        public int DefectLimit { get; set; }
+        public double DefectLimit { get; set; }
 
-        public int SumOfCheckedQuantity { get; set; }
+        public double SumOfCheckedQuantity { get; set; }
 
-        public int SumOfUnqualifiedQuantity { get; set; }
+        public double SumOfUnqualifiedQuantity { get; set; }
 
-        public int SumOfCountedQuantity { get; set; }
+        public double SumOfCountedQuantity { get; set; }
 
-        public int SumOfIdentifiedQuantity { get; set; }
+        public double SumOfIdentifiedQuantity { get; set; }
 
         public bool isPackedItemCreated(int PackPK, List<Client_OrderedItemPK_PackedQuantity_Comment> list)
         {

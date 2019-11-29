@@ -20,15 +20,15 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public int IdentifiedQuantitty { get; set; }
+        public double IdentifiedQuantitty { get; set; }
 
         public string PackID { get; set; }
 
-        public int Sample { get; set; }
+        public double Sample { get; set; }
 
-        public int SumCheckedQuantity { get; set; }
+        public double SumCheckedQuantity { get; set; }
 
-        public Client_IdentifiedItemCheckedDetail(IdentifiedItem identifiedItem, Accessory accessory, string packID, int sample, int sumCheckedQuantity)
+        public Client_IdentifiedItemCheckedDetail(IdentifiedItem identifiedItem, Accessory accessory, string packID, double sample, double sumCheckedQuantity)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;

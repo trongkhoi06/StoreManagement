@@ -53,7 +53,6 @@ namespace StoreManagement.Models
         public virtual DbSet<Supplier> Suppliers { get; set; }
         public virtual DbSet<SystemUser> SystemUsers { get; set; }
         public virtual DbSet<TransferringSession> TransferringSessions { get; set; }
-        public virtual DbSet<Unit> Units { get; set; }
         public virtual DbSet<UnstoredBox> UnstoredBoxes { get; set; }
         public virtual DbSet<Verification> Verifications { get; set; }
         public virtual DbSet<Restoration> Restorations { get; set; }

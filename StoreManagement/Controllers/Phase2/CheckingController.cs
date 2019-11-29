@@ -147,7 +147,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CountItemBusiness")]
         [HttpPost]
-        public IHttpActionResult CountItemBusiness(int identifiedItemPK, int countedQuantity, string userID)
+        public IHttpActionResult CountItemBusiness(int identifiedItemPK, double countedQuantity, string userID)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -212,7 +212,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditCountItemBusiness")]
         [HttpPut]
-        public IHttpActionResult EditCountItemBusiness(int countingSessionPK, int countedQuantity, string userID)
+        public IHttpActionResult EditCountItemBusiness(int countingSessionPK, double countedQuantity, string userID)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -432,7 +432,12 @@ namespace StoreManagement.Controllers
                     Accessory accessory = (from a in db.Accessories
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
-                    client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem));
+                    PackedItemsController packedItemsController = new PackedItemsController();
+                    if (packedItemsController.isInitAllCalculate(packedItem.PackedItemPK))
+                    {
+                        client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
+                    }
+                    
                 }
             }
             catch (Exception e)
@@ -482,7 +487,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CheckItemBusiness")]
         [HttpPost]
-        public IHttpActionResult CheckItemBusiness(int identifiedItemPK, int checkedQuantity, int unqualifiedQuantity, string userID)
+        public IHttpActionResult CheckItemBusiness(int identifiedItemPK, double checkedQuantity, double unqualifiedQuantity, string userID)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -543,7 +548,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditCheckItemBusiness")]
         [HttpPut]
-        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, int checkedQuantity, int unqualifiedQuantity, string userID)
+        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string userID)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -780,7 +785,7 @@ namespace StoreManagement.Controllers
                         // nếu chưa có classify item của packitem thì tạo mới
                         else
                         {
-                            int finalQuantity = identifyItemController.GenerateFinalQuantity(packedItemPK);
+                            double finalQuantity = identifyItemController.GenerateFinalQuantity(packedItemPK);
                             ClassifiedItem classifiedItem = new ClassifiedItem(qualityState, finalQuantity, packedItemPK);
 
                             // tạo classified item

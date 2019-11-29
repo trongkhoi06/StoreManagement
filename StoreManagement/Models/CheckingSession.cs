@@ -13,7 +13,7 @@ namespace StoreManagement.Models
         {
         }
 
-        public CheckingSession(int checkedQuantity, int unqualifiedQuantity, int identifiedItemPK, string userID)
+        public CheckingSession(double checkedQuantity, double unqualifiedQuantity, int identifiedItemPK, string userID)
         {
             CheckedQuantity = checkedQuantity;
             UnqualifiedQuantity = unqualifiedQuantity;

@@ -40,7 +40,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateCountingSession(int countingSessionPK, int countedQuantity)
+        public void updateCountingSession(int countingSessionPK, double countedQuantity)
         {
             try
             {

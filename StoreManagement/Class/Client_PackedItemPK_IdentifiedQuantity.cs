@@ -7,7 +7,7 @@ namespace StoreManagement.Class
 {
     public class Client_PackedItemPK_IdentifiedQuantity
     {
-        public int IdentifiedQuantity { get; set; }
+        public double IdentifiedQuantity { get; set; }
 
         public int PackedItemPK { get; set; }
     }

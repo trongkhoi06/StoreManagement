@@ -20,7 +20,7 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public int IdentifiedQuantitty { get; set; }
+        public double IdentifiedQuantitty { get; set; }
 
         public string PackID { get; set; }
 

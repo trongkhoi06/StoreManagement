@@ -188,6 +188,8 @@
     <Compile Include="Models\ReceivingSession.cs" />
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\RequestedItem.cs" />
+    <Compile Include="Models\Restoration.cs" />
+    <Compile Include="Models\RestoredItem.cs" />
     <Compile Include="Models\ReturningSession.cs" />
     <Compile Include="Models\Role.cs" />
     <Compile Include="Models\Shelf.cs" />
@@ -196,7 +198,6 @@
     <Compile Include="Models\SystemUser.cs" />
     <Compile Include="Models\StoredBox.cs" />
     <Compile Include="Models\TransferringSession.cs" />
-    <Compile Include="Models\Unit.cs" />
     <Compile Include="Models\UnstoredBox.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Models\Verification.cs" />

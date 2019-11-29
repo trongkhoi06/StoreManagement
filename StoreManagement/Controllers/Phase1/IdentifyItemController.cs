@@ -60,7 +60,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateIdentifiedItem(int IdentifiedItemPK, int IdentifiedQuantity)
+        public void updateIdentifiedItem(int IdentifiedItemPK, double IdentifiedQuantity)
         {
             try
             {
@@ -154,9 +154,9 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public int ActualQuantity(int identifiedItemPK)
+        public double ActualQuantity(int identifiedItemPK)
         {
-            int result = 0;
+            double result = 0;
             int numCase = 0;
             try
             {
@@ -204,9 +204,9 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public int GenerateFinalQuantity(int packedItemPK)
+        public double GenerateFinalQuantity(int packedItemPK)
         {
-            int result = 0;
+            double result = 0;
             try
             {
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems

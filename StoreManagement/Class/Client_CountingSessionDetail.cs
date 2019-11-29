@@ -44,9 +44,9 @@ namespace StoreManagement.Class
 
         public DateTime ExecutedDate { get; set; }
 
-        public int CountedQuantity { get; set; }
+        public double CountedQuantity { get; set; }
 
-        public int IdentifiedQuantity { get; set; }
+        public double IdentifiedQuantity { get; set; }
 
         public string BoxID { get; set; }
 

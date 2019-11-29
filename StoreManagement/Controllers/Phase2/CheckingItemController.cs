@@ -40,7 +40,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateCheckingSession(int checkingSessionPK, int checkedQuantity, int unqualifiedQuantity)
+        public void updateCheckingSession(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity)
         {
             try
             {

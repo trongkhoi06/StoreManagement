@@ -22,7 +22,7 @@ namespace StoreManagement.Class
 
         public int PackedItemPK { get; set; }
 
-        public int PackedQuantity { get; set; }
+        public double PackedQuantity { get; set; }
 
         public string AccessoryID { get; set; }
 
