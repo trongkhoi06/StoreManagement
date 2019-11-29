@@ -20,6 +20,6 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string ShelfName { get; set; }
 
-        public int? Row { get; set; }
+        public int Row { get; set; }
     }
 }

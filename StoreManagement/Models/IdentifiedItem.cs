@@ -26,7 +26,7 @@ namespace StoreManagement.Models
         [Key]
         public int IdentifiedItemPK { get; set; }
 
-        public int IdentifiedQuantity { get; set; }
+        public double IdentifiedQuantity { get; set; }
 
         public bool IsChecked { get; set; }
 

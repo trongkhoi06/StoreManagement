@@ -56,6 +56,8 @@ namespace StoreManagement.Models
         public virtual DbSet<Unit> Units { get; set; }
         public virtual DbSet<UnstoredBox> UnstoredBoxes { get; set; }
         public virtual DbSet<Verification> Verifications { get; set; }
+        public virtual DbSet<Restoration> Restorations { get; set; }
+        public virtual DbSet<RestoredItem> RestoredItems { get; set; }
 
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

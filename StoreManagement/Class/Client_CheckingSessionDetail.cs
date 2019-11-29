@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession)
+        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession, Box box, PackedItem packedItem)
         {
             CheckingSessionPK = checkingSession.CheckingSessionPK;
             ExecutedDate = checkingSession.ExecutedDate;
@@ -25,6 +25,8 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
+            BoxID = box.BoxID;
+            IsClassified = packedItem.IsClassified;
         }
 
         public int CheckingSessionPK { get; set; }
@@ -48,6 +50,10 @@ namespace StoreManagement.Class
         public int UnqualifiedQuantity { get; set; }
 
         public string Comment { get; set; }
+
+        public string BoxID { get; set; }
+
+        public bool IsClassified { get; set; }
 
     }
 }

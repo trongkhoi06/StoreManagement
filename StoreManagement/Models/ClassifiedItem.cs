@@ -14,7 +14,7 @@ namespace StoreManagement.Models
 
         }
 
-        public ClassifiedItem(int finalQuantity, int qualityState, int packedItemPK)
+        public ClassifiedItem(int qualityState, int finalQuantity, int packedItemPK)
         {
             FinalQuantity = finalQuantity;
             QualityState = qualityState;
@@ -24,7 +24,7 @@ namespace StoreManagement.Models
         [Key]
         public int ClassifiedItemPK { get; set; }
 
-        public int FinalQuantity { get; set; }
+        public double FinalQuantity { get; set; }
 
         public int QualityState { get; set; }
 

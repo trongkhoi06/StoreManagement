@@ -27,5 +27,9 @@ namespace StoreManagement.Models
         public int SessionPK { get; set; }
 
         public bool IsRestored { get; set; }
+
+        public double Quantity { get; set; }
+
+        public int ItemPK { get; set; }
     }
 }

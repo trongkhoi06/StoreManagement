@@ -6,23 +6,22 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("ReceivingSession")]
-    public partial class ReceivingSession
+    [Table("RestoredItem")]
+    public partial class RestoredItem
     {
-        public ReceivingSession()
+        public RestoredItem()
         {
         }
 
         [Key]
-        public int ReceivingSessionPK { get; set; }
+        public int RestoredItemPK { get; set; }
 
-        public DateTime ExecutedDate { get; set; }
+        public int AccessoryPK { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string UserID { get; set; }
+        public double RestoredQuantity { get; set; }
+
+        public string Comment { get; set; }
 
         public int RestorationPK { get; set; }
-        
     }
 }

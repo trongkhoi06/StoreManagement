@@ -70,10 +70,18 @@ namespace StoreManagement.Controllers
         public bool isUpdatedPackedItem(PackedItem packedItem)
         {
             PackedItem dbPackedItem = GetPackedItem(packedItem.PackedItemPK);
-            dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
-            dbPackedItem.Comment = packedItem.Comment;
-            dbPackedItem.IsClassified = packedItem.IsClassified;
-            db.Entry(dbPackedItem).State = EntityState.Modified;
+            if (packedItem.PackedQuantity == 0)
+            {
+                db.PackedItems.Remove(dbPackedItem);
+            }
+            else
+            {
+                dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
+                dbPackedItem.Comment = packedItem.Comment;
+                dbPackedItem.IsClassified = packedItem.IsClassified;
+                db.Entry(dbPackedItem).State = EntityState.Modified;
+            }
+
             try
             {
                 db.SaveChanges();
@@ -84,22 +92,6 @@ namespace StoreManagement.Controllers
             }
 
             return true;
-        }
-
-        public IQueryable<PackedItem> GetPackedItemsByPackPK(int packPK)
-        {
-            try
-            {
-                //SqlParameter PackParam = new SqlParameter("@PackPK", packPK);
-                //result = (db.Database.SqlQuery<PackedItem>("exec GetPackedItemByPackPK @PackPK", PackParam).ToList());
-                return (from pi in db.PackedItems
-                        where pi.PackPK == packPK
-                        select pi);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
         }
 
         public void DeletePackedItem(int PackedItemPK)

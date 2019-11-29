@@ -25,9 +25,9 @@ namespace StoreManagement.Models
         [Key]
         public int CheckingSessionPK { get; set; }
 
-        public int CheckedQuantity { get; set; }
+        public double CheckedQuantity { get; set; }
 
-        public int UnqualifiedQuantity { get; set; }
+        public double UnqualifiedQuantity { get; set; }
 
         public DateTime ExecutedDate { get; set; }
 

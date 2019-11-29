@@ -55,7 +55,16 @@ namespace StoreManagement.Controllers
             OrderedItem dbOrderedItem = GetOrderedItem(orderedItem.OrderedItemPK);
             if (dbOrderedItem.OrderPK == orderedItem.OrderPK)
             {
-                db.Entry(orderedItem).State = EntityState.Modified;
+                if (orderedItem.OrderedQuantity == 0)
+                {
+                    db.OrderedItems.Remove(dbOrderedItem);
+                }
+                else
+                {
+                    dbOrderedItem.Comment = orderedItem.Comment;
+                    dbOrderedItem.OrderedQuantity = orderedItem.OrderedQuantity;
+                    db.Entry(dbOrderedItem).State = EntityState.Modified;
+                }
                 try
                 {
                     db.SaveChanges();

@@ -18,12 +18,16 @@ namespace StoreManagement.Class
             SupplierName = supplier.SupplierName;
             PackID = pack.PackID;
             DateCreated = session.ExecutedDate;
+            IsOpened = pack.IsOpened;
         }
         public int IdentifyingSessionPK { get; set; }
 
         public string SupplierName { get; set; }
 
         public string PackID { get; set; }
+
         public DateTime DateCreated { get; set; }
+
+        public bool IsOpened { get; set; }
     }
 }

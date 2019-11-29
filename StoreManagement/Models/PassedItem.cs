@@ -24,8 +24,6 @@ namespace StoreManagement.Models
 
         public bool IsStored { get; set; }
 
-        public int? StoredQuantity { get; set; }
-
         public int ClassifiedItemPK { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace StoreManagement.Controllers
     public class PacksController
     {
         private UserModel db = new UserModel();
+
         public Pack CreatePack(string packID, int orderPK, string userID)
         {
             PrimitiveType primitiveType = new PrimitiveType();
@@ -43,7 +44,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        internal bool isCheckedOrCountedOrClassified(int packPK)
+        public bool isCheckedOrCountedOrClassified(int packPK)
         {
             bool result = false;
             try
@@ -73,7 +74,7 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        internal bool isIdentifiedOrClassified(int packPK)
+        public bool isIdentifiedOrClassified(int packPK)
         {
             bool result = false;
             try
@@ -98,8 +99,6 @@ namespace StoreManagement.Controllers
             }
             return result;
         }
-
-        
 
         private bool PackExists(string id)
         {
@@ -133,7 +132,7 @@ namespace StoreManagement.Controllers
                 }
                 else
                 {
-                    throw new Exception("PACK ĐÃ CHECK HOẶC COUNT HOẶC CLASSIFY");
+                    throw new Exception("PACK ĐÃ CHECK HOẶC COUNT HOẶC CLASSIFY RỒI");
                 }
             }
             db.Entry(pack).State = EntityState.Modified;

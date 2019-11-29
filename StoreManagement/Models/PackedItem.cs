@@ -26,7 +26,7 @@ namespace StoreManagement.Models
         [Key]
         public int PackedItemPK { get; set; }
 
-        public int PackedQuantity { get; set; }
+        public float PackedQuantity { get; set; }
 
         public bool IsClassified { get; set; }
 

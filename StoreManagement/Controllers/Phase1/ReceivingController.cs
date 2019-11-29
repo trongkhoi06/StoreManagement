@@ -94,9 +94,10 @@ namespace StoreManagement.Controllers
             {
                 OrdersController ordersController = new OrdersController();
                 Order order = null;
-                if (ordersController.CheckAccessoryAndSupplier(supplierPK,list))
+
+                try
                 {
-                    try
+                    if (ordersController.CheckAccessoryAndSupplier(supplierPK, list))
                     {
                         // create order
                         order = ordersController.CreateOrder(orderID, supplierPK, userID);
@@ -110,21 +111,21 @@ namespace StoreManagement.Controllers
                             }
                             return Content(HttpStatusCode.Conflict, "Something is wrong!");
                         }
-
                     }
-                    catch (Exception e)
+                    else
                     {
-                        if (order != null)
-                        {
-                            ordersController.DeleteOrder(order.OrderPK);
-                        }
-                        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                        //return Content(HttpStatusCode.Conflict, "PHỤ LIỆU KHÔNG ĐÚNG NHÀ CUNG CẤP");
                     }
                 }
-                else
+                catch (Exception e)
                 {
-
+                    if (order != null)
+                    {
+                        ordersController.DeleteOrder(order.OrderPK);
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
+
                 return Content(HttpStatusCode.OK, "TẠO ĐƠN HÀNG THÀNH CÔNG");
             }
             else
@@ -187,25 +188,32 @@ namespace StoreManagement.Controllers
                 {
                     if (ordersController.IsContainPack(orderPK))
                     {
-                        return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PACK");
+                        return Content(HttpStatusCode.Conflict, "ĐƠN HÀNG ĐÃ CHỨA PHIẾU NHẬP");
                     }
                     else
                     {
                         Order order = ordersController.GetOrderByOrderPK(orderPK);
-                        IQueryable<OrderedItem> temp = orderedItemsController.GetOrderedItemsByOrderPK(order.OrderPK);
-                        listOrderedItem = temp.ToList();
-
-                        if (order == null || listOrderedItem == null)
+                        if (order.UserID == userID)
                         {
-                            return Content(HttpStatusCode.Conflict, "CÓ LỖI");
-                        }
+                            IQueryable<OrderedItem> temp = orderedItemsController.GetOrderedItemsByOrderPK(order.OrderPK);
+                            listOrderedItem = temp.ToList();
 
-                        for (int i = 0; i < listOrderedItem.Count; i++)
-                        {
-                            orderedItemsController.DeleteOrderedItem(listOrderedItem[i].OrderedItemPK);
+                            if (order == null || listOrderedItem == null)
+                            {
+                                return Content(HttpStatusCode.Conflict, "CÓ LỖI");
+                            }
+
+                            for (int i = 0; i < listOrderedItem.Count; i++)
+                            {
+                                orderedItemsController.DeleteOrderedItem(listOrderedItem[i].OrderedItemPK);
+                            }
+                            ordersController.DeleteOrder(order.OrderPK);
+                            return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
                         }
-                        ordersController.DeleteOrder(order.OrderPK);
-                        return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PHẢI LÀ USER TẠO ORDER NÀY MỚI XÓA ĐƯỢC");
+                        }
                     }
                 }
                 catch (Exception e)
@@ -231,7 +239,14 @@ namespace StoreManagement.Controllers
                 OrdersController ordersController = new OrdersController();
                 try
                 {
-                    ordersController.SwiftOrderState(orderPK);
+                    if (order.UserID == userID)
+                    {
+                        ordersController.SwiftOrderState(orderPK);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "PHẢI LÀ USER TẠO ĐƠN HÀNG NÀY MỚI ĐỔI ĐƯỢC");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -313,7 +328,6 @@ namespace StoreManagement.Controllers
 
             return Content(HttpStatusCode.OK, client_Pack_Angulars);
         }
-
 
         [Route("api/ReceivingController/GetPackedItemsByPackPK")]
         [HttpGet]
@@ -478,9 +492,17 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        if (!packedItemsController.isUpdatedPackedItem(packedItem))
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        if (pack.UserID == userID)
                         {
-                            return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
+                            if (!packedItemsController.isUpdatedPackedItem(packedItem))
+                            {
+                                return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
+                            }
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "KHÔNG PHẢI USER TẠO PACK !");
                         }
                     }
 
@@ -506,31 +528,35 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 2)
             {
-
                 List<PackedItem> listPackedItem;
                 PacksController packsController = new PacksController();
                 PackedItemsController packedItemsController = new PackedItemsController();
                 try
                 {
                     Pack pack = db.Packs.Find(packPK);
-
-                    IQueryable<PackedItem> temp = packedItemsController.GetPackedItemsByPackPK(pack.PackPK);
-                    listPackedItem = temp.ToList();
-
-                    if (packsController.isIdentifiedOrClassified(packPK))
+                    if (pack.UserID == userID)
                     {
-                        return Content(HttpStatusCode.Conflict, "PACK ĐÃ CHỨA CLASSIFIED ITEM");
-                    }
-                    else if (pack == null || listPackedItem == null)
-                    {
-                        return Content(HttpStatusCode.Conflict, "CÓ LỖI");
-                    }
+                        //IQueryable<PackedItem> temp = packedItemsController.GetPackedItemsByPackPK(pack.PackPK);
+                        listPackedItem = (from pI in db.PackedItems
+                                          where pI.PackPK == pack.PackPK
+                                          select pI).ToList();
 
-                    for (int i = 0; i < listPackedItem.Count; i++)
-                    {
-                        packedItemsController.DeletePackedItem(listPackedItem[i].PackedItemPK);
+                        if (packsController.isIdentifiedOrClassified(packPK))
+                        {
+                            return Content(HttpStatusCode.Conflict, "PACK ĐÃ CHỨA CLASSIFIED ITEM");
+                        }
+
+                        foreach (var item in listPackedItem)
+                        {
+                            packedItemsController.DeletePackedItem(item.PackedItemPK);
+                        }
+
+                        packsController.DeletePack(pack.PackPK);
                     }
-                    packsController.DeletePack(pack.PackPK);
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ko có quyền!");
+                    }
                     return Content(HttpStatusCode.OK, "DELETE THÀNH CÔNG");
                 }
                 catch (Exception e)
@@ -556,7 +582,14 @@ namespace StoreManagement.Controllers
                 PacksController packsController = new PacksController();
                 try
                 {
-                    packsController.SwiftPackState(packPK);
+                    if (pack.UserID == userID)
+                    {
+                        packsController.SwiftPackState(packPK);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ko có quyền");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -581,17 +614,26 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 2)
             {
-                // Edit
-                PackedItemsController packedItemsController = new PackedItemsController();
-                try
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+                if (pack.UserID == userID)
                 {
-                    packedItemsController.changeContract(packedItemPK, contractNumber);
+                    // Edit
+                    PackedItemsController packedItemsController = new PackedItemsController();
+                    try
+                    {
+                        packedItemsController.changeContract(packedItemPK, contractNumber);
+                    }
+                    catch (Exception e)
+                    {
+                        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                 }
-
+                // done
                 return Content(HttpStatusCode.OK, "Edit Contract Number THÀNH CÔNG");
             }
             else
@@ -753,7 +795,7 @@ namespace StoreManagement.Controllers
                     // kiểm unstoredBox đã identified chưa
                     if (uBox.IsIdentified == true)
                     {
-                        return Content(HttpStatusCode.Conflict, "UNSTORED BOX ĐÃ ĐƯỢC IDENTIFY");
+                        return Content(HttpStatusCode.Conflict, "BOX ĐÃ ĐƯỢC IDENTIFY");
                     }
                     else
                     {
@@ -809,33 +851,40 @@ namespace StoreManagement.Controllers
                 IdentifyItemController identifyItemController = new IdentifyItemController();
                 try
                 {
-                    foreach (var el in list)
+                    if (identifyingSession.UserID == userID)
                     {
-                        // querry lấy pack
-                        IdentifiedItem identifiedItem = db.IdentifiedItems.Find(el.IdentifiedItemPK);
-                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                        Pack pack = db.Packs.Find(packedItem.PackPK);
-                        // pack đang mở
-                        if (pack.IsOpened)
+                        foreach (var el in list)
                         {
-                            // switch case xoa sua
-                            switch (el.IdentifiedQuantity)
+                            // querry lấy pack
+                            IdentifiedItem identifiedItem = db.IdentifiedItems.Find(el.IdentifiedItemPK);
+                            PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                            Pack pack = db.Packs.Find(packedItem.PackPK);
+                            // pack đang mở
+                            if (pack.IsOpened)
                             {
+                                // switch case xoa sua
+                                switch (el.IdentifiedQuantity)
+                                {
 
-                                case 0:
-                                    identifyItemController.deleteIdentifiedItem(el.IdentifiedItemPK);
-                                    break;
-                                default:
-                                    identifyItemController.updateIdentifiedItem(el.IdentifiedItemPK, el.IdentifiedQuantity);
-                                    break;
+                                    case 0:
+                                        identifyItemController.deleteIdentifiedItem(el.IdentifiedItemPK);
+                                        break;
+                                    default:
+                                        identifyItemController.updateIdentifiedItem(el.IdentifiedItemPK, el.IdentifiedQuantity);
+                                        break;
+                                }
+
+                                identifyItemController.changeExecutedDate(identifyingSession);
                             }
-
-                            identifyItemController.changeExecutedDate(identifyingSession);
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                            }
                         }
-                        else
-                        {
-                            return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
-                        }
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ko có quyền!ahihi");
                     }
                 }
                 catch (Exception e)
@@ -843,7 +892,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "Edit Identification THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "EDIT IDENTIFICATION THÀNH CÔNG");
             }
             else
             {
@@ -862,26 +911,35 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 4)
             {
+                // edit identification
+                IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
                 // Delete
                 IdentifyItemController identifyItemController = new IdentifyItemController();
                 BoxController boxController = new BoxController();
                 try
                 {
-                    // querry lấy pack
-                    IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
-                                                     where iI.IdentifyingSessionPK == IdentifyingSessionPK
-                                                     select iI).FirstOrDefault();
-                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                    Pack pack = db.Packs.Find(packedItem.PackPK);
-                    // pack đang mở
-                    if (pack.IsOpened)
+                    if (identifyingSession.UserID == userID)
                     {
-                        identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
-                        boxController.updateIsIdentifyUnstoreBox(db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK), false);
+                        // querry lấy pack
+                        IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
+                                                         where iI.IdentifyingSessionPK == IdentifyingSessionPK
+                                                         select iI).FirstOrDefault();
+                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        // pack đang mở
+                        if (pack.IsOpened)
+                        {
+                            identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
+                            boxController.updateIsIdentifyUnstoreBox(db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK), false);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                        }
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "PACK ĐANG CLOSE, KO IDENTIFY ĐƯỢC");
+                        return Content(HttpStatusCode.Conflict, "ko có quyền!");
                     }
                 }
                 catch (Exception e)

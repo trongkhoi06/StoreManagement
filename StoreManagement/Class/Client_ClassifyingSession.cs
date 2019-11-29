@@ -13,7 +13,7 @@ namespace StoreManagement.Class
 
         }
 
-        public Client_ClassifyingSession(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, ClassifiedItem classifiedItem)
+        public Client_ClassifyingSession(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, ClassifiedItem classifiedItem, bool isStoredOrReturn)
         {
             ClassifyingSessionPK = classifyingSession.ClassifyingSessionPK;
             ExecutedDate = classifyingSession.ExecutedDate;
@@ -24,6 +24,7 @@ namespace StoreManagement.Class
             Item = accessory.Item;
             PackID = pack.PackID;
             QualityState = classifiedItem.QualityState;
+            IsStoredOrReturn = isStoredOrReturn;
         }
 
         public int ClassifyingSessionPK { get; set; }
@@ -43,5 +44,7 @@ namespace StoreManagement.Class
         public string PackID { get; set; }
 
         public int QualityState { get; set; }
+
+        public bool IsStoredOrReturn { get; set; }
     }
 }

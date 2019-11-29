@@ -26,7 +26,11 @@ namespace StoreManagement.Class
 
         public bool IsChecked { get; set; }
 
-        public Client_IdentifiedItemChecked(IdentifiedItem identifiedItem,Accessory accessory,string packID)
+        public bool IsOpened { get; set; }
+
+        public bool IsClassified { get; set; }
+
+        public Client_IdentifiedItemChecked(IdentifiedItem identifiedItem,Accessory accessory,Pack pack,PackedItem packedItem)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -35,8 +39,10 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
-            PackID = packID;
+            PackID = pack.PackID;
             IsChecked = identifiedItem.IsChecked;
+            IsOpened = pack.IsOpened;
+            IsClassified = packedItem.IsClassified;
         }
     }
 }

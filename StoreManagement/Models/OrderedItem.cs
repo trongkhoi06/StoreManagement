@@ -25,14 +25,12 @@ namespace StoreManagement.Models
         [Key]
         public int OrderedItemPK { get; set; }
 
-        public int OrderedQuantity { get; set; }
+        public double OrderedQuantity { get; set; }
 
         public string Comment { get; set; }
 
         public int OrderPK { get; set; }
 
         public int AccessoryPK { get; set; }
-
-        public int? UnitPK { get; set; }
     }
 }

@@ -119,7 +119,16 @@ namespace StoreManagement.Controllers
         {
             try
             {
-
+                foreach (var item in list)
+                {
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    if (accessory == null) throw new Exception("PHỤ LIỆU KHÔNG TỒN TẠI");
+                    if (accessory.SupplierPK != SupplierPK)
+                    {
+                        throw new Exception("PHỤ LIỆU KHÔNG ĐÚNG NHÀ CUNG CẤP");
+                    }
+                }
+                
             }
             catch (Exception e)
             {

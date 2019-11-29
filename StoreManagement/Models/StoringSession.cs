@@ -16,7 +16,7 @@ namespace StoreManagement.Models
         [Key]
         public int StoringSessionPK { get; set; }
 
-        public DateTime? ExecutedDate { get; set; }
+        public DateTime ExecutedDate { get; set; }
 
         public int BoxPK { get; set; }
 

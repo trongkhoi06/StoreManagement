@@ -16,7 +16,7 @@ namespace StoreManagement.Models
         [Key]
         public int RequestedItemPK { get; set; }
 
-        public int RequestedQuantity { get; set; }
+        public double RequestedQuantity { get; set; }
 
         public int RequestPK { get; set; }
 
