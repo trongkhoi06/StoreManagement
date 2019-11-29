@@ -13,9 +13,9 @@ namespace StoreManagement.Controllers
     public class StoringController : ApiController
     {
         private UserModel db = new UserModel();
-        [Route("api/ReceivingController/CountItemBusiness")]
+        [Route("api/StoringController/StoreBoxBusiness")]
         [HttpPost]
-        public IHttpActionResult CountItemBusiness(int identifiedItemPK, double countedQuantity, string userID)
+        public IHttpActionResult StoreBoxBusiness(string boxID, double countedQuantity, string userID)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);

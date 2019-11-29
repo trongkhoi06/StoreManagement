@@ -193,6 +193,7 @@
     <Compile Include="Models\RestoredItem.cs" />
     <Compile Include="Models\ReturningSession.cs" />
     <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\Row.cs" />
     <Compile Include="Models\Shelf.cs" />
     <Compile Include="Models\StoringSession.cs" />
     <Compile Include="Models\Supplier.cs" />
