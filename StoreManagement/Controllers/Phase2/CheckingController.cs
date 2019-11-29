@@ -437,7 +437,7 @@ namespace StoreManagement.Controllers
                     {
                         client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
                     }
-                    
+
                 }
             }
             catch (Exception e)
@@ -502,12 +502,8 @@ namespace StoreManagement.Controllers
                 {
                     IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
                     // kiểm state pack is closed
-                    Pack pack = (from p in db.Packs
-                                 where p.PackPK ==
-                                            (from pI in db.PackedItems
-                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
-                                             select pI).FirstOrDefault().PackPK
-                                 select p).FirstOrDefault();
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
                     if (pack.IsOpened == false)
                     {
                         // kiểm packeditem ứng với identified item đã classified chưa
@@ -515,17 +511,27 @@ namespace StoreManagement.Controllers
                         {
                             if (!identifiedItem.IsChecked)
                             {
-                                // tạo session update và ischecked
-                                checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID));
-                                checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
+                                packedItemsController.isInitAllCalculate(packedItem.PackedItemPK);
+                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
+                                {
+                                    // tạo session update và ischecked
+                                    checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID));
+                                    checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
+                                }
+                                else
+                                {
+                                    return Content(HttpStatusCode.Conflict, "SAI SỐ LƯỢNG");
+                                }
                             }
-
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, "ĐÃ ĐƯỢC KIỂM");
+                            }
                         }
                         else
                         {
                             return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
                         }
-
                     }
                     else
                     {
@@ -557,10 +563,35 @@ namespace StoreManagement.Controllers
             {
                 // khởi tạo
                 CheckingItemController checkingItemController = new CheckingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
                 // chạy lệnh edit checking
                 try
                 {
-                    checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity);
+                    CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(checkingSession.IdentifiedItemPK);
+                    if (checkingSession.UserID == userID)
+                    {
+                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        {
+                            if (!identifiedItem.IsChecked)
+                            {
+                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
+                                {
+                                    // update session check
+                                    checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity);
+                                }
+                                else
+                                {
+                                    return Content(HttpStatusCode.Conflict, "SAI SỐ LƯỢNG");
+                                }
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -587,13 +618,20 @@ namespace StoreManagement.Controllers
             {
                 // khởi tạo
                 CheckingItemController checkingItemController = new CheckingItemController();
+                PackedItemsController packedItemsController = new PackedItemsController();
                 // chạy lệnh edit checking
                 try
                 {
                     CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
-                    checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
-                    checkingItemController.deleteCheckingSession(checkingSessionPK);
-
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(checkingSession.IdentifiedItemPK);
+                    if (checkingSession.UserID == userID)
+                    {
+                        if (!packedItemsController.isPackedItemClassified(identifiedItem))
+                        {
+                            checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
+                            checkingItemController.deleteCheckingSession(checkingSessionPK);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {

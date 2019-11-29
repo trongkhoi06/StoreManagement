@@ -165,6 +165,10 @@ namespace StoreManagement.Controllers
                             deleteItemByQualityState(classifiedItemPK, oldQualityState);
                             createItemByQualityState(classifiedItemPK, newQualityState);
                         }
+                        if (newQualityState == 1)
+                        {
+                            deleteItemByQualityState(classifiedItemPK, oldQualityState);
+                        }
                     }
                     else if (oldQualityState == 3)
                     {
@@ -172,6 +176,10 @@ namespace StoreManagement.Controllers
                         {
                             deleteItemByQualityState(classifiedItemPK, oldQualityState);
                             createItemByQualityState(classifiedItemPK, newQualityState);
+                        }
+                        if (newQualityState == 1)
+                        {
+                            deleteItemByQualityState(classifiedItemPK, oldQualityState);
                         }
                     }
                 }
