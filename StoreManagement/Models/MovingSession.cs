@@ -13,8 +13,21 @@ namespace StoreManagement.Models
         {
         }
 
+        public MovingSession(StoredBox storedBox, Shelf shelf, string userID)
+        {
+            StartShelfPK = storedBox.ShelfPK;
+            DestinationShelfPK = shelf.ShelfPK;
+            ExecutedDate = DateTime.Now;
+            StoredBoxPK = storedBox.StoredBoxPK;
+            UserID = userID;
+        }
+
         [Key]
         public int MovingSessionPK { get; set; }
+
+        public int StartShelfPK { get; set; }
+
+        public int DestinationShelfPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
 

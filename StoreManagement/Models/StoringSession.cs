@@ -13,6 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
+        public StoringSession(int boxPK, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            BoxPK = boxPK;
+            UserID = userID;
+        }
+
         [Key]
         public int StoringSessionPK { get; set; }
 

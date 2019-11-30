@@ -9,7 +9,7 @@ using System.Web.Http;
 
 namespace StoreManagement.Controllers
 {
-    public class CountingItemController
+    public class CountingItemDAO
     {
         private UserModel db = new UserModel();
 

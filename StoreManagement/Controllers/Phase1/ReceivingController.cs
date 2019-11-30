@@ -92,7 +92,7 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 3)
             {
-                OrdersController ordersController = new OrdersController();
+                OrdersDAO ordersController = new OrdersDAO();
                 Order order = null;
 
                 try
@@ -102,7 +102,7 @@ namespace StoreManagement.Controllers
                         // create order
                         order = ordersController.CreateOrder(orderID, supplierPK, userID);
                         // create order items
-                        OrderedItemsController orderedItemsController = new OrderedItemsController();
+                        OrderedItemsDAO orderedItemsController = new OrderedItemsDAO();
                         if (!orderedItemsController.isOrderedItemCreated(order.OrderPK, list))
                         {
                             if (order != null)
@@ -143,8 +143,8 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 3)
             {
-                OrdersController ordersController = new OrdersController();
-                OrderedItemsController orderedItemsController = new OrderedItemsController();
+                OrdersDAO ordersController = new OrdersDAO();
+                OrderedItemsDAO orderedItemsController = new OrderedItemsDAO();
                 try
                 {
                     if (ordersController.IsContainPack(orderedItems.OrderPK))
@@ -182,8 +182,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 3)
             {
                 List<OrderedItem> listOrderedItem;
-                OrdersController ordersController = new OrdersController();
-                OrderedItemsController orderedItemsController = new OrderedItemsController();
+                OrdersDAO ordersController = new OrdersDAO();
+                OrderedItemsDAO orderedItemsController = new OrderedItemsDAO();
                 try
                 {
                     if (ordersController.IsContainPack(orderPK))
@@ -236,7 +236,7 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 3)
             {
                 Order order = db.Orders.Find(orderPK);
-                OrdersController ordersController = new OrdersController();
+                OrdersDAO ordersController = new OrdersDAO();
                 try
                 {
                     if (order.UserID == userID)
@@ -335,7 +335,7 @@ namespace StoreManagement.Controllers
         {
             List<PackedItem> packedItems;
             List<Client_PackedItem> client_packedItems = new List<Client_PackedItem>();
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             try
             {
                 packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
@@ -419,7 +419,7 @@ namespace StoreManagement.Controllers
                 int noPackID;
                 if (order.IsOpened)
                 {
-                    PacksController packsController = new PacksController();
+                    PacksDAO packsController = new PacksDAO();
                     Pack pack = null;
                     try
                     {
@@ -441,7 +441,7 @@ namespace StoreManagement.Controllers
                         pack = packsController.CreatePack(packID, orderPK, userID);
 
                         // create pack items
-                        PackedItemsController packedItemsController = new PackedItemsController();
+                        PackedItemsDAO packedItemsController = new PackedItemsDAO();
                         if (!packedItemsController.IsPackedItemCreated(pack.PackPK, list))
                         {
                             if (pack != null)
@@ -482,8 +482,8 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 2)
             {
-                PacksController packsController = new PacksController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                PacksDAO packsController = new PacksDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 try
                 {
                     if (packsController.isIdentifiedOrClassified(packedItem.PackPK))
@@ -529,8 +529,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 2)
             {
                 List<PackedItem> listPackedItem;
-                PacksController packsController = new PacksController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                PacksDAO packsController = new PacksDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 try
                 {
                     Pack pack = db.Packs.Find(packPK);
@@ -579,7 +579,7 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 2)
             {
                 Pack pack = db.Packs.Find(packPK);
-                PacksController packsController = new PacksController();
+                PacksDAO packsController = new PacksDAO();
                 try
                 {
                     if (pack.UserID == userID)
@@ -619,7 +619,7 @@ namespace StoreManagement.Controllers
                 if (pack.UserID == userID)
                 {
                     // Edit
-                    PackedItemsController packedItemsController = new PackedItemsController();
+                    PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     try
                     {
                         packedItemsController.ChangeContract(packedItemPK, contractNumber);
@@ -648,8 +648,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyingSessionByUserID(string userID)
         {
             List<Client_IdentifyingSession> client_IdentifyingSessions = new List<Client_IdentifyingSession>();
-            BoxController boxController = new BoxController();
-            PacksController packsController = new PacksController();
+            BoxDAO boxController = new BoxDAO();
+            PacksDAO packsController = new PacksDAO();
             try
             {
                 List<IdentifyingSession> identifyingSessions = (from ss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
@@ -683,8 +683,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifiedItemByIdentifyingSessionPK(int identifyingSessionPK)
         {
             List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
-            BoxController boxController = new BoxController();
-            PacksController packsController = new PacksController();
+            BoxDAO boxController = new BoxDAO();
+            PacksDAO packsController = new PacksDAO();
             try
             {
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
@@ -721,7 +721,7 @@ namespace StoreManagement.Controllers
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItem> client_IdentifiedItems = new List<Client_IdentifiedItem>();
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
@@ -777,8 +777,8 @@ namespace StoreManagement.Controllers
             // check role of system user
             if (systemUser != null && systemUser.RoleID == 4)
             {
-                IdentifyItemController identifyItemController = new IdentifyItemController();
-                BoxController boxController = new BoxController();
+                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
+                BoxDAO boxController = new BoxDAO();
                 // chạy lệnh identify
                 try
                 {
@@ -848,7 +848,7 @@ namespace StoreManagement.Controllers
             {
                 // edit identification
                 IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
-                IdentifyItemController identifyItemController = new IdentifyItemController();
+                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
                 try
                 {
                     if (identifyingSession.UserID == userID)
@@ -914,8 +914,8 @@ namespace StoreManagement.Controllers
                 // edit identification
                 IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
                 // Delete
-                IdentifyItemController identifyItemController = new IdentifyItemController();
-                BoxController boxController = new BoxController();
+                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
+                BoxDAO boxController = new BoxDAO();
                 try
                 {
                     if (identifyingSession.UserID == userID)
@@ -965,8 +965,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 4)
             {
                 // Arrange
-                IdentifyItemController identifyItemController = new IdentifyItemController();
-                BoxController boxController = new BoxController();
+                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
+                BoxDAO boxController = new BoxDAO();
                 try
                 {
                     // take box by boxID
@@ -1042,7 +1042,7 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetIsBoxStoredOrIdentified(string boxID)
         {
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             bool result = false;
             try
             {
@@ -1063,7 +1063,7 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetIsBoxStored(string boxID)
         {
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             bool result = false;
             try
             {

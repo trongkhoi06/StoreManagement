@@ -9,7 +9,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Controllers
 {
-    public class PacksController
+    public class PacksDAO
     {
         private UserModel db = new UserModel();
 

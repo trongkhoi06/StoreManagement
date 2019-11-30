@@ -13,12 +13,20 @@ namespace StoreManagement.Models
         {
         }
 
+        public Entry(StoredBox storedBox, string kindRoleName, int sessionPK, bool isRestored, double quantity, int itemPK)
+        {
+            StoredBoxPK = storedBox.StoredBoxPK;
+            KindRoleName = kindRoleName;
+            SessionPK = sessionPK;
+            IsRestored = isRestored;
+            Quantity = quantity;
+            ItemPK = itemPK;
+        }
+
         [Key]
         public int EntryPK { get; set; }
 
         public int StoredBoxPK { get; set; }
-
-        public bool isApproved { get; set; }
 
         [Required]
         [StringLength(100)]

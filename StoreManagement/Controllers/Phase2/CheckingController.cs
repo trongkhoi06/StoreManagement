@@ -22,7 +22,7 @@ namespace StoreManagement.Controllers
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItemCounted> client_IdentifiedItems = new List<Client_IdentifiedItemCounted>();
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
@@ -155,8 +155,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
-                CountingItemController countingItemController = new CountingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                CountingItemDAO countingItemController = new CountingItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh counting
                 try
                 {
@@ -220,7 +220,7 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
-                CountingItemController countingItemController = new CountingItemController();
+                CountingItemDAO countingItemController = new CountingItemDAO();
                 try
                 {
                     CountingSession countingSession = db.CountingSessions.Find(countingSessionPK);
@@ -266,7 +266,7 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 4)
             {
                 // khởi tạo
-                CountingItemController countingItemController = new CountingItemController();
+                CountingItemDAO countingItemController = new CountingItemDAO();
                 // chạy lệnh delete counting
                 try
                 {
@@ -313,7 +313,7 @@ namespace StoreManagement.Controllers
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItemChecked> client_IdentifiedItems = new List<Client_IdentifiedItemChecked>();
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
@@ -364,8 +364,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByPK(int identifiedItemPK)
         {
             List<Client_IdentifiedItemCheckedDetail> client_IdentifiedItems = new List<Client_IdentifiedItemCheckedDetail>();
-            BoxController boxController = new BoxController();
-            PackedItemsController packedItemsController = new PackedItemsController();
+            BoxDAO boxController = new BoxDAO();
+            PackedItemsDAO packedItemsController = new PackedItemsDAO();
             try
             {
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
@@ -432,7 +432,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = (from a in db.Accessories
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
-                    PackedItemsController packedItemsController = new PackedItemsController();
+                    PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
                     {
                         client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
@@ -495,8 +495,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                CheckingItemController checkingItemController = new CheckingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                CheckingItemDAO checkingItemController = new CheckingItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh checking
                 try
                 {
@@ -562,8 +562,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                CheckingItemController checkingItemController = new CheckingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                CheckingItemDAO checkingItemController = new CheckingItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh edit checking
                 try
                 {
@@ -617,8 +617,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                CheckingItemController checkingItemController = new CheckingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                CheckingItemDAO checkingItemController = new CheckingItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh edit checking
                 try
                 {
@@ -653,7 +653,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID, string userID)
         {
             List<Client_PackedItemClassified> client_PackedItemClassifieds = new List<Client_PackedItemClassified>();
-            BoxController boxController = new BoxController();
+            BoxDAO boxController = new BoxDAO();
             try
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
@@ -723,8 +723,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetPackedItemByPackedItemPK(int packedItemPK)
         {
             List<Client_PackedItemClassified2> client_PackedItemClassifieds = new List<Client_PackedItemClassified2>();
-            BoxController boxController = new BoxController();
-            PackedItemsController packedItemsController = new PackedItemsController();
+            BoxDAO boxController = new BoxDAO();
+            PackedItemsDAO packedItemsController = new PackedItemsDAO();
             try
             {
                 PackedItem packedItem = db.PackedItems.Find(packedItemPK);
@@ -774,9 +774,9 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                IdentifyItemController identifyItemController = new IdentifyItemController();
-                ClassifyingItemController classifyingItemController = new ClassifyingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
+                ClassifyItemDAO classifyingItemController = new ClassifyItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh classify
                 try
                 {
@@ -803,11 +803,9 @@ namespace StoreManagement.Controllers
                                     // tạo failed or passed item
                                     classifyingItemController.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
                                     // edit
-                                    tempItem.QualityState = qualityState;
 
-                                    tempSS.Comment = comment;
-                                    classifyingItemController.updateClassifiedItem(tempItem);
-                                    classifyingItemController.updateClassifyingSession(tempSS);
+                                    classifyingItemController.updateClassifiedItem(tempItem.ClassifiedItemPK,qualityState);
+                                    classifyingItemController.updateClassifyingSession(tempSS.ClassifyingSessionPK,comment);
                                 }
                                 else
                                 {
@@ -923,7 +921,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetClassifyingSessionsByPK(int classifyingSessionPK)
         {
             List<Client_ClassifyingSessionDetail> client_ClassifyingSessions = new List<Client_ClassifyingSessionDetail>();
-            PackedItemsController packedItemsController = new PackedItemsController();
+            PackedItemsDAO packedItemsController = new PackedItemsDAO();
             try
             {
                 ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
@@ -979,8 +977,8 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                ClassifyingItemController classifyingItemController = new ClassifyingItemController();
-                PackedItemsController packedItemsController = new PackedItemsController();
+                ClassifyItemDAO classifyingItemController = new ClassifyItemDAO();
+                PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh delete classify
                 try
                 {
@@ -1029,7 +1027,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetFailedItem()
         {
             List<Client_FailedItem> client_FailedItems = new List<Client_FailedItem>();
-            PackedItemsController packedItemsController = new PackedItemsController();
+            PackedItemsDAO packedItemsController = new PackedItemsDAO();
             try
             {
 
@@ -1087,7 +1085,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetFailedItemByFailedItemPK(int FailedItemPK)
         {
             List<Client_FailedItemDetail> client_FailedItems = new List<Client_FailedItemDetail>();
-            PackedItemsController packedItemsController = new PackedItemsController();
+            PackedItemsDAO packedItemsController = new PackedItemsDAO();
             try
             {
 
@@ -1166,7 +1164,7 @@ namespace StoreManagement.Controllers
             if (systemUser != null && systemUser.RoleID == 6)
             {
                 // khởi tạo
-                ReturningItemController returningItemController = new ReturningItemController();
+                ReturningItemDAO returningItemController = new ReturningItemDAO();
                 // chạy lệnh classify
                 try
                 {

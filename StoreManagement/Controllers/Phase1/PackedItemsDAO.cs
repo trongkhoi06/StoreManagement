@@ -13,7 +13,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Controllers
 {
-    public class PackedItemsController
+    public class PackedItemsDAO
     {
         private UserModel db = new UserModel();
 
@@ -144,9 +144,15 @@ namespace StoreManagement.Controllers
                     Sample += item.IdentifiedQuantity / 10;
                     DefectLimit += item.IdentifiedQuantity / 10;
                     SumOfIdentifiedQuantity += item.IdentifiedQuantity;
-                    SumOfCountedQuantity += countingSession.CountedQuantity;
-                    SumOfUnqualifiedQuantity += checkingSession.UnqualifiedQuantity;
-                    SumOfCheckedQuantity += checkingSession.CheckedQuantity;
+                    if (countingSession != null)
+                    {
+                        SumOfCountedQuantity += countingSession.CountedQuantity;
+                    }
+                    if (checkingSession != null)
+                    {
+                        SumOfUnqualifiedQuantity += checkingSession.UnqualifiedQuantity;
+                        SumOfCheckedQuantity += checkingSession.CheckedQuantity;
+                    }
                 }
 
             }

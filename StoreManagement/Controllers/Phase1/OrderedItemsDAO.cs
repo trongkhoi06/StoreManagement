@@ -14,7 +14,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Controllers
 {
-    public class OrderedItemsController
+    public class OrderedItemsDAO
     {
         private UserModel db = new UserModel();
         

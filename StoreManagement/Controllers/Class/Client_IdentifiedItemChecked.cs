@@ -20,7 +20,7 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public double IdentifiedQuantitty { get; set; }
+        public double IdentifiedQuantity { get; set; }
 
         public string PackID { get; set; }
 
@@ -38,7 +38,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
-            IdentifiedQuantitty = identifiedItem.IdentifiedQuantity;
+            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
             PackID = pack.PackID;
             IsChecked = identifiedItem.IsChecked;
             IsOpened = pack.IsOpened;

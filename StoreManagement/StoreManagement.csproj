@@ -112,6 +112,9 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_ItemPK_TransferQuantity_IsRestored.cs" />
+    <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />
+    <Compile Include="Controllers\Class\Client_InBoxItem.cs" />
     <Compile Include="Controllers\Class\Client_FailedItemDetail.cs" />
     <Compile Include="Controllers\Class\Client_FailedItem.cs" />
     <Compile Include="Controllers\Class\Client_ClassifyingSessionDetail.cs" />
@@ -119,6 +122,7 @@
     <Compile Include="Controllers\Class\Client_CheckingSession.cs" />
     <Compile Include="Controllers\Class\Client_CheckingSessionDetail.cs" />
     <Compile Include="Controllers\Class\Client_CountingSessionDetail.cs" />
+    <Compile Include="Controllers\Class\Client_IdentifiedItemStored.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemChecked.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemCounted.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemCheckedDetail.cs" />
@@ -136,6 +140,7 @@
     <Compile Include="Controllers\Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemPK_IdentifiedQuantity.cs" />
     <Compile Include="Controllers\Class\Content_CatchInnerException.cs" />
+    <Compile Include="Controllers\Class\Client_Shelf.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />
     <Compile Include="Controllers\Other\BoxDAO.cs" />
     <Compile Include="Controllers\Phase1\IdentifyItemDAO.cs" />
@@ -151,6 +156,7 @@
     <Compile Include="Controllers\Phase2\ClassifyItemDAO.cs" />
     <Compile Include="Controllers\Phase2\CheckingItemDAO.cs" />
     <Compile Include="Controllers\Phase2\CountingItemDAO.cs" />
+    <Compile Include="Controllers\Phase3\StoringDAO.cs" />
     <Compile Include="Controllers\Phase3\StoringController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

@@ -13,6 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public TransferringSession(int startBoxPK, int destinationBoxPK, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            StartBoxPK = startBoxPK;
+            DestinationBoxPK = destinationBoxPK;
+            UserID = userID;
+        }
+
         [Key]
         public int TransferingSessionPK { get; set; }
 

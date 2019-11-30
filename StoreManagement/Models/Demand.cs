@@ -32,5 +32,11 @@ namespace StoreManagement.Models
 
         [Required]
         public string ReceiveDivision { get; set; }
+
+        public bool IsOpened { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string UserID { get; set; }
     }
 }

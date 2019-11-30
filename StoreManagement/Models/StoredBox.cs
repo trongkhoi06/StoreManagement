@@ -13,6 +13,12 @@ namespace StoreManagement.Models
         {
         }
 
+        public StoredBox(int boxPK, int shelfPK)
+        {
+            BoxPK = boxPK;
+            ShelfPK = shelfPK;
+        }
+
         [Key]
         public int StoredBoxPK { get; set; }
 

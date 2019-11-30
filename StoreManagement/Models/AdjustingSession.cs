@@ -13,6 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public AdjustingSession(string comment, bool isVerified, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            Comment = comment;
+            IsVerified = isVerified;
+            UserID = userID;
+        }
+
         [Key]
         public int AdjustingSessionPK { get; set; }
 

@@ -18,7 +18,7 @@ namespace StoreManagement.Models
 
         [Required]
         [StringLength(50)]
-        public string ShelfName { get; set; }
+        public string ShelfID { get; set; }
 
         public int? RowPK { get; set; }
     }

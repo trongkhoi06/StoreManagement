@@ -9,7 +9,7 @@ using System.Web.Http;
 
 namespace StoreManagement.Controllers
 {
-    public class ClassifyingItemController
+    public class ClassifyItemDAO
     {
         private UserModel db = new UserModel();
 
@@ -26,10 +26,12 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateClassifyingSession(ClassifyingSession classifyingSession)
+        public void updateClassifyingSession(int classifyingSessionPK,string comment)
         {
             try
             {
+                ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
+                classifyingSession.Comment = comment;
                 db.Entry(classifyingSession).State = EntityState.Modified;
                 db.SaveChanges();
             }
@@ -68,10 +70,12 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateClassifiedItem(ClassifiedItem classifiedItem)
+        public void updateClassifiedItem(int classifiedItemPK,int qualityState)
         {
             try
             {
+                ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifiedItemPK);
+                classifiedItem.QualityState = qualityState;
                 db.Entry(classifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }

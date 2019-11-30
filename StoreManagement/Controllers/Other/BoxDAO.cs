@@ -9,7 +9,7 @@ using System.Web.Http;
 
 namespace StoreManagement.Controllers
 {
-    public class BoxController
+    public class BoxDAO
     {
         private UserModel db = new UserModel();
 
@@ -58,6 +58,20 @@ namespace StoreManagement.Controllers
             return (from uB in db.UnstoredBoxes
                     where uB.BoxPK == boxPK
                     select uB).FirstOrDefault();
+        }
+
+        public StoredBox GetStoredBoxbyBoxPK(int boxPK)
+        {
+            return (from sB in db.StoredBoxes
+                    where sB.BoxPK == boxPK
+                    select sB).FirstOrDefault();
+        }
+
+        public Shelf GetShelfByShelfID(string shelfID)
+        {
+            return (from sh in db.Shelves
+                    where sh.ShelfID == shelfID
+                    select sh).FirstOrDefault();
         }
     }
 }
