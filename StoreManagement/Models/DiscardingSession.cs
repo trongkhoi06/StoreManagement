@@ -13,6 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public DiscardingSession(string comment, bool isVerified, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            Comment = comment;
+            IsVerified = isVerified;
+            UserID = userID;
+        }
+
         [Key]
         public int DiscardingSessionPK { get; set; }
 

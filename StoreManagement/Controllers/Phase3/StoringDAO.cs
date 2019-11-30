@@ -69,7 +69,7 @@ namespace StoreManagement.Controllers
                                                  select pI).FirstOrDefault();
                         if (passedItem != null)
                         {
-                            updatePassedItem(passedItem.PassedItemPK);
+                            UpdatePassedItem(passedItem.PassedItemPK);
                             // tạo entry
                             Entry entry = new Entry(storedBox, "Storing", storingSession.StoringSessionPK, false,
                                 identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), passedItem.PassedItemPK);
@@ -93,7 +93,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        private void updatePassedItem(int passedItemPK)
+        private void UpdatePassedItem(int passedItemPK)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void deleteStoredBox(int storedBoxPK)
+        public void DeleteStoredBox(int storedBoxPK)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void deleteStoringSession(int storingSessionPK)
+        public void DeleteStoringSession(int storingSessionPK)
         {
             try
             {
@@ -319,7 +319,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void createAdjustEntry(StoredBox sBox, int itemPK, double adjustedQuantity, bool isRestored, bool isMinus,AdjustingSession adjustingSession)
+        public void CreateAdjustEntry(StoredBox sBox, int itemPK, double adjustedQuantity, bool isRestored, bool isMinus, AdjustingSession adjustingSession)
         {
             try
             {
@@ -354,6 +354,107 @@ namespace StoreManagement.Controllers
                 throw e;
             }
         }
+
+        public void UpdateAdjustingSession(int adjustingSessionPK, bool isVerified)
+        {
+            try
+            {
+                AdjustingSession adjustingSession = db.AdjustingSessions.Find(adjustingSessionPK);
+                adjustingSession.IsVerified = isVerified;
+                db.Entry(adjustingSession).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Verification CreateVerification(int sessionPK, string userID, bool isApproved, bool isDiscard)
+        {
+            try
+            {
+                Verification verification = new Verification(isApproved, userID, isDiscard, sessionPK);
+                db.Verifications.Add(verification);
+                db.SaveChanges();
+                verification = (from ver in db.Verifications.OrderByDescending(unit => unit.VerificationPK)
+                                select ver).FirstOrDefault();
+                return verification;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public DiscardingSession CreateDiscardingSession(string comment, bool isVerified, string userID)
+        {
+            try
+            {
+                DiscardingSession discardingSession = new DiscardingSession(comment, isVerified, userID);
+                db.DiscardingSessions.Add(discardingSession);
+                db.SaveChanges();
+                discardingSession = (from Ass in db.DiscardingSessions.OrderByDescending(unit => unit.DiscardingSessionPK)
+                                     select Ass).FirstOrDefault();
+                return discardingSession;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateDiscardEntry(StoredBox sBox, int itemPK, double discardedQuantity, bool isRestored, bool isMinus, DiscardingSession discardingSession)
+        {
+            try
+            {
+                Entry entry;
+                if (isMinus)
+                {
+                    entry = new Entry(sBox, "DiscardingMinus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK);
+                }
+                else
+                {
+                    entry = new Entry(sBox, "DiscardingPlus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK);
+                }
+                db.Entries.Add(entry);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteDiscardingSession(int discardingSessionPK)
+        {
+            try
+            {
+                DiscardingSession discardingSession = db.DiscardingSessions.Find(discardingSessionPK);
+                db.DiscardingSessions.Remove(discardingSession);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateDiscardingSession(int discardingSessionPK, bool isVerified)
+        {
+            try
+            {
+                DiscardingSession discardingSession = db.DiscardingSessions.Find(discardingSessionPK);
+                discardingSession.IsVerified = isVerified;
+                db.Entry(discardingSession).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
     }
 }
 

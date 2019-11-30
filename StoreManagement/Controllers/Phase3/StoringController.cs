@@ -141,9 +141,9 @@ namespace StoreManagement.Controllers
                 catch (Exception e)
                 {
                     if (storedBox != null)
-                        storingItemDAO.deleteStoredBox(storedBox.StoredBoxPK);
+                        storingItemDAO.DeleteStoredBox(storedBox.StoredBoxPK);
                     if (storingSession != null)
-                        storingItemDAO.deleteStoringSession(storingSession.StoringSessionPK);
+                        storingItemDAO.DeleteStoringSession(storingSession.StoringSessionPK);
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
@@ -374,11 +374,11 @@ namespace StoreManagement.Controllers
                         adjustingSession = storingDAO.CreateAdjustingSession(comment, false, userID);
                         if (adjustedQuantity > storingDAO.InBoxQuantity(entries))
                         {
-                            storingDAO.createAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, false, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, false, adjustingSession);
                         }
                         if (adjustedQuantity < storingDAO.InBoxQuantity(entries))
                         {
-                            storingDAO.createAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, true, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, true, adjustingSession);
                         }
                         else
                         {
@@ -398,7 +398,141 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "ADJUST KHO THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/StoringController/VerifyAdjusting")]
+        [HttpPost]
+        public IHttpActionResult VerifyAdjusting(int adjustingSessionPK, string userID, bool isApproved)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 2)
+            {
+                StoringDAO storingDAO = new StoringDAO();
+                Verification verification = null;
+                AdjustingSession adjustingSession = null;
+                try
+                {
+                    adjustingSession = db.AdjustingSessions.Find(adjustingSessionPK);
+                    if (adjustingSession != null && adjustingSession.IsVerified == false)
+                    {
+                        storingDAO.UpdateAdjustingSession(adjustingSession.AdjustingSessionPK, true);
+                        verification = storingDAO.CreateVerification(adjustingSession.AdjustingSessionPK, userID, isApproved,false);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "AdjustingSession SAI!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (adjustingSession != null)
+                        storingDAO.UpdateAdjustingSession(adjustingSession.AdjustingSessionPK, false);
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "VERIFY ADJUSTING THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/StoringController/DiscardInventory")]
+        [HttpPost]
+        public IHttpActionResult DiscardInventory(string boxID, int itemPK, double discardedQuantity, bool isRestored, string userID, string comment)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 4)
+            {
+                BoxDAO boxDAO = new BoxDAO();
+                StoringDAO storingDAO = new StoringDAO();
+                DiscardingSession discardingSession = null;
+                try
+                {
+                    Box box = boxDAO.GetBoxByBoxID(boxID);
+                    StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+                    if (sBox != null)
+                    {
+                        List<Entry> entries = (from e in db.Entries
+                                               where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
+                                               select e).ToList();
+                        discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
+                        if (discardedQuantity > storingDAO.InBoxQuantity(entries))
+                        {
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, false, discardingSession);
+                        }
+                        if (discardedQuantity < storingDAO.InBoxQuantity(entries))
+                        {
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, true, discardingSession);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
+                        }
+                    }
+                    else
+                    {
+                        if (discardingSession != null)
+                        {
+                            storingDAO.DeleteDiscardingSession(discardingSession.DiscardingSessionPK);
+                        }
+                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/StoringController/VerifyDiscarding")]
+        [HttpPost]
+        public IHttpActionResult VerifyDiscarding(int discardingSessionPK, string userID, bool isApproved)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 2)
+            {
+                StoringDAO storingDAO = new StoringDAO();
+                Verification verification = null;
+                DiscardingSession discardingSession = null;
+                try
+                {
+                    discardingSession = db.DiscardingSessions.Find(discardingSessionPK);
+                    if (discardingSession != null && discardingSession.IsVerified == false)
+                    {
+                        storingDAO.UpdateDiscardingSession(discardingSession.DiscardingSessionPK, true);
+                        verification = storingDAO.CreateVerification(discardingSession.DiscardingSessionPK, userID, isApproved,true);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "DiscardingSession SAI!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (discardingSession != null)
+                        storingDAO.UpdateDiscardingSession(discardingSession.DiscardingSessionPK, false);
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "VERIFY ADJUSTING THÀNH CÔNG!");
             }
             else
             {

@@ -13,6 +13,15 @@ namespace StoreManagement.Models
         {
         }
 
+        public Verification(bool isApproved, string userID, bool isDiscard, int sessionPK)
+        {
+            ExecutedDate = DateTime.Now;
+            IsApproved = isApproved;
+            UserID = userID;
+            IsDiscard = isDiscard;
+            SessionPK = sessionPK;
+        }
+
         [Key]
         public int VerificationPK { get; set; }
 
