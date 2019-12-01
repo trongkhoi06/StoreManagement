@@ -63,5 +63,73 @@ namespace StoreManagement.Controllers
             }
             return Content(HttpStatusCode.OK, client_Demands);
         }
+
+        [Route("api/IssuingController/CreateRequest")]
+        [HttpPost]
+        public IHttpActionResult CreateRequest(int demandPK, DateTime expectedDate, string comment, string userID, [FromBody] List<Client_DemandedItemPK_RequestedQuantity> list)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 7)
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    foreach (var item in list)
+                    {
+                        DemandedItem demandedItem = db.DemandedItems.Find(item.DemandedItemPK);
+                        Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                        List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                              where rI.DemandedItemPK == demandedItem.DemandedItemPK
+                                                              select rI).ToList();
+                        if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                                                        - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        {
+                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        }
+                        if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems)) 
+                        {
+                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        }
+                    }
+                    if (expectedDate.Date < DateTime.Now)
+                    {
+                        return Content(HttpStatusCode.Conflict, "NGÀY DỰ KIẾN KHÔNG HỢP LỆ!");
+                    }
+
+                    // init requestid
+                    int noRequestID;
+                    Demand demand = db.Demands.Find(demandPK);
+                    Request lastRequest = (from p in db.Requests.OrderByDescending(unit => unit.RequestPK)
+                                           where p.RequestID.Contains(demand.DemandID)
+                                           select p).FirstOrDefault();
+                    if (lastRequest == null)
+                    {
+                        noRequestID = 1;
+                    }
+                    else
+                    {
+                        noRequestID = Int32.Parse(lastRequest.RequestID.Substring(lastRequest.RequestID.Length - 2)) + 1;
+                    }
+                    string requestID = (noRequestID >= 10) ? (demand.DemandID + "#" + noRequestID) : (demand.DemandID + "#" + "0" + noRequestID);
+
+                    // create request
+                    Request request = issuingDAO.CreateRequest(requestID, expectedDate, false, false, comment, demandPK);
+
+                    // create requestedItems
+                    issuingDAO.createRequestedItems(list, request.RequestPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
     }
 }

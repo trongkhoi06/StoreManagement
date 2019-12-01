@@ -13,6 +13,17 @@ namespace StoreManagement.Models
         {
         }
 
+        public Request(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK)
+        {
+            RequestID = requestID;
+            DateCreated = DateTime.Now;
+            ExpectedDate = expectedDate;
+            IsIssued = isIssued;
+            IsConfirmed = isConfirmed;
+            Comment = comment;
+            DemandPK = demandPK;
+        }
+
         [Key]
         public int RequestPK { get; set; }
 
@@ -22,6 +33,7 @@ namespace StoreManagement.Models
 
         public DateTime DateCreated { get; set; }
 
+        [Column(TypeName = "date")]
         public DateTime ExpectedDate { get; set; }
 
         public bool IsIssued { get; set; }

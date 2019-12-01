@@ -121,6 +121,41 @@ namespace StoreManagement.Controllers
             }
             return result;
         }
+
+        public void createRequestedItems(List<Client_DemandedItemPK_RequestedQuantity> list, int requestPK)
+        {
+            try
+            {
+                foreach (var item in list)
+                {
+                    RequestedItem requestedItem = new RequestedItem(item.RequestedQuantity,requestPK,item.DemandedItemPK);
+                    db.RequestedItems.Add(requestedItem);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Request CreateRequest(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK)
+        {
+            try
+            {
+                Request request = new Request(requestID, expectedDate, isIssued, isConfirmed, comment, demandPK);
+                db.Requests.Add(request);
+                db.SaveChanges();
+                request = (from rq in db.Requests.OrderByDescending(unit => unit.RequestPK)
+                           select rq).FirstOrDefault();
+                return request;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
     }
 }
 

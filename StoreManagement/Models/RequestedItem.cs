@@ -13,6 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
+        public RequestedItem(double requestedQuantity, int requestPK, int demandedItemPK)
+        {
+            RequestedQuantity = requestedQuantity;
+            RequestPK = requestPK;
+            DemandedItemPK = demandedItemPK;
+        }
+
         [Key]
         public int RequestedItemPK { get; set; }
 

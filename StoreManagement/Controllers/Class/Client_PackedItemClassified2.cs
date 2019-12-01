@@ -32,7 +32,7 @@ namespace StoreManagement.Class
 
         public int PackedItemPK { get; set; }
 
-        public int QualityState { get; set; }
+        public int? QualityState { get; set; }
 
         public string AccessoryID { get; set; }
 
