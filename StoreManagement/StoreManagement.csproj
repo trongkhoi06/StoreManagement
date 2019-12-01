@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_IdentifiedItemArranged.cs" />
     <Compile Include="Controllers\Class\Client_ItemPK_TransferQuantity_IsRestored.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItem.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="Controllers\Class\Client_IdentifyingSession.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItem.cs" />
     <Compile Include="Controllers\Class\Client_CountingSession.cs" />
+    <Compile Include="Controllers\Class\Client_Demand.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemClassified2.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemClassified.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemAngular.cs" />
@@ -143,21 +145,23 @@
     <Compile Include="Controllers\Class\Client_Shelf.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />
     <Compile Include="Controllers\Other\BoxDAO.cs" />
-    <Compile Include="Controllers\Phase1\IdentifyItemDAO.cs" />
-    <Compile Include="Controllers\Phase2\CheckingController.cs" />
+    <Compile Include="Controllers\Phrase1\IdentifyItemDAO.cs" />
+    <Compile Include="Controllers\Phrase2\CheckingController.cs" />
     <Compile Include="Controllers\Other\LoginController.cs" />
-    <Compile Include="Controllers\Phase1\OrderedItemsDAO.cs" />
-    <Compile Include="Controllers\Phase1\OrdersDAO.cs" />
-    <Compile Include="Controllers\Phase1\PackedItemsDAO.cs" />
-    <Compile Include="Controllers\Phase1\PacksDAO.cs" />
-    <Compile Include="Controllers\Phase1\ReceivingController.cs" />
+    <Compile Include="Controllers\Phrase1\OrderedItemsDAO.cs" />
+    <Compile Include="Controllers\Phrase1\OrdersDAO.cs" />
+    <Compile Include="Controllers\Phrase1\PackedItemsDAO.cs" />
+    <Compile Include="Controllers\Phrase1\PacksDAO.cs" />
+    <Compile Include="Controllers\Phrase1\ReceivingController.cs" />
     <Compile Include="Controllers\Other\SystemUsersController.cs" />
-    <Compile Include="Controllers\Phase2\ReturningItemDAO.cs" />
-    <Compile Include="Controllers\Phase2\ClassifyItemDAO.cs" />
-    <Compile Include="Controllers\Phase2\CheckingItemDAO.cs" />
-    <Compile Include="Controllers\Phase2\CountingItemDAO.cs" />
-    <Compile Include="Controllers\Phase3\StoringDAO.cs" />
-    <Compile Include="Controllers\Phase3\StoringController.cs" />
+    <Compile Include="Controllers\Phrase2\ReturningItemDAO.cs" />
+    <Compile Include="Controllers\Phrase2\ClassifyItemDAO.cs" />
+    <Compile Include="Controllers\Phrase2\CheckingItemDAO.cs" />
+    <Compile Include="Controllers\Phrase2\CountingItemDAO.cs" />
+    <Compile Include="Controllers\Phrase3\StoringDAO.cs" />
+    <Compile Include="Controllers\Phrase3\StoringController.cs" />
+    <Compile Include="Controllers\Phrase4\IssuingController.cs" />
+    <Compile Include="Controllers\Phrase4\IssuingDAO.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

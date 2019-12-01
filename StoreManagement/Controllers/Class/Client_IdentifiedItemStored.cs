@@ -6,7 +6,7 @@ using StoreManagement.Models;
 
 namespace StoreManagement.Class
 {
-    public class Client_IdentifiedItem
+    public class Client_IdentifiedItemStored
     {
         public int IdentifiedItemPK { get; set; }
 
@@ -20,11 +20,11 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public double IdentifiedQuantity { get; set; }
+        public double ActualQuantity { get; set; }
 
         public string PackID { get; set; }
 
-        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory, string packID)
+        public Client_IdentifiedItemStored(IdentifiedItem identifiedItem, Accessory accessory, Pack pack, double actualQuantity)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -32,19 +32,10 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
-            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
-            PackID = packID;
+            ActualQuantity = actualQuantity;
+            PackID = pack.PackID;
         }
 
-        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory)
-        {
-            IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
-            AccessoryID = accessory.AccessoryID;
-            AccessoryDescription = accessory.AccessoryDescription;
-            Art = accessory.Art;
-            Color = accessory.Color;
-            Item = accessory.Item;
-            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
-        }
+        
     }
 }

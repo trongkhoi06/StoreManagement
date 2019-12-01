@@ -16,7 +16,9 @@ namespace StoreManagement.Models
         [Key]
         public int ConceptionPK { get; set; }
 
-        public int ConceptionCode { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string ConceptionCode { get; set; }
 
         public string Description { get; set; }
 

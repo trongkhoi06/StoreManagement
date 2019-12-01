@@ -163,10 +163,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/28/2019 10:51:11</publishTime>
     </File>
     <File Include="bin/StoreManagement.dll">
-      <publishTime>12/01/2019 01:00:25</publishTime>
+      <publishTime>12/01/2019 09:12:59</publishTime>
     </File>
     <File Include="bin/StoreManagement.pdb">
-      <publishTime>12/01/2019 01:00:25</publishTime>
+      <publishTime>12/01/2019 09:12:59</publishTime>
     </File>
     <File Include="bin/Swashbuckle.Core.dll">
       <publishTime>11/28/2019 10:51:12</publishTime>
