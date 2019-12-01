@@ -487,7 +487,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/CheckItemBusiness")]
         [HttpPost]
-        public IHttpActionResult CheckItemBusiness(int identifiedItemPK, double checkedQuantity, double unqualifiedQuantity, string userID)
+        public IHttpActionResult CheckItemBusiness(int identifiedItemPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -515,7 +515,7 @@ namespace StoreManagement.Controllers
                                 if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
                                 {
                                     // tạo session update và ischecked
-                                    checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID));
+                                    checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID, comment));
                                     checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
                                 }
                                 else
@@ -554,7 +554,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditCheckItemBusiness")]
         [HttpPut]
-        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string userID)
+        public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
@@ -578,7 +578,7 @@ namespace StoreManagement.Controllers
                                 if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
                                 {
                                     // update session check
-                                    checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity);
+                                    checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity, comment);
                                 }
                                 else
                                 {

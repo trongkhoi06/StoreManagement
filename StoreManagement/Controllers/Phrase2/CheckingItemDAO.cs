@@ -40,7 +40,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateCheckingSession(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity)
+        public void updateCheckingSession(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string comment)
         {
             try
             {
@@ -48,6 +48,7 @@ namespace StoreManagement.Controllers
                 checkingSession.CheckedQuantity = checkedQuantity;
                 checkingSession.UnqualifiedQuantity = unqualifiedQuantity;
                 checkingSession.ExecutedDate = DateTime.Now;
+                checkingSession.Comment = comment;
                 db.Entry(checkingSession).State = EntityState.Modified;
                 db.SaveChanges();
             }

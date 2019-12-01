@@ -59,6 +59,10 @@ namespace StoreManagement.Controllers
                 foreach (var identifiedItem in identifiedItems)
                 {
                     PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                    // lấy accessory
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    //
                     ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
                                                      where cI.PackedItemPK == packedItem.PackedItemPK
                                                      select cI).FirstOrDefault();
@@ -72,7 +76,7 @@ namespace StoreManagement.Controllers
                             UpdatePassedItem(passedItem.PassedItemPK);
                             // tạo entry
                             Entry entry = new Entry(storedBox, "Storing", storingSession.StoringSessionPK, false,
-                                identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), passedItem.PassedItemPK);
+                                identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), passedItem.PassedItemPK, accessory);
                             db.Entries.Add(entry);
                         }
                         else
@@ -135,8 +139,8 @@ namespace StoreManagement.Controllers
                 throw e;
             }
         }
-        // list entries nào cũng đc
-        public double InBoxQuantity(List<Entry> entries)
+
+        public double EntriesQuantity(List<Entry> entries)
         {
             double result = 0;
             foreach (var entry in entries)
@@ -198,6 +202,11 @@ namespace StoreManagement.Controllers
             return result;
         }
 
+        public double InBoxQuantity(List<Entry> entries)
+        {
+            return EntriesQuantity(entries);
+        }
+
         public TransferringSession CreateTransferingSession(string boxFromID, string boxToID, string userID)
         {
             TransferringSession result;
@@ -224,13 +233,27 @@ namespace StoreManagement.Controllers
             {
                 foreach (var item in list)
                 {
+                    Accessory accessory;
+                    if (item.IsRestored)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(item.ItemPK);
+                        accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                    }
+                    else
+                    {
+                        PassedItem passedItem = db.PassedItems.Find(item.ItemPK);
+                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                        accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    }
                     // Tạo out entry
                     Entry entry = new Entry(sBoxFrom, "Out", transferringSession.TransferingSessionPK,
-                    item.IsRestored, item.TransferQuantity, item.ItemPK);
+                    item.IsRestored, item.TransferQuantity, item.ItemPK, accessory);
                     db.Entries.Add(entry);
                     // Tạo in entry
                     entry = new Entry(sBoxTo, "In", transferringSession.TransferingSessionPK,
-                    item.IsRestored, item.TransferQuantity, item.ItemPK);
+                    item.IsRestored, item.TransferQuantity, item.ItemPK, accessory);
                     db.Entries.Add(entry);
                 }
                 db.SaveChanges();
@@ -324,13 +347,27 @@ namespace StoreManagement.Controllers
             try
             {
                 Entry entry;
-                if (isMinus)
+                Accessory accessory;
+                if (isRestored)
                 {
-                    entry = new Entry(sBox, "AdjustingMinus", adjustingSession.AdjustingSessionPK, isRestored, adjustedQuantity, itemPK);
+                    RestoredItem restoredItem = db.RestoredItems.Find(itemPK);
+                    accessory = db.Accessories.Find(restoredItem.AccessoryPK);
                 }
                 else
                 {
-                    entry = new Entry(sBox, "AdjustingPlus", adjustingSession.AdjustingSessionPK, isRestored, adjustedQuantity, itemPK);
+                    PassedItem passedItem = db.PassedItems.Find(itemPK);
+                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                }
+                if (isMinus)
+                {
+                    entry = new Entry(sBox, "AdjustingMinus", adjustingSession.AdjustingSessionPK, isRestored, adjustedQuantity, itemPK, accessory);
+                }
+                else
+                {
+                    entry = new Entry(sBox, "AdjustingPlus", adjustingSession.AdjustingSessionPK, isRestored, adjustedQuantity, itemPK, accessory);
                 }
                 db.Entries.Add(entry);
                 db.SaveChanges();
@@ -409,13 +446,27 @@ namespace StoreManagement.Controllers
             try
             {
                 Entry entry;
-                if (isMinus)
+                Accessory accessory;
+                if (isRestored)
                 {
-                    entry = new Entry(sBox, "DiscardingMinus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK);
+                    RestoredItem restoredItem = db.RestoredItems.Find(itemPK);
+                    accessory = db.Accessories.Find(restoredItem.AccessoryPK);
                 }
                 else
                 {
-                    entry = new Entry(sBox, "DiscardingPlus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK);
+                    PassedItem passedItem = db.PassedItems.Find(itemPK);
+                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                }
+                if (isMinus)
+                {
+                    entry = new Entry(sBox, "DiscardingMinus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
+                }
+                else
+                {
+                    entry = new Entry(sBox, "DiscardingPlus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
                 }
                 db.Entries.Add(entry);
                 db.SaveChanges();

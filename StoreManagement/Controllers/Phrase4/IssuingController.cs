@@ -37,12 +37,25 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetDemandAndDemandedItemsByDemandPK(int demandPK)
         {
-            List<Client_Demand> client_Demands = new List<Client_Demand>();
+            List<Client_DemandDetail> client_Demands = new List<Client_DemandDetail>();
             IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 Demand demand = db.Demands.Find(demandPK);
-
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                                                    where dI.DemandPK == demandPK
+                                                    select dI).ToList();
+                foreach (var demandedItem in demandedItems)
+                {
+                    Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                          where rI.DemandedItemPK == demandedItem.DemandedItemPK
+                                                          select rI).ToList();
+                    client_Demands.Add(new Client_DemandDetail(demandedItem, accessory,
+                        issuingDAO.TotalRequestedQuantity(requestedItems),
+                        issuingDAO.TotalRequestedQuantityConfirmed(requestedItems),
+                        issuingDAO.InStoredQuantity(accessory.AccessoryPK) - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)));
+                }
             }
             catch (Exception e)
             {

@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_DemandDetail.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemArranged.cs" />
     <Compile Include="Controllers\Class\Client_ItemPK_TransferQuantity_IsRestored.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />

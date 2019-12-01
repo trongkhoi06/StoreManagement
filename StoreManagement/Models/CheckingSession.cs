@@ -13,13 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
-        public CheckingSession(double checkedQuantity, double unqualifiedQuantity, int identifiedItemPK, string userID)
+        public CheckingSession(double checkedQuantity, double unqualifiedQuantity, int identifiedItemPK, string userID, string comment)
         {
             CheckedQuantity = checkedQuantity;
             UnqualifiedQuantity = unqualifiedQuantity;
             ExecutedDate = DateTime.Now;
             IdentifiedItemPK = identifiedItemPK;
             UserID = userID;
+            Comment = comment;
         }
 
         [Key]

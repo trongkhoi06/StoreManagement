@@ -240,7 +240,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/StoringController/TransferStoredItems")]
         [HttpPost]
-        public IHttpActionResult TransferStoredItems(string boxFromID, string boxToID, string userID, List<Client_ItemPK_TransferQuantity_IsRestored> list)
+        public IHttpActionResult TransferStoredItems(string boxFromID, string boxToID, string userID, [FromBody] List<Client_ItemPK_TransferQuantity_IsRestored> list)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);

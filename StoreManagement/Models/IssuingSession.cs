@@ -22,6 +22,8 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string UserID { get; set; }
 
-        public int? RequestPK { get; set; }
+        public int RequestPK { get; set; }
+
+        public string DeactivatedBoxes { get; set; }
     }
 }
