@@ -140,6 +140,65 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public double EntryQuantity(Entry entry)
+        {
+            double result = 0;
+            AdjustingSession adjustingSession;
+            Verification verification;
+            KindRole kindRole = db.KindRoles.Find(entry.KindRoleName);
+            switch (entry.KindRoleName)
+            {
+                case "Discarding":
+                    DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                    verification = (from ver in db.Verifications
+                                    where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
+                                    select ver).FirstOrDefault();
+                    if (!(discardingSession.IsVerified && !verification.IsApproved))
+                    {
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    }
+                    break;
+                case "AdjustingMinus":
+                    adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                    verification = (from ver in db.Verifications
+                                    where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
+                                    select ver).FirstOrDefault();
+                    if (!(adjustingSession.IsVerified && !verification.IsApproved))
+                    {
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    }
+                    break;
+                case "AdjustingPlus":
+                    adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                    verification = (from ver in db.Verifications
+                                    where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
+                                    select ver).FirstOrDefault();
+                    if (adjustingSession.IsVerified && verification.IsApproved)
+                    {
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    }
+                    break;
+                case "In":
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    break;
+                case "Issuing":
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    break;
+                case "Out":
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    break;
+                case "Receiving":
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    break;
+                case "Storing":
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+
         public double EntriesQuantity(List<Entry> entries)
         {
             double result = 0;

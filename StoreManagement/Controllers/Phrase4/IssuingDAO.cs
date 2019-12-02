@@ -122,13 +122,13 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public void createRequestedItems(List<Client_DemandedItemPK_RequestedQuantity> list, int requestPK)
+        public void CreateRequestedItems(List<Client_DemandedItemPK_RequestedQuantity> list, int requestPK)
         {
             try
             {
                 foreach (var item in list)
                 {
-                    RequestedItem requestedItem = new RequestedItem(item.RequestedQuantity,requestPK,item.DemandedItemPK);
+                    RequestedItem requestedItem = new RequestedItem(item.RequestedQuantity, requestPK, item.DemandedItemPK);
                     db.RequestedItems.Add(requestedItem);
                 }
                 db.SaveChanges();
@@ -139,11 +139,11 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Request CreateRequest(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK)
+        public Request CreateRequest(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK, string userID)
         {
             try
             {
-                Request request = new Request(requestID, expectedDate, isIssued, isConfirmed, comment, demandPK);
+                Request request = new Request(requestID, expectedDate, isIssued, isConfirmed, comment, demandPK, userID);
                 db.Requests.Add(request);
                 db.SaveChanges();
                 request = (from rq in db.Requests.OrderByDescending(unit => unit.RequestPK)
@@ -155,6 +155,144 @@ namespace StoreManagement.Controllers
 
                 throw e;
             }
+        }
+
+        public void UpdateRequest(int requestPK, string comment, DateTime expectedDate)
+        {
+            try
+            {
+                Request request = db.Requests.Find(requestPK);
+                request.DateCreated = DateTime.Now;
+                request.Comment = comment;
+                request.ExpectedDate = expectedDate;
+                db.Entry(request).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateRequestedItems(List<Client_RequestedItemPK_RequestedQuantity> list, int requestPK)
+        {
+            try
+            {
+                foreach (var item in list)
+                {
+                    RequestedItem requestedItem = db.RequestedItems.Find(item.RequestedItemPK);
+                    requestedItem.RequestedQuantity = item.RequestedQuantity;
+                    db.Entry(requestedItem).State = EntityState.Modified;
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteRequestedItems(int requestPK)
+        {
+            try
+            {
+                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                      where rI.RequestPK == requestPK
+                                                      select rI).ToList();
+                foreach (var requestedItem in requestedItems)
+                {
+                    db.RequestedItems.Remove(requestedItem);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteRequest(int requestPK)
+        {
+            try
+            {
+                Request request = db.Requests.Find(requestPK);
+                db.Requests.Remove(request);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public double OtherRequestedItem(int demandedItemPK, int requestedItemPK)
+        {
+            double result = 0;
+            try
+            {
+                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                      where rI.DemandedItemPK == demandedItemPK && rI.RequestedItemPK != requestedItemPK
+                                                      select rI).ToList();
+                foreach (var requestedItem in requestedItems)
+                {
+                    result += requestedItem.RequestedQuantity;
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
+        }
+
+        public List<Client_Box_Shelf_Row> StoredBoxesOfEntries(Accessory accessory)
+        {
+            List<Client_Box_Shelf_Row> result = new List<Client_Box_Shelf_Row>();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                // cực phẩm IQ
+                double inStoredQuantity = InStoredQuantity(accessory.AccessoryPK);
+                if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
+                List<Entry> entries = (from e in db.Entries
+                                       where e.AccessoryPK == accessory.AccessoryPK
+                                       select e).ToList();
+                HashSet<StoredBox> tempSBox = new HashSet<StoredBox>();
+                Dictionary<StoredBox, double> tempDictionary = new Dictionary<StoredBox, double>();
+                foreach (var entry in entries)
+                {
+                    StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                    Box box = db.Boxes.Find(storedBox.BoxPK);
+                    if (box.IsActive)
+                    {
+                        tempSBox.Add(storedBox);
+                        if (!tempDictionary.ContainsKey(storedBox))
+                        {
+                            tempDictionary.Add(storedBox, storingDAO.EntryQuantity(entry));
+                        }
+                        else
+                        {
+                            tempDictionary[storedBox] += storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                }
+
+                foreach (var item in tempDictionary)
+                {
+                    if (item.Value > 0)
+                    {
+                        Box box = db.Boxes.Find(item.Key.BoxPK);
+                        Shelf shelf = db.Shelves.Find(item.Key.ShelfPK);
+                        Row row = db.Rows.Find(shelf.RowPK);
+                        result.Add(new Client_Box_Shelf_Row(box.BoxID,shelf.ShelfID,row.RowID,item.Value));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
         }
     }
 }

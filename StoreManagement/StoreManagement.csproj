@@ -112,6 +112,11 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_RequestedItemDetail.cs" />
+    <Compile Include="Controllers\Class\Client_RequestedItem.cs" />
+    <Compile Include="Controllers\Class\Client_Request2.cs" />
+    <Compile Include="Controllers\Class\Client_RequestedItemPK_RequestedQuantity.cs" />
+    <Compile Include="Controllers\Class\Client_Request.cs" />
     <Compile Include="Controllers\Class\Client_DemandDetail.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemArranged.cs" />
     <Compile Include="Controllers\Class\Client_DemandedItemPK_RequestedQuantity.cs" />
@@ -143,6 +148,7 @@
     <Compile Include="Controllers\Class\Client_Pack.cs" />
     <Compile Include="Controllers\Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemPK_IdentifiedQuantity.cs" />
+    <Compile Include="Controllers\Class\Client_StoredBox_Shelf_Row.cs" />
     <Compile Include="Controllers\Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\Class\Client_Shelf.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />

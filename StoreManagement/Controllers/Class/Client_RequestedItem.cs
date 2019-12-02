@@ -1,0 +1,46 @@
+﻿using StoreManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace StoreManagement.Class
+{
+    public class Client_RequestedItem
+    {
+        public Client_RequestedItem()
+        {
+        }
+
+        public Client_RequestedItem(Request request, Accessory accessory,double inStoredQuantity, List<Client_Box_Shelf_Row> requestedItemPosition)
+        {
+            RequestPK = request.RequestPK;
+            RequestedQuantity = request.RequestID;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
+            InStoredQuantity = inStoredQuantity;
+            RequestedItemPosition = requestedItemPosition;
+        }
+
+        public int RequestPK { get; set; }
+
+        public string RequestedQuantity { get; set; }
+
+        public string AccessoryID { get; set; }
+
+        public string AccessoryDescription { get; set; }
+
+        public string Art { get; set; }
+
+        public string Color { get; set; }
+
+        public string Item { get; set; }
+
+        public double InStoredQuantity { get; set; }
+
+        public List<Client_Box_Shelf_Row> RequestedItemPosition { get; set; }
+    }
+}

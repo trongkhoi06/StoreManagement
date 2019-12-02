@@ -13,7 +13,7 @@ namespace StoreManagement.Models
         {
         }
 
-        public Request(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK)
+        public Request(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK, string userID)
         {
             RequestID = requestID;
             DateCreated = DateTime.Now;
@@ -22,6 +22,7 @@ namespace StoreManagement.Models
             IsConfirmed = isConfirmed;
             Comment = comment;
             DemandPK = demandPK;
+            UserID = userID;
         }
 
         [Key]
@@ -43,5 +44,7 @@ namespace StoreManagement.Models
         public string Comment { get; set; }
 
         public int DemandPK { get; set; }
+
+        public string UserID { get; set; }
     }
 }
