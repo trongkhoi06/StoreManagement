@@ -156,7 +156,7 @@ namespace StoreManagement.Controllers
                     List<StoredBox> sBoxes = (from sB in db.StoredBoxes
                                               where sB.ShelfPK == shelf.ShelfPK
                                               select sB).ToList();
-                    Client_InBoxItems_Row<List<Client_Row>> result;
+                    Client_InBoxItems_Box<List<Client_Row>> result;
                     List<Client_Row> client_Rows = new List<Client_Row>();
                     Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
                     Row row = db.Rows.Find(shelf.RowPK);
@@ -229,8 +229,8 @@ namespace StoreManagement.Controllers
                         }
 
                     }
-                    
-                    result = new Client_InBoxItems_Row<List<Client_Row>>(client_Rows, client_InBoxItems.Values.ToList());
+
+                    result = new Client_InBoxItems_Box<List<Client_Row>>(client_Rows, client_InBoxItems.Values.ToList());
                     return Content(HttpStatusCode.OK, result);
                 }
                 else
@@ -261,15 +261,15 @@ namespace StoreManagement.Controllers
                 {
 
                     List<Shelf> shelves = (from sh in db.Shelves
-                                         where sh.RowPK == row.RowPK
-                                         select sh).ToList();
+                                           where sh.RowPK == row.RowPK
+                                           select sh).ToList();
                     Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
                     foreach (var shelf in shelves)
                     {
                         List<StoredBox> sBoxes = (from sB in db.StoredBoxes
                                                   where sB.ShelfPK == shelf.ShelfPK
                                                   select sB).ToList();
-                        
+
                         shelfIDs.Add(shelf.ShelfID);
                         foreach (var sBox in sBoxes)
                         {
