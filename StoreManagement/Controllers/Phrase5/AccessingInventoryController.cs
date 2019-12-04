@@ -14,7 +14,7 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        [Route("api/ReceivingController/GetItemByBoxID")]
+        [Route("api/AccessingInventoryController/GetItemByBoxID")]
         [HttpGet]
         public IHttpActionResult GetItemByBoxID(string boxID)
         {
@@ -140,7 +140,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/ReceivingController/GetItemByShelfID")]
+        [Route("api/AccessingInventoryController/GetItemByShelfID")]
         [HttpGet]
         public IHttpActionResult GetItemByShelfID(string shelfID)
         {
@@ -244,7 +244,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/ReceivingController/GetItemByRowID")]
+        [Route("api/AccessingInventoryController/GetItemByRowID")]
         [HttpGet]
         public IHttpActionResult GetItemByRowID(string rowID)
         {
@@ -336,7 +336,6 @@ namespace StoreManagement.Controllers
                                     }
                                 }
                             }
-
                         }
                     }
                     result = new Client_InBoxItems_Row<List<string>>(shelfIDs, client_InBoxItems.Values.ToList());
