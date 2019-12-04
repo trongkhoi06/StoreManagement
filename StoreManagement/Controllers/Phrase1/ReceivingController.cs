@@ -593,7 +593,7 @@ namespace StoreManagement.Controllers
                                                              where cI.PackedItemPK == packedItem.PackedItemPK
                                                              select cI).FirstOrDefault();
                             if (classifiedItem == null)
-                            return Content(HttpStatusCode.Conflict, "Pack đã được classify, không đc swift state");
+                                return Content(HttpStatusCode.Conflict, "Pack đã được classify, không đc swift state");
                             List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
                                                                     where iI.PackedItemPK == packedItem.PackedItemPK
                                                                     select iI).ToList();
