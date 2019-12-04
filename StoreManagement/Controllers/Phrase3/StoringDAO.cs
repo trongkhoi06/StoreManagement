@@ -261,8 +261,14 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public double InBoxQuantity(List<Entry> entries)
+        public double InBoxQuantity(string boxID, int itemPK, bool isRestored)
         {
+            BoxDAO boxDAO = new BoxDAO();
+            Box box = boxDAO.GetBoxByBoxID(boxID);
+            StoredBox storedBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+            List<Entry> entries = (from e in db.Entries
+                                   where e.StoredBoxPK == storedBox.StoredBoxPK && e.IsRestored == isRestored
+                                   select e).ToList();
             return EntriesQuantity(entries);
         }
 

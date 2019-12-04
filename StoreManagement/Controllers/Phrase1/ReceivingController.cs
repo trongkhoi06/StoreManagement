@@ -584,11 +584,32 @@ namespace StoreManagement.Controllers
                 {
                     if (pack.UserID == userID)
                     {
+                        List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                        where pI.PackPK == pack.PackPK
+                                                        select pI).ToList();
+                        foreach (var packedItem in packedItems)
+                        {
+                            ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                             where cI.PackedItemPK == packedItem.PackedItemPK
+                                                             select cI).FirstOrDefault();
+                            if (classifiedItem == null)
+                            return Content(HttpStatusCode.Conflict, "Pack đã được classify, không đc swift state");
+                            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                                    where iI.PackedItemPK == packedItem.PackedItemPK
+                                                                    select iI).ToList();
+                            foreach (var identifiedItem in identifiedItems)
+                            {
+                                if (identifiedItem.IsChecked || identifiedItem.IsCounted)
+                                {
+                                    return Content(HttpStatusCode.Conflict, "Pack đã được check hoặc count, không đc swift state");
+                                }
+                            }
+                        }
                         packsController.SwiftPackState(packPK);
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "ko có quyền");
+                        return Content(HttpStatusCode.Conflict, "KHÔNG CÓ QUYỀN");
                     }
                 }
                 catch (Exception e)
@@ -734,22 +755,14 @@ namespace StoreManagement.Controllers
 
                     foreach (var identifiedItem in identifiedItems)
                     {
-                        PackedItem packedItem = (from pI in db.PackedItems
-                                                 where pI.PackedItemPK == identifiedItem.PackedItemPK
-                                                 select pI).FirstOrDefault();
+                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         // lấy pack ID
-                        Pack pack = (from p in db.Packs
-                                     where p.PackPK == packedItem.PackPK
-                                     select p).FirstOrDefault();
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
 
                         // lấy phụ liệu tương ứng
-                        OrderedItem orderedItem = (from oI in db.OrderedItems
-                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
-                                                   select oI).FirstOrDefault();
+                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
 
-                        Accessory accessory = (from a in db.Accessories
-                                               where a.AccessoryPK == orderedItem.AccessoryPK
-                                               select a).FirstOrDefault();
+                        Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
 
                         client_IdentifiedItems.Add(new Client_IdentifiedItemArranged(identifiedItem, accessory, pack.PackID));
                     }
@@ -981,6 +994,11 @@ namespace StoreManagement.Controllers
                 BoxDAO boxController = new BoxDAO();
                 try
                 {
+                    if (boxFromID == boxToID)
+                    {
+                        return Content(HttpStatusCode.Conflict, "KHÔNG THỂ CHỌN CÙNG MỘT THÙNG!");
+                    }
+
                     // take box by boxID
                     Box boxFrom = boxController.GetBoxByBoxID(boxFromID);
                     Box boxTo = boxController.GetBoxByBoxID(boxToID);
@@ -1023,9 +1041,11 @@ namespace StoreManagement.Controllers
                                 identifyItemController.ArrangeIndentifiedItem(identifiedItem);
 
                                 // Map session with item
-                                IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession = new IdentifiedItem_ArrangingSession();
-                                identifiedItem_ArrangingSession.IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
-                                identifiedItem_ArrangingSession.ArrangingSessionPK = arrangingSession.ArrangingSessionPK;
+                                IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession = new IdentifiedItem_ArrangingSession
+                                {
+                                    IdentifiedItemPK = identifiedItem.IdentifiedItemPK,
+                                    ArrangingSessionPK = arrangingSession.ArrangingSessionPK
+                                };
                                 identifyItemController.MapItemWithSession(identifiedItem_ArrangingSession);
                             }
                         }

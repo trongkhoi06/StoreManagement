@@ -16,7 +16,7 @@ namespace StoreManagement.Controllers
 
         // Count
 
-        [Route("api/ReceivingController/GetIdentifyItemByBoxIDCounted")]
+        [Route("api/CheckingController/GetIdentifyItemByBoxIDCounted")]
         [HttpGet]
         public IHttpActionResult GetIdentifyItemByBoxIDCounted(string boxID)
         {
@@ -61,7 +61,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
-        [Route("api/ReceivingController/GetCountingSessionByUserID")]
+        [Route("api/CheckingController/GetCountingSessionByUserID")]
         [HttpGet]
         public IHttpActionResult GetCountingSessionByUserID(string userID)
         {
@@ -108,7 +108,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_CountingSessions);
         }
 
-        //[Route("api/ReceivingController/GetCountingSessionByCountingSessionPK")]
+        //[Route("api/CheckingController/GetCountingSessionByCountingSessionPK")]
         //[HttpGet]
         //public IHttpActionResult GetCountingSessionByCountingSessionPK(int countingSessionPK)
         //{
@@ -145,7 +145,7 @@ namespace StoreManagement.Controllers
         //    return Content(HttpStatusCode.OK, client_CountingSessions);
         //}
 
-        [Route("api/ReceivingController/CountItemBusiness")]
+        [Route("api/CheckingController/CountItemBusiness")]
         [HttpPost]
         public IHttpActionResult CountItemBusiness(int identifiedItemPK, double countedQuantity, string userID)
         {
@@ -210,7 +210,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/EditCountItemBusiness")]
+        [Route("api/CheckingController/EditCountItemBusiness")]
         [HttpPut]
         public IHttpActionResult EditCountItemBusiness(int countingSessionPK, double countedQuantity, string userID)
         {
@@ -256,7 +256,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/DeleteCountItemBusiness")]
+        [Route("api/CheckingController/DeleteCountItemBusiness")]
         [HttpDelete]
         public IHttpActionResult DeleteCountItemBusiness(int countingSessionPK, string userID)
         {
@@ -307,7 +307,7 @@ namespace StoreManagement.Controllers
         }
 
         // Check
-        [Route("api/ReceivingController/GetIdentifyItemByBoxIDChecked")]
+        [Route("api/CheckingController/GetIdentifyItemByBoxIDChecked")]
         [HttpGet]
         public IHttpActionResult GetIdentifyItemByBoxIDChecked(string boxID)
         {
@@ -359,7 +359,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
-        [Route("api/ReceivingController/GetIdentifyItemByPK")]
+        [Route("api/CheckingController/GetIdentifyItemByPK")]
         [HttpGet]
         public IHttpActionResult GetIdentifyItemByPK(int identifiedItemPK)
         {
@@ -398,7 +398,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
-        [Route("api/ReceivingController/GetCheckingSessionByUserID")]
+        [Route("api/CheckingController/GetCheckingSessionByUserID")]
         [HttpGet]
         public IHttpActionResult GetCheckingSessionByUserID(string userID)
         {
@@ -448,7 +448,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_CheckingSessions);
         }
 
-        //[Route("api/ReceivingController/GetCheckingSessionByCheckingSessionPK")]
+        //[Route("api/CheckingController/GetCheckingSessionByCheckingSessionPK")]
         //[HttpGet]
         //public IHttpActionResult GetCheckingSessionByCheckingSessionPK(int checkingSessionPK)
         //{
@@ -485,7 +485,7 @@ namespace StoreManagement.Controllers
         //    return Content(HttpStatusCode.OK, client_CheckingSessions);
         //}
 
-        [Route("api/ReceivingController/CheckItemBusiness")]
+        [Route("api/CheckingController/CheckItemBusiness")]
         [HttpPost]
         public IHttpActionResult CheckItemBusiness(int identifiedItemPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
@@ -552,7 +552,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/EditCheckItemBusiness")]
+        [Route("api/CheckingController/EditCheckItemBusiness")]
         [HttpPut]
         public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
@@ -607,7 +607,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/DeleteCheckItemBusiness")]
+        [Route("api/CheckingController/DeleteCheckItemBusiness")]
         [HttpDelete]
         public IHttpActionResult DeleteCheckItemBusiness(int checkingSessionPK, string userID)
         {
@@ -648,7 +648,7 @@ namespace StoreManagement.Controllers
         }
 
         // Classify
-        [Route("api/ReceivingController/GetPackedItemByBoxIDUserID")]
+        [Route("api/CheckingController/GetPackedItemByBoxIDUserID")]
         [HttpGet]
         public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID, string userID)
         {
@@ -718,7 +718,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_PackedItemClassifieds);
         }
 
-        [Route("api/ReceivingController/GetPackedItemByPackedItemPK")]
+        [Route("api/CheckingController/GetPackedItemByPackedItemPK")]
         [HttpGet]
         public IHttpActionResult GetPackedItemByPackedItemPK(int packedItemPK)
         {
@@ -764,7 +764,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_PackedItemClassifieds);
         }
 
-        [Route("api/ReceivingController/ClassifyItemBusiness")]
+        [Route("api/CheckingController/ClassifyItemBusiness")]
         [HttpPost]
         public IHttpActionResult ClassifyItemBusiness(int packedItemPK, string comment, int qualityState, string userID)
         {
@@ -857,7 +857,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/GetClassifyingSessionsByUserID")]
+        [Route("api/CheckingController/GetClassifyingSessionsByUserID")]
         [HttpGet]
         public IHttpActionResult GetClassifyingSessionsByUserID(string userID)
         {
@@ -916,7 +916,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_ClassifyingSessions);
         }
 
-        [Route("api/ReceivingController/GetClassifyingSessionsByPK")]
+        [Route("api/CheckingController/GetClassifyingSessionsByPK")]
         [HttpGet]
         public IHttpActionResult GetClassifyingSessionsByPK(int classifyingSessionPK)
         {
@@ -967,7 +967,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_ClassifyingSessions);
         }
 
-        [Route("api/ReceivingController/DeleteClassifyItemBusiness")]
+        [Route("api/CheckingController/DeleteClassifyItemBusiness")]
         [HttpDelete]
         public IHttpActionResult DeleteClassifyBusiness(int classifyingSessionPK, string userID)
         {
@@ -1022,7 +1022,7 @@ namespace StoreManagement.Controllers
 
         }
 
-        [Route("api/ReceivingController/GetFailedItem")]
+        [Route("api/CheckingController/GetFailedItem")]
         [HttpGet]
         public IHttpActionResult GetFailedItem()
         {
@@ -1080,7 +1080,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_FailedItems);
         }
 
-        [Route("api/ReceivingController/GetFailedItemByFailedItemPK")]
+        [Route("api/CheckingController/GetFailedItemByFailedItemPK")]
         [HttpGet]
         public IHttpActionResult GetFailedItemByFailedItemPK(int FailedItemPK)
         {
@@ -1154,7 +1154,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_FailedItems);
         }
 
-        [Route("api/ReceivingController/ReturnItemBusiness")]
+        [Route("api/CheckingController/ReturnItemBusiness")]
         [HttpPost]
         public IHttpActionResult ReturnItemBusiness(int failedItemPK, string userID)
         {

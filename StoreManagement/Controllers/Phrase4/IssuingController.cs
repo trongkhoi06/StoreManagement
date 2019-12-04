@@ -334,7 +334,7 @@ namespace StoreManagement.Controllers
                 {
                     DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
                     Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
-                    List<Client_Box_Shelf_Row>  client_Boxes = issuingDAO.StoredBoxesOfEntries(accessory);
+                    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBoxesOfEntries(accessory);
                     client_RequestedItemDetails.Add(new Client_RequestedItem(request, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
                 }
             }
@@ -345,6 +345,31 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_RequestedItemDetails);
         }
 
+        [Route("api/IssuingController/PrepareRequest")]
+        [HttpPost]
+        public IHttpActionResult PrepareRequest(int requestPK, string userID, [FromBody] List<RequestedItem> requestedItems,[FromBody] List<List<Client_StoredBoxPK_IssuedQuantity>> client_StoredBoxPK_IssuedQuantitiess,List<string> boxIDs)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 7)
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
 
 
 

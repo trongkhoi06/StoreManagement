@@ -112,6 +112,8 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_IdentifiedItemRead.cs" />
+    <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />
     <Compile Include="Controllers\Class\Client_RequestedItemDetail.cs" />
     <Compile Include="Controllers\Class\Client_RequestedItem.cs" />
     <Compile Include="Controllers\Class\Client_Request2.cs" />
@@ -121,7 +123,7 @@
     <Compile Include="Controllers\Class\Client_IdentifiedItemArranged.cs" />
     <Compile Include="Controllers\Class\Client_DemandedItemPK_RequestedQuantity.cs" />
     <Compile Include="Controllers\Class\Client_ItemPK_TransferQuantity_IsRestored.cs" />
-    <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />
+    <Compile Include="Controllers\Class\Client_InBoxItems_Row.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItem.cs" />
     <Compile Include="Controllers\Class\Client_FailedItemDetail.cs" />
     <Compile Include="Controllers\Class\Client_FailedItem.cs" />
@@ -148,6 +150,8 @@
     <Compile Include="Controllers\Class\Client_Pack.cs" />
     <Compile Include="Controllers\Class\Client_OrderedItemPK_PackedQuantity_Comment.cs" />
     <Compile Include="Controllers\Class\Client_PackedItemPK_IdentifiedQuantity.cs" />
+    <Compile Include="Controllers\Class\Client_Row.cs" />
+    <Compile Include="Controllers\Class\Client_StoredBoxPK_IssuedQuantity.cs" />
     <Compile Include="Controllers\Class\Client_StoredBox_Shelf_Row.cs" />
     <Compile Include="Controllers\Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\Class\Client_Shelf.cs" />
@@ -170,6 +174,7 @@
     <Compile Include="Controllers\Phrase3\StoringController.cs" />
     <Compile Include="Controllers\Phrase4\IssuingController.cs" />
     <Compile Include="Controllers\Phrase4\IssuingDAO.cs" />
+    <Compile Include="Controllers\Phrase5\AccessingInventoryController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
