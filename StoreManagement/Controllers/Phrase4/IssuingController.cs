@@ -57,6 +57,97 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/IssuingController/EditDemand")]
+        [HttpPut]
+        public IHttpActionResult EditDemand(int demandPK, int demandedItemPK, double demandedQuantity, string comment, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Demand demand = null;
+                try
+                {
+                    demand = db.Demands.Find(demandPK);
+                    if (demand.UserID != userID)
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    }
+                    if (issuingDAO.GetRequestFromDemandPK(demandPK).Count > 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ YÊU CẦU XUẤT!");
+                    }
+                    issuingDAO.UpdateDemandedItem(demandedItemPK, demandedQuantity, comment);
+                    issuingDAO.UpdateDemand(demandPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/DeleteDemand")]
+        [HttpDelete]
+        public IHttpActionResult DeleteDemand(int demandPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Demand demand = null;
+                try
+                {
+                    demand = db.Demands.Find(demandPK);
+                    if (demand.UserID != userID)
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    }
+                    if (issuingDAO.GetRequestFromDemandPK(demandPK).Count > 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ YÊU CẦU XUẤT!");
+                    }
+                    issuingDAO.DeleteDemandedItem(demandPK);
+                    issuingDAO.DeleteDemand(demandPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/SwiftDemandState")]
+        [HttpPut]
+        public IHttpActionResult SwiftDemandState(int demandPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    issuingDAO.SwiftDemand(demandPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
         [Route("api/IssuingController/GetAllDemand")]
         [HttpGet]
         public IHttpActionResult GetAllDemand()

@@ -81,6 +81,52 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public List<Request> GetRequestFromDemandPK(int demandPK)
+        {
+            try
+            {
+                List<Request> result = (from re in db.Requests
+                                        where re.DemandPK == demandPK
+                                        select re).ToList();
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateDemand(int demandPK)
+        {
+            try
+            {
+                Demand demand = db.Demands.Find(demandPK);
+                demand.DateCreated = DateTime.Now;
+                db.Entry(demand).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateDemandedItem(int demandedItemPK,double demandedQuantity, string comment)
+        {
+            try
+            {
+                DemandedItem demandedItem = db.DemandedItems.Find(demandedItemPK);
+                demandedItem.DemandedQuantity = demandedQuantity;
+                demandedItem.Comment = comment;
+                db.Entry(demandedItem).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public void CreateDemandedItems(Demand demand, List<Client_Accessory_DemandedQuantity_Comment> list, string conceptionCode)
         {
             try
@@ -101,6 +147,40 @@ namespace StoreManagement.Controllers
                     if (conceptionAccessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " CHƯA ĐƯỢC GẮN CC!");
                     DemandedItem demandedItem = new DemandedItem(item.DemandedQuantity, item.Comment, demand.DemandPK, accessory.AccessoryPK);
                     db.DemandedItems.Add(demandedItem);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void SwiftDemand(int demandPK)
+        {
+            try
+            {
+                Demand demand = db.Demands.Find(demandPK);
+                demand.IsOpened = !demand.IsOpened;
+                db.Entry(demand).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteDemandedItem(int demandPK)
+        {
+            try
+            {
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                                                    where dI.DemandPK == demandPK
+                                                    select dI).ToList();
+                foreach (var item in demandedItems)
+                {
+                    db.DemandedItems.Remove(item);
                 }
                 db.SaveChanges();
             }
