@@ -58,6 +58,9 @@ namespace StoreManagement.Models
         public virtual DbSet<Restoration> Restorations { get; set; }
         public virtual DbSet<RestoredItem> RestoredItems { get; set; }
         public virtual DbSet<Row> Rows { get; set; }
+        public virtual DbSet<ActionTypeEnum> ActionTypeEnums { get; set; }
+        public virtual DbSet<Activity> Activities { get; set; }
+        public virtual DbSet<ObjectKindEnum> ObjectKindEnums { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
