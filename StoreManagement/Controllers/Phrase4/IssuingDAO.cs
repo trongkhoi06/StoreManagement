@@ -174,6 +174,36 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public void UpdateRequest(int requestPK, bool isIssued)
+        {
+            try
+            {
+                Request request = db.Requests.Find(requestPK);
+                request.IsIssued = isIssued;
+                db.Entry(request).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateRequest2(int requestPK, bool isConfirmed)
+        {
+            try
+            {
+                Request request = db.Requests.Find(requestPK);
+                request.IsConfirmed = isConfirmed;
+                db.Entry(request).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public void UpdateRequestedItems(List<Client_RequestedItemPK_RequestedQuantity> list, int requestPK)
         {
             try
@@ -245,7 +275,26 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public List<Client_Box_Shelf_Row> StoredBoxesOfEntries(Accessory accessory)
+        public class StoredBox_ItemPK_IsRestored
+        {
+            public StoredBox_ItemPK_IsRestored()
+            {
+            }
+
+            public StoredBox_ItemPK_IsRestored(int storedBoxPK, int itemPK, bool isRestored)
+            {
+                StoredBoxPK = storedBoxPK;
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+            }
+
+            public int StoredBoxPK { get; set; }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+        }
+        public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
         {
             List<Client_Box_Shelf_Row> result = new List<Client_Box_Shelf_Row>();
             StoringDAO storingDAO = new StoringDAO();
@@ -257,22 +306,34 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();
-                HashSet<StoredBox> tempSBox = new HashSet<StoredBox>();
-                Dictionary<StoredBox, double> tempDictionary = new Dictionary<StoredBox, double>();
+                Dictionary<StoredBox_ItemPK_IsRestored, double> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, double>();
                 foreach (var entry in entries)
                 {
                     StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
                     Box box = db.Boxes.Find(storedBox.BoxPK);
+                    PassedItem passedItem;
+                    RestoredItem restoredItem;
+                    StoredBox_ItemPK_IsRestored key;
+                    if (entry.IsRestored)
+                    {
+                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, restoredItem.RestoredItemPK, entry.IsRestored);
+                    }
+                    else
+                    {
+                        passedItem = db.PassedItems.Find(entry.ItemPK);
+                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, passedItem.PassedItemPK, entry.IsRestored);
+                    }
                     if (box.IsActive)
                     {
-                        tempSBox.Add(storedBox);
-                        if (!tempDictionary.ContainsKey(storedBox))
+
+                        if (!tempDictionary.ContainsKey(key))
                         {
-                            tempDictionary.Add(storedBox, storingDAO.EntryQuantity(entry));
+                            tempDictionary.Add(key, storingDAO.EntryQuantity(entry));
                         }
                         else
                         {
-                            tempDictionary[storedBox] += storingDAO.EntryQuantity(entry);
+                            tempDictionary[key] += storingDAO.EntryQuantity(entry);
                         }
                     }
                 }
@@ -281,10 +342,11 @@ namespace StoreManagement.Controllers
                 {
                     if (item.Value > 0)
                     {
-                        Box box = db.Boxes.Find(item.Key.BoxPK);
-                        Shelf shelf = db.Shelves.Find(item.Key.ShelfPK);
+                        StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
+                        Box box = db.Boxes.Find(storedBox.BoxPK);
+                        Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
                         Row row = db.Rows.Find(shelf.RowPK);
-                        result.Add(new Client_Box_Shelf_Row(box.BoxID,shelf.ShelfID,row.RowID,item.Value));
+                        result.Add(new Client_Box_Shelf_Row(box.BoxID, shelf.ShelfID, row.RowID,item.Key.ItemPK,item.Key.IsRestored, item.Value));
                     }
                 }
             }
@@ -293,6 +355,125 @@ namespace StoreManagement.Controllers
                 throw e;
             }
             return result;
+        }
+
+        public List<Client_Box_Shelf_Row2> StoredBox_ItemPK_IsRestoredOfEntries2(Accessory accessory, int issuingSessionPK)
+        {
+            List<Client_Box_Shelf_Row2> result = new List<Client_Box_Shelf_Row2>();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                // cực phẩm IQ
+                double inStoredQuantity = InStoredQuantity(accessory.AccessoryPK);
+                if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
+                List<Entry> entries = (from e in db.Entries
+                                       where e.AccessoryPK == accessory.AccessoryPK && e.SessionPK == issuingSessionPK && e.KindRoleName == "Issuing"
+                                       select e).ToList();
+                Dictionary<StoredBox_ItemPK_IsRestored, double> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, double>();
+                foreach (var entry in entries)
+                {
+                    StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                    Box box = db.Boxes.Find(storedBox.BoxPK);
+                    PassedItem passedItem;
+                    RestoredItem restoredItem;
+                    StoredBox_ItemPK_IsRestored key;
+                    if (entry.IsRestored)
+                    {
+                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, restoredItem.RestoredItemPK, entry.IsRestored);
+                    }
+                    else
+                    {
+                        passedItem = db.PassedItems.Find(entry.ItemPK);
+                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, passedItem.PassedItemPK, entry.IsRestored);
+                    }
+                    if (box.IsActive)
+                    {
+
+                        if (!tempDictionary.ContainsKey(key))
+                        {
+                            tempDictionary.Add(key, storingDAO.EntryQuantity(entry));
+                        }
+                        else
+                        {
+                            tempDictionary[key] += storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                }
+
+                foreach (var item in tempDictionary)
+                {
+                    if (item.Value > 0)
+                    {
+                        StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
+                        Box box = db.Boxes.Find(storedBox.BoxPK);
+                        Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
+                        Row row = db.Rows.Find(shelf.RowPK);
+                        result.Add(new Client_Box_Shelf_Row2(box.BoxID, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
+        }
+
+        public IssuingSession CreateIssuingSession(string userID, int requestPK, List<string> boxIDs)
+        {
+            try
+            {
+                string deactivatedBoxes = "";
+                foreach (var boxID in boxIDs)
+                {
+                    deactivatedBoxes += boxID + "~!~";
+                }
+                IssuingSession issuingSession = new IssuingSession(userID, requestPK, deactivatedBoxes);
+                db.IssuingSessions.Add(issuingSession);
+                db.SaveChanges();
+                issuingSession = (from iS in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
+                                  select iS).FirstOrDefault();
+                return issuingSession;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteIssuingSession(int issuingSessionPK)
+        {
+            try
+            {
+                IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+                db.IssuingSessions.Remove(issuingSession);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteIssueEntries(int issuingSessionPK)
+        {
+            try
+            {
+                IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+                List<Entry> entries = (from e in db.Entries
+                                       where e.KindRoleName == "Issuing" && e.SessionPK == issuingSessionPK
+                                       select e).ToList();
+                foreach (var entry in entries)
+                {
+                    db.Entries.Remove(entry);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

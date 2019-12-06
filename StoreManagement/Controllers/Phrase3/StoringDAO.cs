@@ -506,7 +506,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void CreateDiscardEntry(StoredBox sBox, int itemPK, double discardedQuantity, bool isRestored, bool isMinus, DiscardingSession discardingSession)
+        public void CreateDiscardEntry(StoredBox sBox, int itemPK, double discardedQuantity, bool isRestored, DiscardingSession discardingSession)
         {
             try
             {
@@ -525,15 +525,49 @@ namespace StoreManagement.Controllers
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                 }
-                if (isMinus)
-                {
-                    entry = new Entry(sBox, "DiscardingMinus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
-                }
-                else
-                {
-                    entry = new Entry(sBox, "DiscardingPlus", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
-                }
+                entry = new Entry(sBox, "Discarding", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
                 db.Entries.Add(entry);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateIssueEntry(Client_InputPrepareRequestAPI input, IssuingSession issuingSession)
+        {
+            try
+            {
+                Entry entry;
+                Accessory accessory;
+                foreach (var item_position_quantity in input.Item_position_quantities)
+                {
+                    // lấy hàng cần xuất
+                    if (item_position_quantity.IsRestored)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(item_position_quantity.ItemPK);
+                        accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                    }
+                    else
+                    {
+                        PassedItem passedItem = db.PassedItems.Find(item_position_quantity.ItemPK);
+                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                        accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    }
+                    // tạo entry xuất trong n - thùng chưa hàng
+                    foreach (var item in item_position_quantity.BoxAndQuantity)
+                    {
+                        StoredBox sBox = db.StoredBoxes.Find(item.StoredBoxPK);
+                        if (sBox == null) throw new Exception("Data StoreBoxes Lỗi!");
+
+                        entry = new Entry(sBox, "Issuing", issuingSession.IssuingSessionPK, item_position_quantity.IsRestored,
+                            item.Quantity, item_position_quantity.ItemPK, accessory);
+                        db.Entries.Add(entry);
+                    }
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

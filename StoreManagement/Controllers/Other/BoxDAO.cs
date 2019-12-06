@@ -49,8 +49,8 @@ namespace StoreManagement.Controllers
         public Box GetBoxByBoxID(string boxID)
         {
             return (from b in db.Boxes
-             where b.BoxID == boxID
-             select b).FirstOrDefault();
+                    where b.BoxID == boxID
+                    select b).FirstOrDefault();
         }
 
         public UnstoredBox GetUnstoredBoxbyBoxPK(int boxPK)
@@ -72,6 +72,17 @@ namespace StoreManagement.Controllers
             return (from sh in db.Shelves
                     where sh.ShelfID == shelfID
                     select sh).FirstOrDefault();
+        }
+
+        public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
+        {
+            foreach (var boxID in boxIDs)
+            {
+                Box box = GetBoxByBoxID(boxID);
+                box.IsActive = isActive;
+                db.Entry(box).State = EntityState.Modified;
+            }
+            db.SaveChanges();
         }
     }
 }

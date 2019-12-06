@@ -13,6 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public IssuingSession(string userID, int requestPK, string deactivatedBoxes)
+        {
+            ExecutedDate = DateTime.Now;
+            UserID = userID;
+            RequestPK = requestPK;
+            DeactivatedBoxes = deactivatedBoxes;
+        }
+
         [Key]
         public int IssuingSessionPK { get; set; }
 

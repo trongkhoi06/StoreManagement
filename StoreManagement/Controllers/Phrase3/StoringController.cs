@@ -471,11 +471,11 @@ namespace StoreManagement.Controllers
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
                         if (discardedQuantity > storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, false, discardingSession);
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored,discardingSession);
                         }
                         if (discardedQuantity < storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, true, discardingSession);
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored,discardingSession);
                         }
                         else
                         {

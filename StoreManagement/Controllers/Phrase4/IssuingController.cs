@@ -334,7 +334,7 @@ namespace StoreManagement.Controllers
                 {
                     DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
                     Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
-                    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBoxesOfEntries(accessory);
+                    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
                     client_RequestedItemDetails.Add(new Client_RequestedItem(request, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
                 }
             }
@@ -347,20 +347,32 @@ namespace StoreManagement.Controllers
 
         [Route("api/IssuingController/PrepareRequest")]
         [HttpPost]
-        public IHttpActionResult PrepareRequest(int requestPK, string userID, [FromBody] List<RequestedItem> requestedItems,[FromBody] List<List<Client_StoredBoxPK_IssuedQuantity>> client_StoredBoxPK_IssuedQuantitiess,List<string> boxIDs)
+        public IHttpActionResult PrepareRequest(int requestPK, string userID, [FromBody] Client_InputPrepareRequestAPI input)
         {
             // kiểm trước khi chạy lệnh
             SystemUser systemUser = db.SystemUsers.Find(userID);
             // check role of system user
-            if (systemUser != null && systemUser.RoleID == 7)
+            if (systemUser != null && systemUser.RoleID == 4)
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
+                StoringDAO storingDAO = new StoringDAO();
+                BoxDAO boxDAO = new BoxDAO();
+                IssuingSession issuingSession = null;
                 try
                 {
-
+                    issuingDAO.UpdateRequest(requestPK, true);
+                    boxDAO.ChangeIsActiveBoxes(input.boxIDs, false);
+                    issuingSession = issuingDAO.CreateIssuingSession(userID, requestPK, input.boxIDs);
+                    storingDAO.CreateIssueEntry(input, issuingSession);
                 }
                 catch (Exception e)
                 {
+                    if (issuingSession != null)
+                    {
+                        issuingDAO.UpdateRequest(requestPK, false);
+                        boxDAO.ChangeIsActiveBoxes(input.boxIDs, true);
+                        issuingDAO.DeleteIssuingSession(issuingSession.IssuingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
@@ -371,11 +383,177 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/IssuingController/GetIssuingSessionByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetIssuingSessionByUserID(string userID)
+        {
+            List<Client_IssuingSession> client_IssuingSessions = new List<Client_IssuingSession>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                List<IssuingSession> issuingSessions = (from Iss in db.IssuingSessions
+                                                        where Iss.UserID == userID
+                                                        select Iss).ToList();
+                foreach (var issuingSession in issuingSessions)
+                {
+                    Request request = db.Requests.Find(issuingSession.RequestPK);
+                    Demand demand = db.Demands.Find(request.DemandPK);
+                    Conception conception = db.Conceptions.Find(demand.ConceptionPK);
+                    client_IssuingSessions.Add(new Client_IssuingSession(issuingSession, demand, request, conception));
+                }
 
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, client_IssuingSessions);
+        }
 
+        [Route("api/IssuingController/GetRequestedItemsByIssuingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetRequestedItemsByIssuingSessionPK(int issuingSessionPK)
+        {
+            List<Client_RequestedItem2> client_RequestedItemDetails = new List<Client_RequestedItem2>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+                Request request = db.Requests.Find(issuingSession.RequestPK);
+                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                      where rI.RequestPK == request.RequestPK
+                                                      select rI).ToList();
+                foreach (var requestedItem in requestedItems)
+                {
+                    DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
+                    Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                    List<Client_Box_Shelf_Row2> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries2(accessory, issuingSessionPK);
+                    client_RequestedItemDetails.Add(new Client_RequestedItem2(request, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, client_RequestedItemDetails);
+        }
 
-        
+        [Route("api/IssuingController/DeletePreparation")]
+        [HttpDelete]
+        public IHttpActionResult DeletePreparation(int issuingSessionPK, string userID)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 4)
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                StoringDAO storingDAO = new StoringDAO();
+                BoxDAO boxDAO = new BoxDAO();
+                try
+                {
+                    IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+                    if (issuingSession != null)
+                    {
+                        Request request = db.Requests.Find(issuingSession.RequestPK);
+                        if (!request.IsConfirmed)
+                        {
+                            issuingDAO.UpdateRequest(request.RequestPK, false);
+                            List<string> boxIDs = issuingSession.DeactivatedBoxes.Split(new[] { "~!~" }, StringSplitOptions.None).ToList();
+                            boxDAO.ChangeIsActiveBoxes(boxIDs, true);
+                            issuingDAO.DeleteIssueEntries(issuingSessionPK);
+                            issuingDAO.DeleteIssuingSession(issuingSession.IssuingSessionPK);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "REQUEST ĐÃ ĐƯỢC CONFIRM RỒI NHA!");
+                        }
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐỪNG PHÁ DỮ LIỆU NHA!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
 
+        [Route("api/IssuingController/GetRequestsByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetRequestsByUserID(string userID)
+        {
+            List<Client_Request> client_Requests = new List<Client_Request>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                List<Request> requests = (from re in db.Requests
+                                          where re.UserID == userID
+                                          select re).ToList();
+                foreach (var request in requests)
+                {
+                    Demand demand = db.Demands.Find(request.DemandPK);
+                    Conception conception = db.Conceptions.Find(demand.ConceptionPK);
+                    client_Requests.Add(new Client_Request(request, demand, conception));
+                }
+            }
+
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, client_Requests);
+        }
+
+        [Route("api/IssuingController/ConfirmRequest")]
+        [HttpPost]
+        public IHttpActionResult ConfirmRequest(int requestPK, string userID)
+        {
+            // kiểm trước khi chạy lệnh
+            SystemUser systemUser = db.SystemUsers.Find(userID);
+            // check role of system user
+            if (systemUser != null && systemUser.RoleID == 4)
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                StoringDAO storingDAO = new StoringDAO();
+                BoxDAO boxDAO = new BoxDAO();
+                try
+                {
+                    Request request = db.Requests.Find(requestPK);
+                    if (request.UserID == userID)
+                    {
+                        if (!request.IsIssued)
+                        {
+                            issuingDAO.UpdateRequest2(requestPK, true);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "YÊU CẦU XUẤT CHƯA ĐƯỢC CHUẨN BỊ!");
+                        }
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
 
     }
 }

@@ -851,7 +851,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditIdentificationBusiness")]
         [HttpPut]
-        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, string userID, List<Client_IdentifiedItemPK_IdentifiedQuantity> list)
+        public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, string userID, [FromBody] List<Client_IdentifiedItemPK_IdentifiedQuantity> list)
         {
             // kiểm trước khi chạy lệnh
 
