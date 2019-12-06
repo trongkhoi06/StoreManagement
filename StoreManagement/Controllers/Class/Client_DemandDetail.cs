@@ -28,7 +28,7 @@ namespace StoreManagement.Class
 
         public int DemandedItemPK { get; set; }
 
-        public int DemandedQuantity { get; set; }
+        public double DemandedQuantity { get; set; }
 
         public string AccessoryID { get; set; }
 

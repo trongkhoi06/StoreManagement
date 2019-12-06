@@ -29,16 +29,16 @@ namespace StoreManagement.Controllers
             {
                 SqlParameter userID = new SqlParameter("@userID", userClient.Username);
                 SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                int? roleID = db.Database.SqlQuery<int>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
-                if (roleID == 0) return NotFound();
+                string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
+                if (db.Roles.Find(roleName) == null) return NotFound();
                 else
                 {
-                    return Ok(roleID);
+                    return Ok(roleName);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return Content(HttpStatusCode.Conflict,e.Message);
+                return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
 
@@ -55,12 +55,13 @@ namespace StoreManagement.Controllers
             }
             catch (Exception e)
             {
-                return Content(HttpStatusCode.Conflict,e.Message);
+                return Content(HttpStatusCode.Conflict, e.Message);
+                return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
 
         [Route("api/ActiveDevice")]
-        public IHttpActionResult ActiveDevice(string deviceCode,string deviceName)
+        public IHttpActionResult ActiveDevice(string deviceCode, string deviceName)
         {
             Device device = new Device(deviceCode, deviceName);
             if (!ModelState.IsValid)

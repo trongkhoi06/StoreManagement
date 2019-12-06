@@ -21,10 +21,12 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string Password { get; set; }
 
-        public int RoleID { get; set; }
-
         [Required]
         [StringLength(50)]
+        public string RoleName { get; set; }
+
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; }
 
         [Column(TypeName = "date")]

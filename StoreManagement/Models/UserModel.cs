@@ -21,7 +21,7 @@ namespace StoreManagement.Models
         public virtual DbSet<ClassifiedItem> ClassifiedItems { get; set; }
         public virtual DbSet<ClassifyingSession> ClassifyingSessions { get; set; }
         public virtual DbSet<Conception> Conceptions { get; set; }
-        public virtual DbSet<ConceptionAccessoryCustomer> ConceptionAccessoryCustomers { get; set; }
+        public virtual DbSet<ConceptionAccessory> ConceptionAccessories { get; set; }
         public virtual DbSet<ConfirmingSession> ConfirmingSessions { get; set; }
         public virtual DbSet<CountingSession> CountingSessions { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }

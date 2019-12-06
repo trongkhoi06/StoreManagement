@@ -29,5 +29,7 @@ namespace StoreManagement.Models
         public string Season { get; set; }
 
         public bool IsActive { get; set; }
+
+        public int CustomerPK { get; set; }
     }
 }

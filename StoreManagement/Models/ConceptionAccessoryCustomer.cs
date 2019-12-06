@@ -6,20 +6,18 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("ConceptionAccessoryCustomer")]
-    public partial class ConceptionAccessoryCustomer
+    [Table("ConceptionAccessory")]
+    public partial class ConceptionAccessory
     {
-        public ConceptionAccessoryCustomer()
+        public ConceptionAccessory()
         {
         }
 
         [Key]
         public int ConceptionAccessoryPK { get; set; }
 
-        public int? ConceptionPK { get; set; }
+        public int ConceptionPK { get; set; }
 
-        public int? AccessoryPK { get; set; }
-
-        public int CustomerPK { get; set; }
+        public int AccessoryPK { get; set; }
     }
 }

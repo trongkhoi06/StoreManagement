@@ -14,6 +14,49 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
+        [Route("api/IssuingController/CreateDemand")]
+        [HttpPost]
+        public IHttpActionResult CreateDemand(int customerPK, string demandID, string conceptionCode, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Demand demand = null;
+                try
+                {
+                    // kiểm khi chạy lệnh
+                    if (issuingDAO.GetDemandByDemandID(demandID) != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ TỒN TẠI");
+                    }
+                    Conception conception = issuingDAO.GetConceptionByConceptionCode(conceptionCode);
+                    if (conception.CustomerPK != customerPK)
+                    {
+                        return Content(HttpStatusCode.Conflict, "KHÔNG ĐÚNG KHÁCH HÀNG");
+                    }
+                    if (startWeek > 52 || startWeek < 1 || endWeek > 52 || endWeek < 1)
+                    {
+                        return Content(HttpStatusCode.Conflict, "SỐ LIỆU TUẦN KHÔNG HỢP LỆ");
+                    }
+                    demand = issuingDAO.CreateDemand(customerPK, demandID, conceptionCode, startWeek, endWeek, totalDemand, receiveDevision, userID);
+                    issuingDAO.CreateDemandedItems(demand, list, conceptionCode);
+                }
+                catch (Exception e)
+                {
+                    if (demand != null)
+                    {
+                        issuingDAO.DeleteDemand(demand.DemandPK);
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
         [Route("api/IssuingController/GetAllDemand")]
         [HttpGet]
         public IHttpActionResult GetAllDemand()
@@ -68,10 +111,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateRequest(int demandPK, DateTime expectedDate, string comment, string userID, [FromBody] List<Client_DemandedItemPK_RequestedQuantity> list)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 7)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 try
@@ -194,10 +234,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditRequest(int requestPK, DateTime expectedDate, string comment, string userID, [FromBody] List<Client_RequestedItemPK_RequestedQuantity> list)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 7)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 try
@@ -255,10 +292,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteRequest(int requestPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 7)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 try
@@ -349,10 +383,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult PrepareRequest(int requestPK, string userID, [FromBody] Client_InputPrepareRequestAPI input)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -442,10 +473,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeletePreparation(int issuingSessionPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -516,10 +544,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult ConfirmRequest(int requestPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -531,7 +556,7 @@ namespace StoreManagement.Controllers
                     {
                         if (!request.IsIssued)
                         {
-                            issuingDAO.UpdateRequest2(requestPK, true);
+                            issuingDAO.ConfirmRequest(requestPK, true);
                         }
                         else
                         {

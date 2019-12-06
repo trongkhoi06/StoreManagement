@@ -108,51 +108,11 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_CountingSessions);
         }
 
-        //[Route("api/CheckingController/GetCountingSessionByCountingSessionPK")]
-        //[HttpGet]
-        //public IHttpActionResult GetCountingSessionByCountingSessionPK(int countingSessionPK)
-        //{
-        //    List<Client_CountingSessionDetail> client_CountingSessions = new List<Client_CountingSessionDetail>();
-
-        //    try
-        //    {
-        //        CountingSession countingSession = db.CountingSessions.Find(countingSessionPK);
-        //        IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
-        //                                          where iI.IdentifiedItemPK == countingSession.IdentifiedItemPK
-        //                                          select iI).FirstOrDefault();
-        //        PackedItem packedItem = (from pI in db.PackedItems
-        //                                 where pI.PackedItemPK == identifiedItems.PackedItemPK
-        //                                 select pI).FirstOrDefault();
-        //        Pack pack = (from p in db.Packs
-        //                     where p.PackPK == packedItem.PackPK
-        //                     select p).FirstOrDefault();
-        //        // lấy phụ liệu tương ứng
-        //        OrderedItem orderedItem = (from oI in db.OrderedItems
-        //                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
-        //                                   select oI).FirstOrDefault();
-
-        //        Accessory accessory = (from a in db.Accessories
-        //                               where a.AccessoryPK == orderedItem.AccessoryPK
-        //                               select a).FirstOrDefault();
-        //        client_CountingSessions.Add(new Client_CountingSessionDetail(accessory, pack, countingSession, identifiedItems));
-
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-
-        //    return Content(HttpStatusCode.OK, client_CountingSessions);
-        //}
-
         [Route("api/CheckingController/CountItemBusiness")]
         [HttpPost]
         public IHttpActionResult CountItemBusiness(int identifiedItemPK, double countedQuantity, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // khởi tạo
                 CountingItemDAO countingItemController = new CountingItemDAO();
@@ -214,10 +174,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditCountItemBusiness(int countingSessionPK, double countedQuantity, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // khởi tạo
                 CountingItemDAO countingItemController = new CountingItemDAO();
@@ -260,10 +217,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteCountItemBusiness(int countingSessionPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // khởi tạo
                 CountingItemDAO countingItemController = new CountingItemDAO();
@@ -403,7 +357,6 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetCheckingSessionByUserID(string userID)
         {
             List<Client_CheckingSessionDetail> client_CheckingSessions = new List<Client_CheckingSessionDetail>();
-
             try
             {
                 List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
@@ -448,51 +401,11 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_CheckingSessions);
         }
 
-        //[Route("api/CheckingController/GetCheckingSessionByCheckingSessionPK")]
-        //[HttpGet]
-        //public IHttpActionResult GetCheckingSessionByCheckingSessionPK(int checkingSessionPK)
-        //{
-        //    List<Client_CheckingSessionDetail> client_CheckingSessions = new List<Client_CheckingSessionDetail>();
-
-        //    try
-        //    {
-        //        CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
-        //        IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
-        //                                          where iI.IdentifiedItemPK == checkingSession.IdentifiedItemPK
-        //                                          select iI).FirstOrDefault();
-        //        PackedItem packedItem = (from pI in db.PackedItems
-        //                                 where pI.PackedItemPK == identifiedItems.PackedItemPK
-        //                                 select pI).FirstOrDefault();
-        //        Pack pack = (from p in db.Packs
-        //                     where p.PackPK == packedItem.PackPK
-        //                     select p).FirstOrDefault();
-        //        // lấy phụ liệu tương ứng
-        //        OrderedItem orderedItem = (from oI in db.OrderedItems
-        //                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
-        //                                   select oI).FirstOrDefault();
-
-        //        Accessory accessory = (from a in db.Accessories
-        //                               where a.AccessoryPK == orderedItem.AccessoryPK
-        //                               select a).FirstOrDefault();
-        //        client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession));
-
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-
-        //    return Content(HttpStatusCode.OK, client_CheckingSessions);
-        //}
-
         [Route("api/CheckingController/CheckItemBusiness")]
         [HttpPost]
         public IHttpActionResult CheckItemBusiness(int identifiedItemPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 CheckingItemDAO checkingItemController = new CheckingItemDAO();
@@ -556,10 +469,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditCheckItemBusiness(int checkingSessionPK, double checkedQuantity, double unqualifiedQuantity, string userID, string comment)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 CheckingItemDAO checkingItemController = new CheckingItemDAO();
@@ -611,10 +521,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteCheckItemBusiness(int checkingSessionPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 CheckingItemDAO checkingItemController = new CheckingItemDAO();
@@ -768,10 +675,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult ClassifyItemBusiness(int packedItemPK, string comment, int qualityState, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
@@ -971,10 +875,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteClassifyBusiness(int classifyingSessionPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 ClassifyItemDAO classifyingItemController = new ClassifyItemDAO();
@@ -1158,10 +1059,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult ReturnItemBusiness(int failedItemPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 6)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
                 ReturningItemDAO returningItemController = new ReturningItemDAO();

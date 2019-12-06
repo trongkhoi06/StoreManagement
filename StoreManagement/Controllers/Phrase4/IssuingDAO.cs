@@ -67,6 +67,96 @@ namespace StoreManagement.Controllers
             return result;
         }
 
+        public void DeleteDemand(int demandPK)
+        {
+            try
+            {
+                Demand demand = db.Demands.Find(demandPK);
+                db.Demands.Remove(demand);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateDemandedItems(Demand demand, List<Client_Accessory_DemandedQuantity_Comment> list, string conceptionCode)
+        {
+            try
+            {
+                foreach (var item in list)
+                {
+                    Accessory accessory = (from a in db.Accessories
+                                           where a.AccessoryID == item.AccessoryID
+                                           select a).FirstOrDefault();
+
+                    Conception conception = db.Conceptions.Find(GetConceptionByConceptionCode(conceptionCode));
+
+                    ConceptionAccessory conceptionAccessory = (from ca in db.ConceptionAccessories
+                                                               where ca.AccessoryPK == accessory.AccessoryPK
+                                                               && ca.ConceptionPK == conception.ConceptionPK
+                                                               select ca).FirstOrDefault();
+                    if (accessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " KHÔNG TỒN TẠI!");
+                    if (conceptionAccessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " CHƯA ĐƯỢC GẮN CC!");
+                    DemandedItem demandedItem = new DemandedItem(item.DemandedQuantity, item.Comment, demand.DemandPK, accessory.AccessoryPK);
+                    db.DemandedItems.Add(demandedItem);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Demand CreateDemand(int customerPK, string demandID, string conceptionCode, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID)
+        {
+            try
+            {
+                Demand demand = new Demand(demandID, startWeek, endWeek, totalDemand, customerPK, receiveDevision, userID);
+                db.Demands.Add(demand);
+                db.SaveChanges();
+                demand = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
+                          select de).FirstOrDefault();
+                return demand;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Conception GetConceptionByConceptionCode(string conceptionCode)
+        {
+            try
+            {
+                Conception conception = (from c in db.Conceptions
+                                         where c.ConceptionCode == conceptionCode
+                                         select c).FirstOrDefault();
+                return conception;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public object GetDemandByDemandID(string demandID)
+        {
+            try
+            {
+                Demand demand = (from de in db.Demands
+                                 where de.DemandID == demandID
+                                 select de).FirstOrDefault();
+                return demand;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public double InRequestedQuantity(int accessoryPK)
         {
             double result = 0;
@@ -189,7 +279,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void UpdateRequest2(int requestPK, bool isConfirmed)
+        public void ConfirmRequest(int requestPK, bool isConfirmed)
         {
             try
             {
@@ -346,7 +436,7 @@ namespace StoreManagement.Controllers
                         Box box = db.Boxes.Find(storedBox.BoxPK);
                         Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
                         Row row = db.Rows.Find(shelf.RowPK);
-                        result.Add(new Client_Box_Shelf_Row(box.BoxID, shelf.ShelfID, row.RowID,item.Key.ItemPK,item.Key.IsRestored, item.Value));
+                        result.Add(new Client_Box_Shelf_Row(box.BoxID, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value));
                     }
                 }
             }

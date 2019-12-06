@@ -88,9 +88,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateOrderBusiness(string orderID, int supplierPK, string userID, [FromBody] List<Client_Accessory_OrderedQuantity_Comment> list)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 3)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
             {
                 OrdersDAO ordersController = new OrdersDAO();
                 Order order = null;
@@ -139,9 +137,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult UpdateOrderBusiness([FromBody] OrderedItem orderedItems, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 3)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
             {
                 OrdersDAO ordersController = new OrdersDAO();
                 OrderedItemsDAO orderedItemsController = new OrderedItemsDAO();
@@ -177,9 +173,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteOrderBusiness(int orderPK, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 3)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
             {
                 List<OrderedItem> listOrderedItem;
                 OrdersDAO ordersController = new OrdersDAO();
@@ -231,9 +225,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult SwiftOrderState(int orderPK, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 3)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
             {
                 Order order = db.Orders.Find(orderPK);
                 OrdersDAO ordersController = new OrdersDAO();
@@ -411,9 +403,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreatePackBusiness(int orderPK, [FromBody] List<Client_OrderedItemPK_PackedQuantity_Comment> list, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 Order order = db.Orders.Find(orderPK);
                 int noPackID;
@@ -478,9 +468,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult UpdatePackBusiness([FromBody] PackedItem packedItem, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 PacksDAO packsController = new PacksDAO();
                 PackedItemsDAO packedItemsController = new PackedItemsDAO();
@@ -524,9 +512,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeletePackBusiness(int packPK, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 List<PackedItem> listPackedItem;
                 PacksDAO packsController = new PacksDAO();
@@ -574,9 +560,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult SwiftPackState(int packPK, string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 Pack pack = db.Packs.Find(packPK);
                 PacksDAO packsController = new PacksDAO();
@@ -629,11 +613,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditContractNumber(int packedItemPK, [FromBody] string contractNumber, string userID)
         {
-            // kiểm trước khi chạy lệnh
-
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 PackedItem packedItem = db.PackedItems.Find(packedItemPK);
                 Pack pack = db.Packs.Find(packedItem.PackPK);
@@ -784,11 +764,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult IdentifyItemBusiness(string boxID, string userID, [FromBody] List<Client_PackedItemPK_IdentifiedQuantity> list)
         {
-            // kiểm trước khi chạy lệnh
-
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
                 BoxDAO boxController = new BoxDAO();
@@ -853,11 +829,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditIdentificationBusiness(int IdentifyingSessionPK, string userID, [FromBody] List<Client_IdentifiedItemPK_IdentifiedQuantity> list)
         {
-            // kiểm trước khi chạy lệnh
-
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // edit identification
                 IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
@@ -930,11 +902,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteIdentificationBusiness(int IdentifyingSessionPK, string userID)
         {
-            // kiểm trước khi chạy lệnh
-
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // edit identification
                 IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
@@ -983,11 +951,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult ArrangeIdentifiedItemsBusiness(string boxFromID, string boxToID, string userID, [FromBody] List<int> listIdentifiedItemsPK)
         {
-            // kiểm trước khi chạy lệnh
-
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // Arrange
                 IdentifyItemDAO identifyItemController = new IdentifyItemDAO();

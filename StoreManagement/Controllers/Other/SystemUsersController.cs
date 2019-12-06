@@ -21,8 +21,8 @@ namespace StoreManagement.Controllers
 
         public class Client_User
         {
-            public string EmployeeCode { get; set; }
-            public int RoleID { get; set; }
+            public string UserID { get; set; }
+            public string RoleName { get; set; }
             public string Name { get; set; }
             public DateTime DateCreated { get; set; }
             public bool IsDeleted { get; set; }
@@ -45,9 +45,9 @@ namespace StoreManagement.Controllers
         // GET: api/SystemUsers/5
         [Route("api/SystemUsers/ID")]
         [HttpPost]
-        public IHttpActionResult GetSystemUser(string EmployeeCode)
+        public IHttpActionResult GetSystemUser(string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
+            SystemUser systemUser = db.SystemUsers.Find(userID);
             if (systemUser == null)
             {
                 return NotFound();
@@ -60,8 +60,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult UpdateSystemUser(Client_User user)
         {
-            SystemUser systemUser = db.SystemUsers.Find(user.EmployeeCode);
-            systemUser.RoleID = user.RoleID;
+            SystemUser systemUser = db.SystemUsers.Find(user.UserID);
             systemUser.Name = user.Name;
 
             if (!ModelState.IsValid)
@@ -77,7 +76,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SystemUserExists(user.EmployeeCode))
+                if (!SystemUserExists(user.UserID))
                 {
                     return NotFound();
                 }
@@ -92,9 +91,9 @@ namespace StoreManagement.Controllers
 
         [Route("api/SystemUsers/ResetPassword")]
         [HttpPut]
-        public IHttpActionResult ResetPassword(string EmployeeCode)
+        public IHttpActionResult ResetPassword(string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
+            SystemUser systemUser = db.SystemUsers.Find(userID);
             systemUser.Password = "PDG@123";
             if (!ModelState.IsValid)
             {
@@ -109,7 +108,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SystemUserExists(EmployeeCode))
+                if (!SystemUserExists(userID))
                 {
                     return NotFound();
                 }
@@ -124,9 +123,9 @@ namespace StoreManagement.Controllers
 
         [Route("api/SystemUsers/Recover")]
         [HttpPut]
-        public IHttpActionResult RecoverUser(string EmployeeCode)
+        public IHttpActionResult RecoverUser(string userID)
         {
-            SystemUser systemUser = db.SystemUsers.Find(EmployeeCode);
+            SystemUser systemUser = db.SystemUsers.Find(userID);
             systemUser.IsDeleted = false;
             if (!ModelState.IsValid)
             {
@@ -141,7 +140,7 @@ namespace StoreManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SystemUserExists(EmployeeCode))
+                if (!SystemUserExists(userID))
                 {
                     return NotFound();
                 }
@@ -158,16 +157,18 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult InsertSystemUser(Client_User user)
         {
-            if (user.RoleID < 2 || user.RoleID > 7)
+            if (db.Roles.Find(user.RoleName) == null)
             {
                 return Conflict();
             }
-            SystemUser systemUser = new SystemUser();
-            systemUser.UserID = user.EmployeeCode;
-            systemUser.RoleID = user.RoleID;
-            systemUser.Name = user.Name;
-            systemUser.DateCreated = user.DateCreated;
-            systemUser.Password = "PDG@123";
+            SystemUser systemUser = new SystemUser
+            {
+                UserID = user.UserID,
+                RoleName = user.RoleName,
+                Name = user.Name,
+                DateCreated = user.DateCreated,
+                Password = "PDG@123"
+            };
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -200,9 +201,9 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                SqlParameter employeeCode = new SqlParameter("@EmployeeCode", id);
+                SqlParameter userID = new SqlParameter("@userID", id);
                 // use execsqlcommand when there is 0 thing in return
-                db.Database.ExecuteSqlCommand("exec DeleteUsers @EmployeeCode", employeeCode);
+                db.Database.ExecuteSqlCommand("exec DeleteUsers @userID", userID);
                 return Ok("XÓA NHÂN VIÊN THÀNH CÔNG!");
             }
             catch (Exception e)

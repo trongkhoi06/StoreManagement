@@ -41,5 +41,7 @@ namespace StoreManagement.Models
         public int AccessoryTypePK { get; set; }
 
         public int SupplierPK { get; set; }
+
+        public int CustomerPK { get; set; }
     }
 }

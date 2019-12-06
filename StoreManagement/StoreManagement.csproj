@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\Client_Accessory_DemandedQuantity_Comment.cs" />
     <Compile Include="Controllers\Class\Client_IssuingSession.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemRead.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItems_Row.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Controllers\Class\Client_StoredBox_Shelf_Row.cs" />
     <Compile Include="Controllers\Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\Class\Client_Shelf.cs" />
+    <Compile Include="Controllers\Class\ValidationBeforeCommandDAO.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />
     <Compile Include="Controllers\Other\BoxDAO.cs" />
     <Compile Include="Controllers\Phrase1\IdentifyItemDAO.cs" />

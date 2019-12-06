@@ -13,15 +13,23 @@ namespace StoreManagement.Models
         {
         }
 
+        public DemandedItem(double demandedQuantity, string comment, int demandPK, int accessoryPK)
+        {
+            DemandedQuantity = demandedQuantity;
+            Comment = comment;
+            DemandPK = demandPK;
+            AccessoryPK = accessoryPK;
+        }
+
         [Key]
         public int DemandedItemPK { get; set; }
 
-        public int DemandedQuantity { get; set; }
+        public double DemandedQuantity { get; set; }
 
         public string Comment { get; set; }
 
         public int DemandPK { get; set; }
 
-        public int? AccessoryPK { get; set; }
+        public int AccessoryPK { get; set; }
     }
 }

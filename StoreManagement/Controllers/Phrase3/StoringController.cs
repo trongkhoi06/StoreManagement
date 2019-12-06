@@ -110,10 +110,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult StoreBoxBusiness(string boxID, string shelfID, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingItemDAO = new StoringDAO();
@@ -244,10 +241,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult TransferStoredItems(string boxFromID, string boxToID, string userID, [FromBody] List<Client_ItemPK_TransferQuantity_IsRestored> list)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -306,10 +300,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult MoveStoredBox(string boxID, string shelfID, string userID)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -356,10 +347,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult AdjustInventory(string boxID, int itemPK, double adjustedQuantity, bool isRestored, string userID, string comment)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -412,10 +400,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult VerifyAdjusting(int adjustingSessionPK, string userID, bool isApproved)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 StoringDAO storingDAO = new StoringDAO();
                 Verification verification = null;
@@ -451,10 +436,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult DiscardInventory(string boxID, int itemPK, double discardedQuantity, bool isRestored, string userID, string comment)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 4)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -507,10 +489,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult VerifyDiscarding(int discardingSessionPK, string userID, bool isApproved)
         {
-            // kiểm trước khi chạy lệnh
-            SystemUser systemUser = db.SystemUsers.Find(userID);
-            // check role of system user
-            if (systemUser != null && systemUser.RoleID == 2)
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 StoringDAO storingDAO = new StoringDAO();
                 Verification verification = null;
