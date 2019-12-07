@@ -29,14 +29,17 @@ namespace StoreManagement.Controllers
 
         public double SumOfIdentifiedQuantity { get; set; }
 
-        public bool IsPackedItemCreated(int PackPK, List<Client_OrderedItemPK_PackedQuantity_Comment> list)
+        public bool IsPackedItemCreated(int PackPK, List<Client_OrderedItemPK_PackedQuantity_Comment> list, int orderPK)
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                db.PackedItems.Add(new PackedItem(PackPK, list[i]));
-            }
             try
             {
+                foreach (var item in list)
+                {
+                    OrderedItem orderedItem = db.OrderedItems.Find(item.OrderedItemPK);
+                    if (orderedItem == null) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG TỒN TẠI!");
+                    if (orderedItem.OrderPK != orderPK) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG CÙNG ĐƠN ĐẶT!");
+                    db.PackedItems.Add(new PackedItem(PackPK, item));
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

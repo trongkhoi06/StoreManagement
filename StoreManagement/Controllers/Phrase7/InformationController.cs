@@ -1,0 +1,611 @@
+﻿using StoreManagement.Class;
+using StoreManagement.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+namespace StoreManagement.Controllers
+{
+    public class InformationController : ApiController
+    {
+        private UserModel db = new UserModel();
+
+        [Route("api/InformationController/GetAllCustomer")]
+        [HttpGet]
+        public IHttpActionResult GetAllCustomer()
+        {
+            List<Customer> result;
+            try
+            {
+                result = db.Customers.ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/InformationController/GetAllAccessory")]
+        [HttpGet]
+        public IHttpActionResult GetAllAccessory()
+        {
+            List<Accessory> result;
+            try
+            {
+                result = db.Accessories.ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/InformationController/CreateCustomer")]
+        [HttpPost]
+        public IHttpActionResult CreateCustomer(string name, string code, string address, string phoneNumber, string taxID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.CreateCustomer(name, code, address, phoneNumber, taxID, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO KHÁCH HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/EditCustomer")]
+        [HttpPut]
+        public IHttpActionResult EditCustomer(int customerPK, string address, string phoneNumber, string taxID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.UpdateCustomer(customerPK, address, phoneNumber, taxID, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "CHỈNH SỬA THÔNG TIN KHÁCH HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteCustomer")]
+        [HttpDelete]
+        public IHttpActionResult DeleteCustomer(int customerPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeleteCustomer(customerPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA KHÁCH HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeactiveCustomer")]
+        [HttpPut]
+        public IHttpActionResult DeactiveCustomer(int customerPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeactiveCustomer(customerPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "ẨN KHÁCH HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/ActiveCustomer")]
+        [HttpPut]
+        public IHttpActionResult ActiveCustomer(int customerPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.ActiveCustomer(customerPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "HIỆN KHÁCH HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/CreateConception")]
+        [HttpPost]
+        public IHttpActionResult CreateConception(int customerPK, string conceptionCode, int year, string season, string description, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.CreateConception(customerPK, conceptionCode, year, season, description, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO MÃ HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteConception")]
+        [HttpDelete]
+        public IHttpActionResult DeleteConception(int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeleteConception(conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA MÃ HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeactiveConception")]
+        [HttpPut]
+        public IHttpActionResult DeactiveConception(int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeactiveConception(conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "ẨN MÃ HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/ActiveConception")]
+        [HttpPut]
+        public IHttpActionResult ActiveConception(int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.ActiveConception(conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "HIỆN MÃ HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/CreateSupplier")]
+        [HttpPost]
+        public IHttpActionResult CreateSupplier(string name, string address, string phoneNumber, string taxID, string supplierCode, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.CreateSupplier(name, address, phoneNumber, taxID, supplierCode, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO NHÀ CUNG CẤP THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/EditSupplier")]
+        [HttpPut]
+        public IHttpActionResult EditSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.UpdateSupplier(supplierPK, address, phoneNumber, taxID, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "CHỈNH SỬA NHÀ CUNG CẤP THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteSupplier")]
+        [HttpDelete]
+        public IHttpActionResult DeleteSupplier(int supplierPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeleteSupplier(supplierPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA NHÀ CUNG CẤP THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeactiveSupplier")]
+        [HttpPut]
+        public IHttpActionResult DeactiveSupplier(int supplierPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeactiveSupplier(supplierPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "ẨN NHÀ CUNG CẤP THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/ActiveSupplier")]
+        [HttpPut]
+        public IHttpActionResult ActiveSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.ActiveSupplier(supplierPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "HIỆN NHÀ CUNG CẤP THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/CreateAccessory")]
+        [HttpPost]
+        public IHttpActionResult CreateAccessory(string item, string art, string description, string comment, string color, int customerPK, int supplierPK, int accessoryTypePK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/EditAccessory")]
+        [HttpPut]
+        public IHttpActionResult EditAccessory(int accessoryPK, string comment, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.UpdateAccessory(accessoryPK, comment, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "CHỈNH SỬA PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/LinkConception")]
+        [HttpPost]
+        public IHttpActionResult LinkConception(int accessoryPK, int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.LinkConception(accessoryPK, conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "LIÊN KẾT MÃ HÀNG VÀ PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/UnlinkConception")]
+        [HttpPost]
+        public IHttpActionResult UnlinkConception(int accessoryPK, int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.UnlinkConception(accessoryPK, conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "GỠ LIÊN KẾT MÃ HÀNG VÀ PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeactiveAccessory")]
+        [HttpPut]
+        public IHttpActionResult DeactiveAccessory(int accessoryPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeactiveAccessory(accessoryPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "ẨN PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/ActiveAccessory")]
+        [HttpPut]
+        public IHttpActionResult ActiveAccessory(int accessoryPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.ActiveAccessory(accessoryPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "HIỆN PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteAccessory")]
+        [HttpDelete]
+        public IHttpActionResult DeleteAccessory(int accessoryPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.DeleteAccessory(accessoryPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/CreateBox")]
+        [HttpPost]
+        public IHttpActionResult CreateBox(int boxKind, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                BoxDAO boxDAO = new BoxDAO();
+                try
+                {
+                    // delete accessory
+                    DateTime now = DateTime.Now;
+                    string boxID = now.Day + now.Month + now.Year + "";
+                    Box box = (from b in db.Boxes.OrderByDescending(unit => unit.BoxPK)
+                               where b.BoxID.Contains(boxID)
+                               select b).FirstOrDefault();
+                    if (box == null)
+                    {
+                        boxID += "001";
+                    }
+                    else
+                    {
+                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 3));
+                        string tempStr = tempInt + "";
+                        if (tempStr.Length == 1) boxID += "00" + tempStr;
+                        if (tempStr.Length == 2) boxID += "0" + tempStr;
+                        if (tempStr.Length == 3) boxID += tempStr;
+                    }
+                    box = new Box(boxID);
+                    db.Boxes.Add(box);
+                    db.SaveChanges();
+
+                    box = boxDAO.GetBoxByBoxID(boxID);
+                    boxDAO.CreateBox(boxKind, box.BoxPK);
+                }
+                catch (Exception e)
+                {
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐÃ ĐƯỢC SỬ DỤNG BỞI ĐƠN ĐẶT HOẶC PHIẾU CẤP PHÁT HOẶC PHIẾU TỒN KHO");
+                }
+                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteBpx")]
+        [HttpPost]
+        public IHttpActionResult DeleteBpx(int boxPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+                {
+                    BoxDAO boxDAO = new BoxDAO();
+                    try
+                    {
+                        boxDAO.DeleteBox(boxPK, userID);
+                    }
+                    catch (Exception e)
+                    {
+                        //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                        return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                    }
+                    return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+    }
+}
+

@@ -11,11 +11,11 @@ namespace StoreManagement.Class
 
         public Client_InBoxItems_Shelf(T shelf, List<Client_InBoxItem> inBoxItems)
         {
-            Shelf = shelf;
+            Shelfs = shelf;
             InBoxItems = inBoxItems;
         }
 
-        public T Shelf { get; set; }
+        public T Shelfs { get; set; }
 
         public List<Client_InBoxItem> InBoxItems { get; set; }
     }

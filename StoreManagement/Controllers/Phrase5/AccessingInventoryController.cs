@@ -148,6 +148,10 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
+                Client_InBoxItems_Box<List<string>> result;
+                List<string> boxIDs = new List<string>();
+                Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
+
                 Shelf shelf = (from sh in db.Shelves
                                where sh.ShelfID == shelfID
                                select sh).FirstOrDefault();
@@ -156,14 +160,13 @@ namespace StoreManagement.Controllers
                     List<StoredBox> sBoxes = (from sB in db.StoredBoxes
                                               where sB.ShelfPK == shelf.ShelfPK
                                               select sB).ToList();
-                    Client_InBoxItems_Box<List<Client_Row>> result;
-                    List<Client_Row> client_Rows = new List<Client_Row>();
-                    Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
-                    Row row = db.Rows.Find(shelf.RowPK);
+                    if (sBoxes.Count == 0) return Content(HttpStatusCode.OK, "");
+                    string rowID = db.Rows.Find(shelf.RowPK).RowID;
                     foreach (var sBox in sBoxes)
                     {
-                        Box box = db.Boxes.Find(sBox.BoxPK);
-                        client_Rows.Add(new Client_Row(box.BoxID, row.RowID));
+                        Box box = db.Boxes.Find(sBox.BoxPK); db.Boxes.Find(sBox.BoxPK);
+                        boxIDs.Add(box.BoxID);
+
                         // Get list inBoxItem
                         List<Entry> entries = (from e in db.Entries
                                                where e.StoredBoxPK == sBox.StoredBoxPK
@@ -230,7 +233,7 @@ namespace StoreManagement.Controllers
 
                     }
 
-                    result = new Client_InBoxItems_Box<List<Client_Row>>(client_Rows, client_InBoxItems.Values.ToList());
+                    result = new Client_InBoxItems_Box<List<string>>(boxIDs, client_InBoxItems.Values.ToList(), rowID);
                     return Content(HttpStatusCode.OK, result);
                 }
                 else
@@ -252,7 +255,7 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                Client_InBoxItems_Row<List<string>> result;
+                Client_InBoxItems_Shelf<List<string>> result;
                 List<string> shelfIDs = new List<string>();
                 Row row = (from r in db.Rows
                            where r.RowID == rowID
@@ -338,7 +341,7 @@ namespace StoreManagement.Controllers
                             }
                         }
                     }
-                    result = new Client_InBoxItems_Row<List<string>>(shelfIDs, client_InBoxItems.Values.ToList());
+                    result = new Client_InBoxItems_Shelf<List<string>>(shelfIDs, client_InBoxItems.Values.ToList());
                     return Content(HttpStatusCode.OK, result);
                 }
                 else

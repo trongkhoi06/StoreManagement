@@ -13,6 +13,12 @@ namespace StoreManagement.Models
         {
         }
 
+        public ConceptionAccessory(int conceptionPK, int accessoryPK)
+        {
+            ConceptionPK = conceptionPK;
+            AccessoryPK = accessoryPK;
+        }
+
         [Key]
         public int ConceptionAccessoryPK { get; set; }
 

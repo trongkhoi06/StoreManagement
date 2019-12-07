@@ -279,8 +279,10 @@ namespace StoreManagement.Controllers
             try
             {
                 Box boxFrom = boxDAO.GetBoxByBoxID(boxFromID);
+                StoredBox sBoxFrom = boxDAO.GetStoredBoxbyBoxPK(boxFrom.BoxPK);
                 Box boxTo = boxDAO.GetBoxByBoxID(boxToID);
-                db.TransferringSessions.Add(new TransferringSession(boxFrom.BoxPK, boxTo.BoxPK, userID));
+                StoredBox sBoxTo = boxDAO.GetStoredBoxbyBoxPK(boxTo.BoxPK);
+                db.TransferringSessions.Add(new TransferringSession(sBoxFrom.StoredBoxPK, sBoxTo.StoredBoxPK, userID));
                 db.SaveChanges();
                 result = (from tSS in db.TransferringSessions.OrderByDescending(unit => unit.TransferingSessionPK)
                           select tSS).FirstOrDefault();

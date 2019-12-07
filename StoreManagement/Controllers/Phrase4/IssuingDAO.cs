@@ -127,7 +127,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void CreateDemandedItems(Demand demand, List<Client_Accessory_DemandedQuantity_Comment> list, string conceptionCode)
+        public void CreateDemandedItems(Demand demand, List<Client_Accessory_DemandedQuantity_Comment> list, int conceptionPK)
         {
             try
             {
@@ -137,13 +137,14 @@ namespace StoreManagement.Controllers
                                            where a.AccessoryID == item.AccessoryID
                                            select a).FirstOrDefault();
 
-                    Conception conception = db.Conceptions.Find(GetConceptionByConceptionCode(conceptionCode));
+                    Conception conception = db.Conceptions.Find(conceptionPK);
 
                     ConceptionAccessory conceptionAccessory = (from ca in db.ConceptionAccessories
                                                                where ca.AccessoryPK == accessory.AccessoryPK
                                                                && ca.ConceptionPK == conception.ConceptionPK
                                                                select ca).FirstOrDefault();
                     if (accessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " KHÔNG TỒN TẠI!");
+                    if (conception == null) throw new Exception("MÃ HÀNG " + conception.ConceptionCode + " KHÔNG TỒN TẠI!");
                     if (conceptionAccessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " CHƯA ĐƯỢC GẮN CC!");
                     DemandedItem demandedItem = new DemandedItem(item.DemandedQuantity, item.Comment, demand.DemandPK, accessory.AccessoryPK);
                     db.DemandedItems.Add(demandedItem);
@@ -190,11 +191,11 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Demand CreateDemand(int customerPK, string demandID, string conceptionCode, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID)
+        public Demand CreateDemand(int customerPK, string demandID, int conceptionPK, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID)
         {
             try
             {
-                Demand demand = new Demand(demandID, startWeek, endWeek, totalDemand, customerPK, receiveDevision, userID);
+                Demand demand = new Demand(demandID, startWeek, endWeek, totalDemand, conceptionPK, receiveDevision, userID);
                 db.Demands.Add(demand);
                 db.SaveChanges();
                 demand = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)

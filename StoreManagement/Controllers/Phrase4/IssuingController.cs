@@ -38,8 +38,8 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "SỐ LIỆU TUẦN KHÔNG HỢP LỆ");
                     }
-                    demand = issuingDAO.CreateDemand(customerPK, demandID, conceptionCode, startWeek, endWeek, totalDemand, receiveDevision, userID);
-                    issuingDAO.CreateDemandedItems(demand, list, conceptionCode);
+                    demand = issuingDAO.CreateDemand(customerPK, demandID, conception.ConceptionPK, startWeek, endWeek, totalDemand, receiveDevision, userID);
+                    issuingDAO.CreateDemandedItems(demand, list, conception.ConceptionPK);
                 }
                 catch (Exception e)
                 {
@@ -159,6 +159,11 @@ namespace StoreManagement.Controllers
                 List<Demand> demands = (from d in db.Demands
                                         where d.IsOpened == true
                                         select d).ToList();
+                foreach (var demand in demands)
+                {
+                    Conception conception = db.Conceptions.Find(demand.ConceptionPK);
+                    client_Demands.Add(new Client_Demand(demand, conception));
+                }
             }
             catch (Exception e)
             {

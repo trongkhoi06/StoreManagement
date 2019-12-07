@@ -180,11 +180,15 @@
     <Compile Include="Controllers\Phrase4\IssuingController.cs" />
     <Compile Include="Controllers\Phrase4\IssuingDAO.cs" />
     <Compile Include="Controllers\Phrase5\AccessingInventoryController.cs" />
+    <Compile Include="Controllers\Phrase7\InformationController.cs" />
+    <Compile Include="Controllers\Phrase7\InformationDAO.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccessoryType.cs" />
     <Compile Include="Models\Accessory.cs" />
+    <Compile Include="Models\ActionTypeEnum.cs" />
+    <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\AdjustingSession.cs" />
     <Compile Include="Models\ArrangingSession.cs" />
     <Compile Include="Models\Box.cs" />
@@ -208,6 +212,7 @@
     <Compile Include="Models\IssuingSession.cs" />
     <Compile Include="Models\KindRole.cs" />
     <Compile Include="Models\MovingSession.cs" />
+    <Compile Include="Models\ObjectKindEnum.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderedItem.cs" />
     <Compile Include="Models\Pack.cs" />

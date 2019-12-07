@@ -13,8 +13,22 @@ namespace StoreManagement.Models
         {
         }
 
+        public Supplier(string supplierName, string supplierAddress, string supplierPhoneNumber, string taxID, string supplierCode)
+        {
+            SupplierName = supplierName;
+            SupplierAddress = supplierAddress;
+            SupplierPhoneNumber = supplierPhoneNumber;
+            TaxID = taxID;
+            IsActive = true;
+            SupplierCode = supplierCode;
+        }
+
         [Key]
         public int SupplierPK { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string SupplierCode { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -28,5 +42,7 @@ namespace StoreManagement.Models
 
         [StringLength(100)]
         public string TaxID { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

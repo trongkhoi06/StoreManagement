@@ -84,6 +84,50 @@ namespace StoreManagement.Controllers
             }
             db.SaveChanges();
         }
+
+        public void CreateBox(int boxKind, int boxPK)
+        {
+            try
+            {
+                UnstoredBox unstoredBox;
+                //StoredBox storedBox;
+                switch (boxKind)
+                {
+                    case 1:
+                        unstoredBox = new UnstoredBox(boxPK, false);
+                        db.UnstoredBoxes.Add(unstoredBox);
+                        break;
+                    case 2:
+                        unstoredBox = new UnstoredBox(boxPK, true);
+                        db.UnstoredBoxes.Add(unstoredBox);
+                        break;
+                    case 3:
+                        break;
+                    default:
+                        break;
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteBox(int boxPK, string userID)
+        {
+            try
+            {
+                Box box = db.Boxes.Find(boxPK);
+                db.Boxes.Remove(box);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
     }
 }
 

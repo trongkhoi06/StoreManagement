@@ -432,7 +432,7 @@ namespace StoreManagement.Controllers
 
                         // create pack items
                         PackedItemsDAO packedItemsController = new PackedItemsDAO();
-                        if (!packedItemsController.IsPackedItemCreated(pack.PackPK, list))
+                        if (!packedItemsController.IsPackedItemCreated(pack.PackPK, list, orderPK))
                         {
                             if (pack != null)
                             {

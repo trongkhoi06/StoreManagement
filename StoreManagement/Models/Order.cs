@@ -19,6 +19,8 @@ namespace StoreManagement.Models
             OrderID = orderID;
             SupplierPK = supplierPK;
             UserID = userID;
+            IsOpened = true;
+            DateCreated = DateTime.Now;
         }
 
         [Key]

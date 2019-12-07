@@ -13,6 +13,16 @@ namespace StoreManagement.Models
         {
         }
 
+        public Conception(string conceptionCode, string description, int year, string season, int customerPK)
+        {
+            ConceptionCode = conceptionCode;
+            Description = description;
+            Year = year;
+            Season = season;
+            IsActive = true;
+            CustomerPK = customerPK;
+        }
+
         [Key]
         public int ConceptionPK { get; set; }
 

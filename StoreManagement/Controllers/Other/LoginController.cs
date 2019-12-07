@@ -56,7 +56,6 @@ namespace StoreManagement.Controllers
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, e.Message);
-                return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
 
