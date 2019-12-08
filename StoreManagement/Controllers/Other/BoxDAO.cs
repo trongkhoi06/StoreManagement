@@ -120,6 +120,8 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = db.Boxes.Find(boxPK);
+                UnstoredBox unstoredBox = db.UnstoredBoxes.Find(box.BoxPK);
+                db.UnstoredBoxes.Remove(unstoredBox);
                 db.Boxes.Remove(box);
                 db.SaveChanges();
             }

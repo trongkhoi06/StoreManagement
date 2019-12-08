@@ -21,6 +21,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
+            IsOpened = pack.IsOpened;
             QualityState = null;
             IsEditable = null;
         }
@@ -34,6 +35,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
+            IsOpened = pack.IsOpened;
             QualityState = classifiedItem.QualityState;
             IsEditable = isEditable;
         }
@@ -52,8 +54,12 @@ namespace StoreManagement.Class
 
         public string PackID { get; set; }
 
+        public bool IsOpened { get; set; }
+
         public int? QualityState { get; set; }
 
         public bool? IsEditable { get; set; }
+
+        
     }
 }

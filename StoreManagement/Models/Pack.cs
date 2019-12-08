@@ -17,7 +17,7 @@ namespace StoreManagement.Models
         {
             PackID = packID;
             DateCreated = DateTime.Now;
-            IsOpened = false;
+            IsOpened = true;
             OrderPK = orderPK;
             UserID = userID;
         }

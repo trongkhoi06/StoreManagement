@@ -130,8 +130,10 @@ namespace StoreManagement.Controllers
         {
             try
             {
+                double tempSample = 0;
+                double tempDefectLimit = 0;
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
-                                                        where iI.IsChecked == true && iI.PackedItemPK == packedItemPK
+                                                        where iI.PackedItemPK == packedItemPK
                                                         select iI).ToList();
                 foreach (var item in identifiedItems)
                 {
@@ -144,8 +146,8 @@ namespace StoreManagement.Controllers
                                                        select checkss).FirstOrDefault();
 
                     // assign value to variable
-                    Sample += item.IdentifiedQuantity / 10;
-                    DefectLimit += item.IdentifiedQuantity / 10;
+                    tempSample += item.IdentifiedQuantity;
+                    tempDefectLimit += item.IdentifiedQuantity;
                     SumOfIdentifiedQuantity += item.IdentifiedQuantity;
                     if (countingSession != null)
                     {
@@ -157,7 +159,8 @@ namespace StoreManagement.Controllers
                         SumOfCheckedQuantity += checkingSession.CheckedQuantity;
                     }
                 }
-
+                Sample = SampleCaculate(tempSample);
+                DefectLimit = DefectLimitCaculate(tempDefectLimit);
             }
             catch (Exception e)
             {
@@ -165,6 +168,33 @@ namespace StoreManagement.Controllers
             }
 
             return true;
+        }
+
+        public double SampleCaculate(double tempSample)
+        {
+            if (tempSample < 151) return 20;
+            if (tempSample < 281) return 32;
+            if (tempSample < 501) return 50;
+            if (tempSample < 1201) return 80;
+            if (tempSample < 3201) return 125;
+            if (tempSample < 10001) return 200;
+            if (tempSample < 35001) return 315;
+            if (tempSample < 150001) return 500;
+            if (tempSample < 500001) return 800;
+            return 1250;
+        }
+        public double DefectLimitCaculate(double tempDefectLimit)
+        {
+            if (tempDefectLimit < 151) return 1;
+            if (tempDefectLimit < 281) return 1;
+            if (tempDefectLimit < 501) return 2;
+            if (tempDefectLimit < 1201) return 2;
+            if (tempDefectLimit < 3201) return 3;
+            if (tempDefectLimit < 10001) return 4;
+            if (tempDefectLimit < 35001) return 6;
+            if (tempDefectLimit < 150001) return 8;
+            if (tempDefectLimit < 500001) return 11;
+            return 15;
         }
     }
 }

@@ -540,22 +540,28 @@ namespace StoreManagement.Controllers
                 {
                     // delete accessory
                     DateTime now = DateTime.Now;
-                    string boxID = now.Day + now.Month + now.Year + "";
+                    string tempDay = (now.Day + "").Length == 1 ? '0' + (now.Day + "") : (now.Day + "");
+                    string tempMonth = (now.Month + "").Length == 1 ? '0' + (now.Month + "") : (now.Month + "");
+                    string tempYear = (now.Year + "").Substring((now.Year + "").Length - 2);
+
+                    string boxID = tempDay + tempMonth + tempYear;
                     Box box = (from b in db.Boxes.OrderByDescending(unit => unit.BoxPK)
                                where b.BoxID.Contains(boxID)
                                select b).FirstOrDefault();
+                   
                     if (box == null)
                     {
                         boxID += "001";
                     }
                     else
                     {
-                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 3));
+                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 6,3))+1;
                         string tempStr = tempInt + "";
                         if (tempStr.Length == 1) boxID += "00" + tempStr;
                         if (tempStr.Length == 2) boxID += "0" + tempStr;
                         if (tempStr.Length == 3) boxID += tempStr;
                     }
+                    boxID += "box";
                     box = new Box(boxID);
                     db.Boxes.Add(box);
                     db.SaveChanges();
@@ -565,8 +571,7 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
-                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                    return Content(HttpStatusCode.Conflict, "ĐÃ ĐƯỢC SỬ DỤNG BỞI ĐƠN ĐẶT HOẶC PHIẾU CẤP PHÁT HOẶC PHIẾU TỒN KHO");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
             }
@@ -576,36 +581,31 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/InformationController/DeleteBpx")]
+        [Route("api/InformationController/DeleteBox")]
         [HttpPost]
-        public IHttpActionResult DeleteBpx(int boxPK, string userID)
+        public IHttpActionResult DeleteBox(int boxPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
-                if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+                BoxDAO boxDAO = new BoxDAO();
+                try
                 {
-                    BoxDAO boxDAO = new BoxDAO();
-                    try
-                    {
-                        boxDAO.DeleteBox(boxPK, userID);
-                    }
-                    catch (Exception e)
-                    {
-                        //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                        return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
-                    }
-                    return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+                    boxDAO.DeleteBox(boxPK, userID);
                 }
-                else
+                catch (Exception e)
                 {
-                    return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
+                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
             }
             else
             {
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
             }
         }
+
     }
 }
 

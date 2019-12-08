@@ -414,7 +414,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "XÓA YÊU CẦU XUẤT THÀNH CÔNG!");
             }
             else
             {
@@ -465,7 +465,7 @@ namespace StoreManagement.Controllers
                     DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
                     Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
                     List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
-                    client_RequestedItemDetails.Add(new Client_RequestedItem(request, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
+                    client_RequestedItemDetails.Add(new Client_RequestedItem(requestedItem, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
                 }
             }
             catch (Exception e)

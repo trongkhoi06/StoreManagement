@@ -33,6 +33,24 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, accessories);
         }
 
+        [Route("api/ReceivingController/GetAccessoryBySupplierPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoryBySupplierPK(int supplierPK)
+        {
+            List<Accessory> accessories;
+            try
+            {
+                accessories = (from a in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
+                               where a.SupplierPK == supplierPK
+                               select a).ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, accessories);
+        }
+
         // Get Supplier
         [Route("api/ReceivingController/GetSupplier")]
         [HttpGet]
@@ -254,6 +272,25 @@ namespace StoreManagement.Controllers
         }
 
         // Pack
+        [Route("api/ReceivingController/GetIsOrderContainsPack")]
+        [HttpGet]
+        public IHttpActionResult GetIsOrderContainsPack(int orderPK )
+        {
+            try
+            {
+                List<Pack> packs = (from p in db.Packs.OrderByDescending(unit => unit.PackPK)
+                                    where p.OrderPK == orderPK
+                                    select p).ToList();
+                if (packs.Count == 0) return Content(HttpStatusCode.OK, false);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, true);
+        }
+
         [Route("api/ReceivingController/GetPackByIsOpened")]
         [HttpGet]
         public IHttpActionResult GetPackByIsOpenedMobile()
@@ -381,7 +418,7 @@ namespace StoreManagement.Controllers
                             }
                         }
                     }
-                    
+
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                     client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity));
@@ -595,7 +632,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
                                                              where cI.PackedItemPK == packedItem.PackedItemPK
                                                              select cI).FirstOrDefault();
-                            if (classifiedItem == null)
+                            if (classifiedItem != null)
                                 return Content(HttpStatusCode.Conflict, "Pack đã được classify, không đc swift state");
                             List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
                                                                     where iI.PackedItemPK == packedItem.PackedItemPK
