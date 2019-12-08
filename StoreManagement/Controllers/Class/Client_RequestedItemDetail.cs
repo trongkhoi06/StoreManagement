@@ -12,10 +12,10 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_RequestedItemDetail(Request request, Accessory accessory, double demandedQuantity, double sumOtherRequestedQuantity, double availableQuantity)
+        public Client_RequestedItemDetail(RequestedItem requestedItem, Accessory accessory, double demandedQuantity, double sumOtherRequestedQuantity, double availableQuantity)
         {
-            RequestPK = request.RequestPK;
-            RequestedQuantity = request.RequestID;
+            RequestedItemPK = requestedItem.RequestPK;
+            RequestedQuantity = requestedItem.RequestedQuantity;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
@@ -26,9 +26,9 @@ namespace StoreManagement.Class
             AvailableQuantity = availableQuantity;
         }
 
-        public int RequestPK { get; set; }
+        public int RequestedItemPK { get; set; }
 
-        public string RequestedQuantity { get; set; }
+        public double RequestedQuantity { get; set; }
 
         public string AccessoryID { get; set; }
 

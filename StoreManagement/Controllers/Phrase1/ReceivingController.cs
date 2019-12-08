@@ -358,14 +358,33 @@ namespace StoreManagement.Controllers
             List<Client_PackedItemAngular> client_PackedItemAngulars = new List<Client_PackedItemAngular>();
             try
             {
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
                 packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
                                where pI.PackPK == PackPK
                                select pI).ToList();
                 foreach (var packedItem in packedItems)
                 {
+                    double actualQuantity = 0;
+                    ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                     where cI.PackedItemPK == packedItem.PackedItemPK
+                                                     select cI).FirstOrDefault();
+                    if (classifiedItem != null)
+                    {
+                        if (classifiedItem.QualityState == 2)
+                        {
+                            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                                    where iI.PackedItemPK == packedItem.PackedItemPK
+                                                                    select iI).ToList();
+                            foreach (var identifiedItem in identifiedItems)
+                            {
+                                actualQuantity += identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK);
+                            }
+                        }
+                    }
+                    
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem));
+                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity));
                 }
 
 

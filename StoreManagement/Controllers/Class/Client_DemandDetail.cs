@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_DemandDetail(DemandedItem demandedItem, Accessory accessory, double totalRequestedQuantity, double totalRequestedQuantityConfirmed, double availableQuantity)
+        public Client_DemandDetail(DemandedItem demandedItem, Accessory accessory, double totalRequestedQuantity, double availableQuantity)
         {
             DemandedItemPK = demandedItem.DemandedItemPK;
             DemandedQuantity = demandedItem.DemandedQuantity;
@@ -22,7 +22,6 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             TotalRequestedQuantity = totalRequestedQuantity;
-            TotalRequestedQuantityConfirmed = totalRequestedQuantityConfirmed;
             AvailableQuantity = availableQuantity;
         }
 
@@ -41,8 +40,6 @@ namespace StoreManagement.Class
         public string Item { get; set; }
 
         public double TotalRequestedQuantity { get; set; }
-
-        public double TotalRequestedQuantityConfirmed { get; set; }
 
         public double AvailableQuantity { get; set; }
 

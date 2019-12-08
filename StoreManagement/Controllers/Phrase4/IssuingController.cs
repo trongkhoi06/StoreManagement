@@ -192,7 +192,7 @@ namespace StoreManagement.Controllers
                                                           select rI).ToList();
                     client_Demands.Add(new Client_DemandDetail(demandedItem, accessory,
                         issuingDAO.TotalRequestedQuantity(requestedItems),
-                        issuingDAO.TotalRequestedQuantityConfirmed(requestedItems),
+                        //issuingDAO.TotalRequestedQuantityConfirmed(requestedItems),
                         issuingDAO.InStoredQuantity(accessory.AccessoryPK) - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)));
                 }
             }
@@ -315,7 +315,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
                     double sumOfOtherRequestedItem = issuingDAO.OtherRequestedItem(demandedItem.DemandedItemPK, requestedItem.RequestedItemPK);
 
-                    client_RequestedItemDetails.Add(new Client_RequestedItemDetail(request, accessory, demandedItem.DemandedQuantity, sumOfOtherRequestedItem,
+                    client_RequestedItemDetails.Add(new Client_RequestedItemDetail(requestedItem, accessory, demandedItem.DemandedQuantity, sumOfOtherRequestedItem,
                         issuingDAO.InStoredQuantity(accessory.AccessoryPK) - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)));
                 }
             }
@@ -610,22 +610,22 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/IssuingController/GetRequestsByUserID")]
+        [Route("api/IssuingController/GetRequestsByUserIDForConfirm")]
         [HttpGet]
-        public IHttpActionResult GetRequestsByUserID(string userID)
+        public IHttpActionResult GetRequestsByUserIDForConfirm(string userID)
         {
-            List<Client_Request> client_Requests = new List<Client_Request>();
+            List<Client_Request2> client_Requests = new List<Client_Request2>();
             IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 List<Request> requests = (from re in db.Requests
-                                          where re.UserID == userID
+                                          where re.UserID == userID && re.IsIssued == true && re.IsConfirmed == false
                                           select re).ToList();
                 foreach (var request in requests)
                 {
                     Demand demand = db.Demands.Find(request.DemandPK);
                     Conception conception = db.Conceptions.Find(demand.ConceptionPK);
-                    client_Requests.Add(new Client_Request(request, demand, conception));
+                    client_Requests.Add(new Client_Request2(request, demand, conception));
                 }
             }
 
