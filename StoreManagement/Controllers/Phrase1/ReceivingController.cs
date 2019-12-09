@@ -75,6 +75,7 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetOrderWithFilter(DateTime start, DateTime end)
         {
+            List<Client_OrderAngular> resutls = new List<Client_OrderAngular>();
             List<Order> orders;
             // make it one more day to make sure < end will be right answer
             end = end.AddDays(1);
@@ -93,13 +94,20 @@ namespace StoreManagement.Controllers
                     orders = (from o in db.Orders.OrderByDescending(unit => unit.OrderPK)
                               select o).ToList();
                 }
+                foreach (var order in orders)
+                {
+                    List<Pack> packs = (from p in db.Packs
+                                        where p.OrderPK == order.OrderPK
+                                        select p).ToList();
+                    resutls.Add(new Client_OrderAngular(order, packs.Count > 0));
+                }
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
-            return Content(HttpStatusCode.OK, orders);
+            return Content(HttpStatusCode.OK, resutls);
         }
 
         [Route("api/ReceivingController/CreateOrderBusiness")]
@@ -274,7 +282,7 @@ namespace StoreManagement.Controllers
         // Pack
         [Route("api/ReceivingController/GetIsOrderContainsPack")]
         [HttpGet]
-        public IHttpActionResult GetIsOrderContainsPack(int orderPK )
+        public IHttpActionResult GetIsOrderContainsPack(int orderPK)
         {
             try
             {

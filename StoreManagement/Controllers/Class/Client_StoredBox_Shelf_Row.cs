@@ -11,23 +11,29 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_Box_Shelf_Row(string boxID, string shelfID, string rowID, int itemPK, bool isRestored, double inBoxQuantity)
+        public Client_Box_Shelf_Row(string boxID, int storedBoxPK, string shelfID, string rowID, int itemPK, bool isRestored, double inBoxQuantity,string containerID)
         {
             BoxID = boxID;
+            StoredBoxPK = storedBoxPK;
             ShelfID = shelfID;
             RowID = rowID;
             ItemPK = itemPK;
+            ContainerID = containerID;
             IsRestored = isRestored;
             InBoxQuantity = inBoxQuantity;
         }
 
         public string BoxID { get; set; }
 
+        public int StoredBoxPK { get; set; }
+
         public string ShelfID { get; set; }
 
         public string RowID { get; set; }
 
         public int ItemPK { get; set; }
+
+        public string ContainerID { get; set; }
 
         public bool IsRestored { get; set; }
 

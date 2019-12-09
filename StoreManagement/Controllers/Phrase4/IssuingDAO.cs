@@ -111,7 +111,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void UpdateDemandedItem(int demandedItemPK,double demandedQuantity, string comment)
+        public void UpdateDemandedItem(int demandedItemPK, double demandedQuantity, string comment)
         {
             try
             {
@@ -382,6 +382,7 @@ namespace StoreManagement.Controllers
                 foreach (var item in list)
                 {
                     RequestedItem requestedItem = db.RequestedItems.Find(item.RequestedItemPK);
+                    if (requestedItem.RequestPK != requestPK) throw new Exception("CÓ ITEM KHÔNG NẰM TRONG YÊU CẦU XUẤT");
                     requestedItem.RequestedQuantity = item.RequestedQuantity;
                     db.Entry(requestedItem).State = EntityState.Modified;
                 }
@@ -517,7 +518,21 @@ namespace StoreManagement.Controllers
                         Box box = db.Boxes.Find(storedBox.BoxPK);
                         Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
                         Row row = db.Rows.Find(shelf.RowPK);
-                        result.Add(new Client_Box_Shelf_Row(box.BoxID, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value));
+                        if (item.Key.IsRestored)
+                        {
+                            RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
+                            Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, restoration.RestorationID));
+                        }
+                        else
+                        {
+                            PassedItem passedItem = db.PassedItems.Find(item.Key.ItemPK);
+                            ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                            PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                            Pack pack = db.Packs.Find(packedItem.PackPK);
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, pack.PackID));
+                        }
+
                     }
                 }
             }

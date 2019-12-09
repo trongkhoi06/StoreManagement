@@ -14,7 +14,7 @@ namespace StoreManagement.Class
 
         public Client_RequestedItem(RequestedItem requestedItem, Accessory accessory,double inStoredQuantity, List<Client_Box_Shelf_Row> requestedItemPosition)
         {
-            RequestedItemPK = requestedItem.RequestPK;
+            RequestedItemPK = requestedItem.RequestedItemPK;
             RequestedQuantity = requestedItem.RequestedQuantity;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;

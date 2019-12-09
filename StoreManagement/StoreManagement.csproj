@@ -118,6 +118,8 @@
     <Compile Include="Controllers\Class\Client_InBoxItems_Row.cs" />
     <Compile Include="Controllers\Class\Client_InBoxItems_Shelf.cs" />
     <Compile Include="Controllers\Class\Client_InputPrepareRequestAPI.cs" />
+    <Compile Include="Controllers\Class\Client_OrderAngular.cs" />
+    <Compile Include="Controllers\Class\Client_Request3.cs" />
     <Compile Include="Controllers\Class\Client_RequestedItemDetail.cs" />
     <Compile Include="Controllers\Class\Client_RequestedItem.cs" />
     <Compile Include="Controllers\Class\Client_Request2.cs" />
