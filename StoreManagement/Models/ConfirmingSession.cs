@@ -13,6 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
+        public ConfirmingSession(int requestPK, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            UserID = userID;
+            RequestPK = requestPK;
+        }
+
         [Key]
         public int ConfirmingSessionPK { get; set; }
 

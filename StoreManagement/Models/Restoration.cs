@@ -13,6 +13,15 @@ namespace StoreManagement.Models
         {
         }
 
+        public Restoration(string restorationID, string userID, string comment)
+        {
+            RestorationID = restorationID;
+            DateCreated = DateTime.Now;
+            IsReceived = false;
+            UserID = userID;
+            Comment = comment;
+        }
+
         [Key]
         public int RestorationPK { get; set; }
 
@@ -27,5 +36,7 @@ namespace StoreManagement.Models
         [Required]
         [StringLength(50)]
         public string UserID { get; set; }
+
+        public string Comment { get; set; }
     }
 }

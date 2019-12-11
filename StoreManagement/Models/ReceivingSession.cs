@@ -13,6 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
+        public ReceivingSession(string userID, int restorationPK)
+        {
+            ExecutedDate = DateTime.Now;
+            UserID = userID;
+            RestorationPK = restorationPK;
+        }
+
         [Key]
         public int ReceivingSessionPK { get; set; }
 

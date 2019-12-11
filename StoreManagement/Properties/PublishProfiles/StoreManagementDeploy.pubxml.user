@@ -6,7 +6,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
-    <_PublishTargetUrl>C:\Users\ADMIN\Desktop\Store Managment Package Deploy</_PublishTargetUrl>
+    <_PublishTargetUrl>C:\Users\ADMIN\Desktop\WebDesktopApp\Store Managment Package Deploy</_PublishTargetUrl>
   </PropertyGroup>
   <ItemGroup>
     <File Include="bin/EntityFramework.dll">
@@ -163,10 +163,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/28/2019 10:51:11</publishTime>
     </File>
     <File Include="bin/StoreManagement.dll">
-      <publishTime>12/09/2019 13:47:18</publishTime>
+      <publishTime>12/11/2019 10:32:04</publishTime>
     </File>
     <File Include="bin/StoreManagement.pdb">
-      <publishTime>12/09/2019 13:47:18</publishTime>
+      <publishTime>12/11/2019 10:32:04</publishTime>
     </File>
     <File Include="bin/Swashbuckle.Core.dll">
       <publishTime>11/28/2019 10:51:12</publishTime>
@@ -190,7 +190,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>11/28/2019 10:51:12</publishTime>
     </File>
     <File Include="Global.asax">
-      <publishTime>11/28/2019 10:51:11</publishTime>
+      <publishTime>11/28/2019 10:51:10</publishTime>
     </File>
     <File Include="Web.config">
       <publishTime>12/07/2019 23:06:32</publishTime>

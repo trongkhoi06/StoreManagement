@@ -76,6 +76,7 @@ namespace StoreManagement.Controllers
 
         public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
         {
+            if (boxIDs != null)
             foreach (var boxID in boxIDs)
             {
                 Box box = GetBoxByBoxID(boxID);

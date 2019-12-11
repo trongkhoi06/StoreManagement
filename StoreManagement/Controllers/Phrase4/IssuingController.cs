@@ -343,12 +343,14 @@ namespace StoreManagement.Controllers
                         List<RequestedItem> requestedItems = (from rI in db.RequestedItems
                                                               where rI.DemandedItemPK == demandedItem.DemandedItemPK
                                                               select rI).ToList();
-                        if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
-                                                        - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        double temp = issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                                                        - issuingDAO.InOtherRequestedQuantity(accessory.AccessoryPK, item.RequestedItemPK);
+                        if (item.RequestedQuantity > temp)
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
                         }
-                        if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems))
+                        temp = item.RequestedQuantity + issuingDAO.TotalOtherRequestedQuantity(requestedItem.RequestedItemPK, requestedItems);
+                        if (demandedItem.DemandedQuantity < temp)
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
                         }
@@ -509,8 +511,10 @@ namespace StoreManagement.Controllers
                     {
                         if (!Map.ContainsKey(item.StoredBoxPK))
                         {
-                            Dictionary<Algo_itempk_isRestored, double> item_isRestored_quantity = new Dictionary<Algo_itempk_isRestored, double>();
-                            item_isRestored_quantity.Add(new Algo_itempk_isRestored(items.ItemPK, items.IsRestored), item.Quantity);
+                            Dictionary<Algo_itempk_isRestored, double> item_isRestored_quantity = new Dictionary<Algo_itempk_isRestored, double>
+                            {
+                                { new Algo_itempk_isRestored(items.ItemPK, items.IsRestored), item.Quantity }
+                            };
 
                             Map.Add(item.StoredBoxPK, item_isRestored_quantity);
                         }
@@ -531,7 +535,7 @@ namespace StoreManagement.Controllers
                 foreach (var items in Map)
                 {
                     bool IsEmpty = true;
-                    
+
                     HashSet<Algo_itempk_isRestored> tempHSAll = new HashSet<Algo_itempk_isRestored>();
                     HashSet<Algo_itempk_isRestored> tempHSTaking = new HashSet<Algo_itempk_isRestored>();
                     // lấy hết item trong storebox ra
@@ -585,6 +589,7 @@ namespace StoreManagement.Controllers
                 IssuingSession issuingSession = null;
                 try
                 {
+
                     issuingDAO.UpdateRequest(requestPK, true);
                     boxDAO.ChangeIsActiveBoxes(input.boxIDs, false);
                     issuingSession = issuingDAO.CreateIssuingSession(userID, requestPK, input.boxIDs);
@@ -745,15 +750,16 @@ namespace StoreManagement.Controllers
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
-                StoringDAO storingDAO = new StoringDAO();
                 BoxDAO boxDAO = new BoxDAO();
+                ConfirmingSession confirmingSession;
                 try
                 {
                     Request request = db.Requests.Find(requestPK);
                     if (request.UserID == userID)
                     {
-                        if (!request.IsIssued)
+                        if (request.IsIssued)
                         {
+                            confirmingSession = issuingDAO.CreateConfirmingSession(requestPK, userID);
                             issuingDAO.ConfirmRequest(requestPK, true);
                         }
                         else
@@ -770,7 +776,257 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "XÓA YÊU CẦU XUẤT THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "NHẬN YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/GetCustomerAndConceptionForRestoreItem")]
+        [HttpGet]
+        public IHttpActionResult GetCustomerAndConceptionForRestoreItem()
+        {
+            List<Client_Customer_Conception> result = new List<Client_Customer_Conception>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            BoxDAO boxDAO = new BoxDAO();
+            try
+            {
+                List<Customer> customers = db.Customers.ToList();
+                foreach (var customer in customers)
+                {
+                    List<Conception> conceptions = (from cc in db.Conceptions
+                                                    where cc.CustomerPK == customer.CustomerPK
+                                                    select cc).ToList();
+                    result.Add(new Client_Customer_Conception(customer.CustomerName, conceptions));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Accessory_RestoreItem
+        {
+            public Accessory_RestoreItem()
+            {
+            }
+
+            public Accessory_RestoreItem(Accessory accessory)
+            {
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+            }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+        }
+        public class ConceptionPK_AccessoryType
+        {
+            public int ConceptionPK { get; set; }
+
+            public int AccessoryTypePK { get; set; }
+        }
+        [Route("api/IssuingController/GetAccessoriesForRestoreItem")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesForRestoreItem(List<ConceptionPK_AccessoryType> list)
+        {
+            List<Accessory_RestoreItem> result = new List<Accessory_RestoreItem>();
+            try
+            {
+                foreach (var item in list)
+                {
+                    List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
+                                                   where unit.ConceptionPK == item.ConceptionPK
+                                                   select unit.AccessoryPK).ToList();
+                    foreach (var AccessoryPK in tempAccessoriesPK)
+                    {
+                        Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
+                        if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK)
+                            result.Add(new Accessory_RestoreItem(tempAccessory));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_AccessoryPK_RestoredQuantity
+        {
+            public Client_AccessoryPK_RestoredQuantity()
+            {
+            }
+
+            public Client_AccessoryPK_RestoredQuantity(int assessoryPK, double restoredQuantity)
+            {
+                AssessoryPK = assessoryPK;
+                RestoredQuantity = restoredQuantity;
+            }
+
+            public int AssessoryPK { get; set; }
+
+            public double RestoredQuantity { get; set; }
+        }
+
+        [Route("api/IssuingController/RestoreItems")]
+        [HttpPost]
+        public IHttpActionResult RestoreItems(string userID, string comment, List<Client_AccessoryPK_RestoredQuantity> list)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Restoration restoration = null;
+                try
+                {
+                    restoration = issuingDAO.CreateRestoration(userID, comment);
+                    issuingDAO.CreateRestoredItems(restoration, list);
+                }
+                catch (Exception e)
+                {
+                    if (restoration != null)
+                    {
+                        issuingDAO.DeleteRestoration(restoration.RestorationPK);
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TRẢ HÀNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        public class Client_RestoredItemPK_RestoredQuantity
+        {
+            public Client_RestoredItemPK_RestoredQuantity()
+            {
+            }
+
+            public Client_RestoredItemPK_RestoredQuantity(int restoredItemPK, double restoredQuantity)
+            {
+                RestoredItemPK = restoredItemPK;
+                RestoredQuantity = restoredQuantity;
+            }
+
+            public int RestoredItemPK { get; set; }
+
+            public double RestoredQuantity { get; set; }
+        }
+
+        [Route("api/IssuingController/EditRestoration")]
+        [HttpPut]
+        public IHttpActionResult EditRestoration(int restorationPK, string userID, string comment, List<Client_RestoredItemPK_RestoredQuantity> list)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Restoration restoration = null;
+                try
+                {
+                    restoration = db.Restorations.Find(restorationPK);
+                    if (restoration == null) return Content(HttpStatusCode.Conflict, "MÃ PHIẾU TRẢ HÀNG KHÔNG HỢP LỆ!");
+                    if (restoration.IsReceived) return Content(HttpStatusCode.Conflict, "PHIẾU TRẢ ĐÃ ĐƯỢC NHẬN, KHÔNG THỂ THAY ĐỔI!");
+                    if (restoration.UserID != userID) return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    issuingDAO.UpdateRestoration(restorationPK, comment);
+                    issuingDAO.UpdateRestoredItems(list);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "CHỈNH SỬA HÀNG TRẢ THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/DeleteRestoration")]
+        [HttpDelete]
+        public IHttpActionResult DeleteRestoration(int restorationPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Restoration restoration = null;
+                try
+                {
+                    restoration = db.Restorations.Find(restorationPK);
+                    if (restoration == null) return Content(HttpStatusCode.Conflict, "MÃ PHIẾU TRẢ HÀNG KHÔNG HỢP LỆ!");
+                    if (restoration.IsReceived) return Content(HttpStatusCode.Conflict, "PHIẾU TRẢ ĐÃ ĐƯỢC NHẬN, KHÔNG THỂ THAY ĐỔI!");
+                    if (restoration.UserID != userID) return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    issuingDAO.DeleteRestoredItems(restorationPK);
+                    issuingDAO.DeleteRestoration(restorationPK);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "XÓA HÀNG TRẢ THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        public class Client_Box_List
+        {
+
+            public class Client_RestoredItemPK_PlacedQuantity
+            {
+                public int RestoredItemPK { get; set; }
+
+                public double PlacedQuantity { get; set; }
+            }
+
+            public string BoxID { get; set; }
+
+            public List<Client_RestoredItemPK_PlacedQuantity> ListItem { get; set; }
+        }
+
+        [Route("api/IssuingController/ReceiveRestoredItem")]
+        [HttpPost]
+        public IHttpActionResult ReceiveRestoredItem(int restorationPK, List<Client_Box_List> list, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                ReceivingSession receivingSession;
+                Restoration restoration = null;
+                try
+                {
+                    restoration = db.Restorations.Find(restorationPK);
+                    if (restoration == null) return Content(HttpStatusCode.Conflict, "MÃ PHIẾU TRẢ HÀNG KHÔNG HỢP LỆ!");
+                    if (restoration.IsReceived) return Content(HttpStatusCode.Conflict, "PHIẾU TRẢ ĐÃ ĐƯỢC NHẬN, KHÔNG THỂ THAY ĐỔI!");
+                    receivingSession = issuingDAO.CreateReceivingSession(restorationPK, userID);
+                    issuingDAO.UpdateRestoration(restorationPK, true);
+                    issuingDAO.CreateEntryReceiving(list, receivingSession);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "NHẬN HÀNG ĐƯỢC TRẢ THÀNH CÔNG!");
             }
             else
             {

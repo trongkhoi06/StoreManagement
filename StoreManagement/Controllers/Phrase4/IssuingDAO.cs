@@ -14,6 +14,20 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
+
+        private string KhoiNKTType(int num)
+        {
+            if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
+            else if (num < 10)
+            {
+                return num + "";
+            }
+            else
+            {
+                return ((char)(num + 86)) + "";
+            }
+        }
+
         public double InStoredQuantity(int accessoryPK)
         {
             double result = 0;
@@ -269,12 +283,54 @@ namespace StoreManagement.Controllers
             return result;
         }
 
+        public double InOtherRequestedQuantity(int accessoryPK, int requestedItemPK)
+        {
+            double result = 0;
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                                                    where dI.AccessoryPK == accessoryPK
+                                                    select dI).ToList();
+                foreach (var demandedItem in demandedItems)
+                {
+                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                                                          where rI.DemandedItemPK == demandedItem.DemandedItemPK && rI.RequestedItemPK != requestedItemPK
+                                                          select rI).ToList();
+                    foreach (var requestedItem in requestedItems)
+                    {
+                        Request request = db.Requests.Find(requestedItem.RequestPK);
+                        if (request.IsIssued == false)
+                        {
+                            result += requestedItem.RequestedQuantity;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return result;
+        }
+
         public double TotalRequestedQuantity(List<RequestedItem> requestedItems)
         {
             double result = 0;
             foreach (var requestedItem in requestedItems)
             {
                 result += requestedItem.RequestedQuantity;
+            }
+            return result;
+        }
+
+        public double TotalOtherRequestedQuantity(int requestedItemPK, List<RequestedItem> requestedItems)
+        {
+            double result = 0;
+            foreach (var requestedItem in requestedItems)
+            {
+                if (requestedItem.RequestedItemPK != requestedItemPK)
+                    result += requestedItem.RequestedQuantity;
             }
             return result;
         }
@@ -655,6 +711,209 @@ namespace StoreManagement.Controllers
                     db.Entries.Remove(entry);
                 }
                 db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Restoration CreateRestoration(string userID, string comment)
+        {
+            try
+            {
+                // Add restoration
+                DateTime now = DateTime.Now;
+                // Generate Restoration
+                string restorationID = KhoiNKTType(now.Day) + KhoiNKTType(now.Month) + now.Year;
+                Restoration restoration = new Restoration(restorationID, userID, comment);
+                db.Restorations.Add(restoration);
+                db.SaveChanges();
+
+                //
+                restoration = (from res in db.Restorations.OrderByDescending(unit => unit.RestorationPK)
+                               select res).FirstOrDefault();
+                return restoration;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+
+        public void CreateRestoredItems(Restoration restoration, List<IssuingController.Client_AccessoryPK_RestoredQuantity> list)
+        {
+            try
+            {
+                // Add restoredItems
+                foreach (var item in list)
+                {
+                    RestoredItem restoredItem = new RestoredItem(item.AssessoryPK, item.RestoredQuantity, restoration.RestorationPK);
+                    db.RestoredItems.Add(restoredItem);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteRestoration(int restorationPK)
+        {
+            try
+            {
+                // Remove restoration
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                db.Restorations.Remove(restoration);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateRestoration(int restorationPK, bool isReceived)
+        {
+            try
+            {
+                // update restoration
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                restoration.IsReceived = isReceived;
+                db.Entry(restoration).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateRestoration(int restorationPK, string comment)
+        {
+            try
+            {
+                // update restoration
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                restoration.DateCreated = DateTime.Now;
+                restoration.Comment = comment;
+                db.Entry(restoration).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void UpdateRestoredItems(List<IssuingController.Client_RestoredItemPK_RestoredQuantity> list)
+        {
+            try
+            {
+                // update restoredItems
+                foreach (var item in list)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
+                    restoredItem.RestoredQuantity = item.RestoredQuantity;
+                    db.Entry(restoredItem).State = EntityState.Modified;
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteRestoredItems(int restorationPK)
+        {
+            try
+            {
+                List<RestoredItem> restoredItems = (from rI in db.RestoredItems
+                                                    where rI.RestorationPK == restorationPK
+                                                    select rI).ToList();
+
+                // delete restoredItems
+                foreach (var item in restoredItems)
+                {
+                    db.RestoredItems.Remove(item);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public ReceivingSession CreateReceivingSession(int restorationPK, string userID)
+        {
+            try
+            {
+                ReceivingSession receivingSession = new ReceivingSession(userID, restorationPK);
+                db.ReceivingSessions.Add(receivingSession);
+                db.SaveChanges();
+                receivingSession = (from Rss in db.ReceivingSessions.OrderByDescending(unit => unit.ReceivingSessionPK)
+                                    select Rss).FirstOrDefault();
+                return receivingSession;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateEntryReceiving(List<IssuingController.Client_Box_List> list, ReceivingSession receivingSession)
+        {
+            BoxDAO boxDAO = new BoxDAO();
+            try
+            {
+                Dictionary<int, double> mapRestoredItems = new Dictionary<int, double>();
+                foreach (var items in list)
+                {
+                    Box box = boxDAO.GetBoxByBoxID(items.BoxID);
+                    StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+                    foreach (var item in items.ListItem)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
+                        if (!mapRestoredItems.ContainsKey(restoredItem.RestoredItemPK))
+                        {
+                            mapRestoredItems.Add(restoredItem.RestoredItemPK, item.PlacedQuantity);
+                        }
+                        else
+                        {
+                            mapRestoredItems[restoredItem.RestoredItemPK] += item.PlacedQuantity;
+                        }
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                        Entry entry = new Entry(sBox, "Receiving", receivingSession.ReceivingSessionPK, true, item.PlacedQuantity, item.RestoredItemPK, accessory);
+                        db.Entries.Add(entry);
+                    }
+                }
+                foreach (var item in mapRestoredItems)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(item.Key);
+                    if (item.Value != restoredItem.RestoredQuantity) throw new Exception("TỔNG HÀNG LƯU KHO KHÔNG GIỐNG HÀNG ĐƯỢC TRẢ!");
+                }
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public ConfirmingSession CreateConfirmingSession(int requestPK, string userID)
+        {
+            try
+            {
+                ConfirmingSession confirmingSession = new ConfirmingSession(requestPK,userID);
+                db.ConfirmingSessions.Add(confirmingSession);
+                db.SaveChanges();
+                confirmingSession = (from Css in db.ConfirmingSessions.OrderByDescending(unit => unit.ConfirmingSessionPK)
+                                     select Css).FirstOrDefault();
+                return confirmingSession;
             }
             catch (Exception e)
             {

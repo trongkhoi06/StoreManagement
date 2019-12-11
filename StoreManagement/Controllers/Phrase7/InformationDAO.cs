@@ -327,20 +327,21 @@ namespace StoreManagement.Controllers
                                                where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK && acc.SupplierPK == supplier.SupplierPK
                                                select acc).ToList();
                 if (accessories.Count == 0)
-                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + "0001";
+                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + "00001";
                 else
                 {
                     HashSet<int> hsSupllierPK = new HashSet<int>();
                     string tempStr;
-                    Int32 tempInt = 1;
+                    Int32 tempInt;
 
-                    tempStr = accessories[0].AccessoryID.Substring(accessories[0].AccessoryID.Length - 4);
+                    tempStr = accessories[0].AccessoryID.Substring(accessories[0].AccessoryID.Length - 5);
                     tempInt = Int32.Parse(tempStr) + 1;
 
                     tempStr = tempInt + "";
-                    if (tempStr.Length == 1) tempStr = "000" + tempStr;
-                    if (tempStr.Length == 2) tempStr = "00" + tempStr;
-                    if (tempStr.Length == 3) tempStr = "0" + tempStr;
+                    if (tempStr.Length == 1) tempStr = "0000" + tempStr;
+                    if (tempStr.Length == 2) tempStr = "000" + tempStr;
+                    if (tempStr.Length == 3) tempStr = "00" + tempStr;
+                    if (tempStr.Length == 4) tempStr = "0" + tempStr;
                     accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + tempStr;
                 }
                 // create accessory
