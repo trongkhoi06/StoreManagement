@@ -3,10 +3,15 @@ using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
+using static StoreManagement.Controllers.IssuingController;
 
 namespace StoreManagement.Controllers
 {
@@ -548,14 +553,14 @@ namespace StoreManagement.Controllers
                     Box box = (from b in db.Boxes.OrderByDescending(unit => unit.BoxPK)
                                where b.BoxID.Contains(boxID)
                                select b).FirstOrDefault();
-                   
+
                     if (box == null)
                     {
                         boxID += "001";
                     }
                     else
                     {
-                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 6,3))+1;
+                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 6, 3)) + 1;
                         string tempStr = tempInt + "";
                         if (tempStr.Length == 1) boxID += "00" + tempStr;
                         if (tempStr.Length == 2) boxID += "0" + tempStr;
@@ -606,6 +611,113 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/InformationController/UploadFile")]
+        [HttpPost]
+        public async Task<IHttpActionResult> UploadFile(int AccessoryPK, string userID)
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                return Content(HttpStatusCode.Conflict, "DATA GỬI LÊN KHÔNG PHẢI HÌNH!");
+            }
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+            {
+                try
+                {
+                    Accessory accessory = db.Accessories.Find(AccessoryPK);
+                    if (accessory == null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "ACCESSORY KHÔNG TỒN TẠI!");
+                    }
+                    // upload img
+                    var root = HttpContext.Current.Server.MapPath("~/Image");
+                    var provider = new MultipartFormDataStreamProvider(root);
+                    await Request.Content.ReadAsMultipartAsync(provider);
+                    foreach (var file in provider.FileData)
+                    {
+                        var name = file.Headers.ContentDisposition.FileName;
+
+                        string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+                        name = now.Replace('.', '8') + ".png";
+                        var localFileName = file.LocalFileName;
+                        var filePath = Path.Combine(root, name);
+                        File.Move(localFileName, filePath);
+
+                        accessory.Image = name;
+                        db.Entry(accessory).State = EntityState.Modified;
+                        db.SaveChanges();
+                        return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+        public class Accessory_RestoreItem2
+        {
+            public Accessory_RestoreItem2()
+            {
+            }
+
+            public Accessory_RestoreItem2(Accessory accessory)
+            {
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                Image = accessory.Image;
+            }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string Image { get; set; }
+        }
+
+        [Route("api/IssuingController/GetAccessoriesForFilter")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesForFilter(List<ConceptionPK_AccessoryType> list, bool onlyNonImagedAccessory)
+        {
+            List<Accessory_RestoreItem2> result = new List<Accessory_RestoreItem2>();
+            try
+            {
+                foreach (var item in list)
+                {
+                    List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
+                                                   where unit.ConceptionPK == item.ConceptionPK
+                                                   select unit.AccessoryPK).ToList();
+                    foreach (var AccessoryPK in tempAccessoriesPK)
+                    {
+                        Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
+                        if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK && (tempAccessory.Image == null) == onlyNonImagedAccessory)
+                        {
+                            tempAccessory.Image = "default.png";
+                            result.Add(new Accessory_RestoreItem2(tempAccessory));
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
     }
 }
 

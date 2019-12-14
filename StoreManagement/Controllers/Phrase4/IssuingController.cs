@@ -830,7 +830,6 @@ namespace StoreManagement.Controllers
 
             public string Item { get; set; }
 
-
             public string Art { get; set; }
 
             public string Color { get; set; }

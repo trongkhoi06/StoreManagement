@@ -6,6 +6,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web.Http;
 using System.Web.Http.Cors;
 
@@ -35,6 +37,57 @@ namespace StoreManagement.Controllers
                 {
                     return Ok(roleName);
                 }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, e.Message);
+            }
+        }
+
+        [Route("api/GetHashByUserID")]
+        [HttpPost]
+        public IHttpActionResult GetHashByUserID([FromBody] UserClient userClient)
+        {
+            try
+            {
+                SqlParameter userID = new SqlParameter("@userID", userClient.Username);
+                SqlParameter Password = new SqlParameter("@Password", userClient.Password);
+                string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
+                if (db.Roles.Find(roleName) == null) return NotFound();
+                else
+                {
+                    string hash = Base64Encode(userClient.Username + "~!~" + DateTime.Now.ToString());
+                    return Content(HttpStatusCode.OK, hash);
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, e.Message);
+            }
+        }
+        public class Client_Hash
+        {
+            public Client_Hash()
+            {
+            }
+
+            public Client_Hash(string hash)
+            {
+                this.Hash = hash;
+            }
+
+            public string Hash { get; set; }
+        }
+
+        [Route("api/GetUserIDByHash")]
+        [HttpPost]
+        public IHttpActionResult GetUserIDByHash([FromBody]Client_Hash h)
+        {
+            try
+            {
+                string userID = Base64Decode(h.Hash).Split(new[] { "~!~" }, StringSplitOptions.None)[0];
+                return Content(HttpStatusCode.OK, userID);
             }
             catch (Exception e)
             {
@@ -89,6 +142,18 @@ namespace StoreManagement.Controllers
         private bool DeviceExists(string name)
         {
             return db.Devices.Count(e => e.DeviceName == name) > 0;
+        }
+
+        private string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        private string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
     }
 }
