@@ -641,7 +641,7 @@ namespace StoreManagement.Controllers
                         var localFileName = file.LocalFileName;
                         var filePath = Path.Combine(root, name);
                         File.Move(localFileName, filePath);
-
+                        File.Delete(Path.Combine(root, accessory.Image));
                         accessory.Image = name;
                         db.Entry(accessory).State = EntityState.Modified;
                         db.SaveChanges();
@@ -690,25 +690,35 @@ namespace StoreManagement.Controllers
         }
 
         [Route("api/IssuingController/GetAccessoriesForFilter")]
-        [HttpGet]
-        public IHttpActionResult GetAccessoriesForFilter(List<ConceptionPK_AccessoryType> list, bool onlyNonImagedAccessory)
+        [HttpPost]
+        public IHttpActionResult GetAccessoriesForFilter(List<ConceptionPK_AccessoryType> list, bool onlyNonImagedAccessory, string customerName)
         {
             List<Accessory_RestoreItem2> result = new List<Accessory_RestoreItem2>();
             try
             {
-                foreach (var item in list)
+                Customer customer = (from cus in db.Customers
+                                     where cus.CustomerName == customerName
+                                     select cus).FirstOrDefault();
+                if (customer == null) return Content(HttpStatusCode.Conflict, "CUSTOMER KHÔNG TỒN TẠI!");
+                List<int> tempAccessoriesPK = (from acc in db.Accessories
+                                               where acc.CustomerPK == customer.CustomerPK
+                                               select acc.AccessoryPK).ToList();
+                foreach (var AccessoryPK in tempAccessoriesPK)
                 {
-                    List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
-                                                   where unit.ConceptionPK == item.ConceptionPK
-                                                   select unit.AccessoryPK).ToList();
-                    foreach (var AccessoryPK in tempAccessoriesPK)
+                    foreach (var item in list)
                     {
-                        Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
-                        if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK && (tempAccessory.Image == null) == onlyNonImagedAccessory)
+                        if ((from unit in db.ConceptionAccessories
+                         where unit.ConceptionPK == item.ConceptionPK && unit.AccessoryPK == AccessoryPK
+                         select unit).FirstOrDefault() != null)
                         {
-                            tempAccessory.Image = "default.png";
-                            result.Add(new Accessory_RestoreItem2(tempAccessory));
+                            Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
+                            if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK && (tempAccessory.Image == null) == onlyNonImagedAccessory)
+                            {
+                                tempAccessory.Image = "default.png";
+                                result.Add(new Accessory_RestoreItem2(tempAccessory));
+                            }
                         }
+                        
                     }
                 }
             }

@@ -841,7 +841,7 @@ namespace StoreManagement.Controllers
             public int AccessoryTypePK { get; set; }
         }
         [Route("api/IssuingController/GetAccessoriesForRestoreItem")]
-        [HttpGet]
+        [HttpPost]
         public IHttpActionResult GetAccessoriesForRestoreItem(List<ConceptionPK_AccessoryType> list)
         {
             List<Accessory_RestoreItem> result = new List<Accessory_RestoreItem>();
