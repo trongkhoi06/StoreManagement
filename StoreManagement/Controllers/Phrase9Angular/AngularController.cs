@@ -271,8 +271,8 @@ namespace StoreManagement.Controllers
             Client_ListConceptionForAccessoryDetail result = new Client_ListConceptionForAccessoryDetail();
             try
             {
-                List<Conception> conceptions = (from cc in db.Conceptions
-                                                where cc.CustomerPK == customerPK
+                List<Conception> conceptions = (from cc in db.Conceptions.OrderByDescending(unit => unit.ConceptionPK)
+                                                where cc.CustomerPK == customerPK && cc.IsActive
                                                 select cc).ToList();
                 foreach (var conception in conceptions)
                 {
@@ -296,6 +296,65 @@ namespace StoreManagement.Controllers
             }
             return Content(HttpStatusCode.OK, result);
         }
+
+        [Route("api/AngularController/GetCustomerByPK")]
+        [HttpGet]
+        public IHttpActionResult GetCustomerByPK(int customerPK)
+        {
+
+            Customer result;
+            try
+            {
+                result = db.Customers.Find(customerPK);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetAccessoriesByCustomerPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesByCustomerPK(int customerPK)
+        {
+            List<Accessory> result;
+            try
+            {
+                result = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
+                          where acc.CustomerPK == customerPK && acc.IsActive
+                          select acc).ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetConceptionsByCustomerPK")]
+        [HttpGet]
+        public IHttpActionResult GetConceptionsByCustomerPK(int customerPK)
+        {
+            List<Client_ConceptionForAccessoryDetail> result = new List<Client_ConceptionForAccessoryDetail>();
+            try
+            {
+                List<Conception> tempList = (from cc in db.Conceptions.OrderByDescending(unit => unit.ConceptionPK)
+                                             where cc.CustomerPK == customerPK && cc.IsActive
+                                             select cc).ToList();
+                foreach (var conception in tempList)
+                {
+                    string temp = conception.ConceptionCode + "-" + conception.Season + (conception.Year + "").Substring(2);
+                    result.Add(new Client_ConceptionForAccessoryDetail(conception.ConceptionPK, temp));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
     }
 }
 

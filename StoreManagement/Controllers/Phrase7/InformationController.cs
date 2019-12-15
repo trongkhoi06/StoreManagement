@@ -80,14 +80,14 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/EditCustomer")]
         [HttpPut]
-        public IHttpActionResult EditCustomer(int customerPK, string address, string phoneNumber, string taxID, string userID)
+        public IHttpActionResult EditCustomer(int customerPK, string address, string phoneNumber, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.UpdateCustomer(customerPK, address, phoneNumber, taxID, userID);
+                    informationDAO.UpdateCustomer(customerPK, address, phoneNumber, userID);
                 }
                 catch (Exception e)
                 {
@@ -289,14 +289,14 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/EditSupplier")]
         [HttpPut]
-        public IHttpActionResult EditSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
+        public IHttpActionResult EditSupplier(int supplierPK, string address, string phoneNumber, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.UpdateSupplier(supplierPK, address, phoneNumber, taxID, userID);
+                    informationDAO.UpdateSupplier(supplierPK, address, phoneNumber, userID);
                 }
                 catch (Exception e)
                 {
@@ -358,7 +358,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/ActiveSupplier")]
         [HttpPut]
-        public IHttpActionResult ActiveSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
+        public IHttpActionResult ActiveSupplier(int supplierPK, string address, string phoneNumber, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {

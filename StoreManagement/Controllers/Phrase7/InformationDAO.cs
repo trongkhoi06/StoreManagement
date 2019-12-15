@@ -34,7 +34,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void UpdateCustomer(int customerPK, string address, string phoneNumber, string taxID, string userID)
+        public void UpdateCustomer(int customerPK, string address, string phoneNumber, string userID)
         {
             try
             {
@@ -42,7 +42,6 @@ namespace StoreManagement.Controllers
                 Customer customer = db.Customers.Find(customerPK);
                 customer.Address = address;
                 customer.PhoneNumber = phoneNumber;
-                customer.TaxID = taxID;
                 db.Entry(customer).State = EntityState.Modified;
 
 
@@ -109,7 +108,7 @@ namespace StoreManagement.Controllers
                 db.Entry(customer).State = EntityState.Modified;
 
                 // lưu activity update
-                Activity activity = new Activity("active", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("reactive", customer.CustomerName, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -195,7 +194,7 @@ namespace StoreManagement.Controllers
                 db.Entry(conception).State = EntityState.Modified;
 
                 // lưu activity active
-                Activity activity = new Activity("active", conception.ConceptionCode, "Conception", userID);
+                Activity activity = new Activity("reactive", conception.ConceptionCode, "Conception", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -226,7 +225,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void UpdateSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
+        public void UpdateSupplier(int supplierPK, string address, string phoneNumber, string userID)
         {
             try
             {
@@ -234,7 +233,6 @@ namespace StoreManagement.Controllers
                 Supplier supplier = db.Suppliers.Find(supplierPK);
                 supplier.SupplierAddress = address;
                 supplier.SupplierPhoneNumber = phoneNumber;
-                supplier.TaxID = taxID;
                 db.Entry(supplier).State = EntityState.Modified;
 
                 // lưu activity update
@@ -304,7 +302,7 @@ namespace StoreManagement.Controllers
                 db.Entry(supplier).State = EntityState.Modified;
 
                 // lưu activity active
-                Activity activity = new Activity("active", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("reactive", supplier.SupplierName, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
