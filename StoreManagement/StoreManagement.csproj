@@ -185,6 +185,8 @@
     <Compile Include="Controllers\Phrase5\AccessingInventoryController.cs" />
     <Compile Include="Controllers\Phrase7\InformationController.cs" />
     <Compile Include="Controllers\Phrase7\InformationDAO.cs" />
+    <Compile Include="Controllers\Phrase9Angular\AngularController.cs" />
+    <Compile Include="Controllers\Phrase9Angular\AngularDAO.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

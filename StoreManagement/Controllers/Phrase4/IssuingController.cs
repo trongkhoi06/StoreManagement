@@ -7,9 +7,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace StoreManagement.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class IssuingController : ApiController
     {
         private UserModel db = new UserModel();
@@ -18,7 +20,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateDemand(int customerPK, string demandID, string conceptionCode, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 Demand demand = null;
@@ -61,7 +63,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditDemand(int demandPK, int demandedItemPK, double demandedQuantity, string comment, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 Demand demand = null;
@@ -95,7 +97,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteDemand(int demandPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 Demand demand = null;
@@ -129,7 +131,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult SwiftDemandState(int demandPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
                 try
@@ -809,6 +811,22 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+        [Route("api/IssuingController/GetAllAccessoryType")]
+        [HttpGet]
+        public IHttpActionResult GetAllAccessoryType()
+        {
+            List<AccessoryType> result;
+            try
+            {
+                result = db.AccessoryTypes.ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
         public class Accessory_RestoreItem
         {
             public Accessory_RestoreItem()
@@ -834,28 +852,31 @@ namespace StoreManagement.Controllers
 
             public string Color { get; set; }
         }
-        public class ConceptionPK_AccessoryType
-        {
-            public int ConceptionPK { get; set; }
 
-            public int AccessoryTypePK { get; set; }
+        public class Client_ConceptionsAndAccessoryTypes
+        {
+            public List<int> conceptionPKs { get; set; }
+
+            public List<int> accessorytypePKs { get; set; }
         }
+
         [Route("api/IssuingController/GetAccessoriesForRestoreItem")]
         [HttpPost]
-        public IHttpActionResult GetAccessoriesForRestoreItem(List<ConceptionPK_AccessoryType> list)
+        public IHttpActionResult GetAccessoriesForRestoreItem(Client_ConceptionsAndAccessoryTypes input)
         {
             List<Accessory_RestoreItem> result = new List<Accessory_RestoreItem>();
             try
             {
-                foreach (var item in list)
+                foreach (var conceptionPK in input.conceptionPKs)
                 {
                     List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
-                                                   where unit.ConceptionPK == item.ConceptionPK
+                                                   where unit.ConceptionPK == conceptionPK
                                                    select unit.AccessoryPK).ToList();
                     foreach (var AccessoryPK in tempAccessoriesPK)
                     {
                         Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
-                        if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK)
+
+                        if (input.accessorytypePKs.Contains(tempAccessory.AccessoryTypePK))
                             result.Add(new Accessory_RestoreItem(tempAccessory));
                     }
                 }

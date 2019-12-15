@@ -36,7 +36,7 @@ namespace StoreManagement.Class
             List<ConceptionPK_ConceptionFullKey> tempList = new List<ConceptionPK_ConceptionFullKey>();
             foreach (var conception in conceptions)
             {
-                string temp = conception.ConceptionCode + conception.Season + (conception.Year + "").Substring(2);
+                string temp = conception.ConceptionCode + "-" + conception.Season + (conception.Year + "").Substring(2);
                 ConceptionPK_ConceptionFullKey tempConception = new ConceptionPK_ConceptionFullKey(conception.ConceptionPK, temp);
                 tempList.Add(tempConception);
             }

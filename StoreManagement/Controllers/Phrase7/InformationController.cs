@@ -11,10 +11,12 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using static StoreManagement.Controllers.IssuingController;
 
 namespace StoreManagement.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class InformationController : ApiController
     {
         private UserModel db = new UserModel();
@@ -53,14 +55,16 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/CreateCustomer")]
         [HttpPost]
-        public IHttpActionResult CreateCustomer(string name, string code, string address, string phoneNumber, string taxID, string userID)
+        public IHttpActionResult CreateCustomer(string name, string code, string address, string phoneNumber, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.CreateCustomer(name, code, address, phoneNumber, taxID, userID);
+                    if (address == "undefined") address = "";
+                    if (phoneNumber == "undefined") phoneNumber = "";
+                    informationDAO.CreateCustomer(name, code, address, phoneNumber, userID);
                 }
                 catch (Exception e)
                 {
@@ -78,7 +82,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditCustomer(int customerPK, string address, string phoneNumber, string taxID, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -101,7 +105,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteCustomer(int customerPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -124,7 +128,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult DeactiveCustomer(int customerPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -147,7 +151,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult ActiveCustomer(int customerPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -170,7 +174,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateConception(int customerPK, string conceptionCode, int year, string season, string description, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -193,7 +197,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteConception(int conceptionPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -216,7 +220,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult DeactiveConception(int conceptionPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -239,7 +243,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult ActiveConception(int conceptionPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -260,14 +264,16 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/CreateSupplier")]
         [HttpPost]
-        public IHttpActionResult CreateSupplier(string name, string address, string phoneNumber, string taxID, string supplierCode, string userID)
+        public IHttpActionResult CreateSupplier(string name, string code, string address, string phoneNumber, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.CreateSupplier(name, address, phoneNumber, taxID, supplierCode, userID);
+                    if (address == "undefined") address = "";
+                    if (phoneNumber == "undefined") phoneNumber = "";
+                    informationDAO.CreateSupplier(name, address, phoneNumber, code, userID);
                 }
                 catch (Exception e)
                 {
@@ -285,7 +291,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -308,7 +314,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteSupplier(int supplierPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -331,7 +337,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult DeactiveSupplier(int supplierPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -354,7 +360,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult ActiveSupplier(int supplierPK, string address, string phoneNumber, string taxID, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -377,11 +383,14 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateAccessory(string item, string art, string description, string comment, string color, int customerPK, int supplierPK, int accessoryTypePK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
+                    if (art == "undefined") art = "";
+                    if (comment == "undefined") comment = "";
+                    if (color == "undefined") color = "";
                     informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
                 }
                 catch (Exception e)
@@ -400,7 +409,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult EditAccessory(int accessoryPK, string comment, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -423,7 +432,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult LinkConception(int accessoryPK, int conceptionPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -446,7 +455,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult UnlinkConception(int accessoryPK, int conceptionPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -469,7 +478,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult DeactiveAccessory(int accessoryPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -488,16 +497,16 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/InformationController/ActiveAccessory")]
+        [Route("api/InformationController/ReactiveAccessory")]
         [HttpPut]
-        public IHttpActionResult ActiveAccessory(int accessoryPK, string userID)
+        public IHttpActionResult ReactiveAccessory(int accessoryPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.ActiveAccessory(accessoryPK, userID);
+                    informationDAO.ReactiveAccessory(accessoryPK, userID);
                 }
                 catch (Exception e)
                 {
@@ -515,7 +524,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteAccessory(int accessoryPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 InformationDAO informationDAO = new InformationDAO();
                 try
@@ -628,24 +637,28 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "ACCESSORY KHÔNG TỒN TẠI!");
                     }
-                    // upload img
-                    var root = HttpContext.Current.Server.MapPath("~/Image");
-                    var provider = new MultipartFormDataStreamProvider(root);
-                    await Request.Content.ReadAsMultipartAsync(provider);
-                    foreach (var file in provider.FileData)
+                    else
                     {
-                        var name = file.Headers.ContentDisposition.FileName;
+                        // upload img
+                        var root = HttpContext.Current.Server.MapPath("~/Image");
+                        var provider = new MultipartFormDataStreamProvider(root);
+                        await Request.Content.ReadAsMultipartAsync(provider);
+                        foreach (var file in provider.FileData)
+                        {
+                            var name = file.Headers.ContentDisposition.FileName;
 
-                        string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
-                        name = now.Replace('.', '8') + ".png";
-                        var localFileName = file.LocalFileName;
-                        var filePath = Path.Combine(root, name);
-                        File.Move(localFileName, filePath);
-                        File.Delete(Path.Combine(root, accessory.Image));
-                        accessory.Image = name;
-                        db.Entry(accessory).State = EntityState.Modified;
-                        db.SaveChanges();
-                        return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+                            string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+                            name = now.Replace('.', '8') + ".png";
+                            var localFileName = file.LocalFileName;
+                            var filePath = Path.Combine(root, name);
+                            File.Move(localFileName, filePath);
+                            if (accessory.Image != null)
+                                File.Delete(Path.Combine(root, accessory.Image));
+                            accessory.Image = name;
+                            db.Entry(accessory).State = EntityState.Modified;
+                            db.SaveChanges();
+                            return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+                        }
                     }
                 }
                 catch (Exception e)
@@ -668,6 +681,7 @@ namespace StoreManagement.Controllers
 
             public Accessory_RestoreItem2(Accessory accessory)
             {
+                AccessoryPK = accessory.AccessoryPK;
                 AccessoryID = accessory.AccessoryID;
                 AccessoryDescription = accessory.AccessoryDescription;
                 Item = accessory.Item;
@@ -675,6 +689,8 @@ namespace StoreManagement.Controllers
                 Color = accessory.Color;
                 Image = accessory.Image;
             }
+
+            public int AccessoryPK { get; set; }
 
             public string AccessoryID { get; set; }
 
@@ -691,7 +707,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/IssuingController/GetAccessoriesForFilter")]
         [HttpPost]
-        public IHttpActionResult GetAccessoriesForFilter(List<ConceptionPK_AccessoryType> list, bool onlyNonImagedAccessory, string customerName)
+        public IHttpActionResult GetAccessoriesForFilter(Client_ConceptionsAndAccessoryTypes input, bool onlyNonImagedAccessory, string customerName)
         {
             List<Accessory_RestoreItem2> result = new List<Accessory_RestoreItem2>();
             try
@@ -705,20 +721,59 @@ namespace StoreManagement.Controllers
                                                select acc.AccessoryPK).ToList();
                 foreach (var AccessoryPK in tempAccessoriesPK)
                 {
-                    foreach (var item in list)
+                    if (input.conceptionPKs.Count == 0)
                     {
-                        if ((from unit in db.ConceptionAccessories
-                         where unit.ConceptionPK == item.ConceptionPK && unit.AccessoryPK == AccessoryPK
-                         select unit).FirstOrDefault() != null)
+                        Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
+                        if (input.accessorytypePKs.Contains(tempAccessory.AccessoryTypePK))
                         {
-                            Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
-                            if (tempAccessory.AccessoryTypePK == item.AccessoryTypePK && (tempAccessory.Image == null) == onlyNonImagedAccessory)
+                            if (onlyNonImagedAccessory == true)
                             {
-                                tempAccessory.Image = "default.png";
+                                if (tempAccessory.Image == null)
+                                {
+                                    tempAccessory.Image = "default.png";
+                                    result.Add(new Accessory_RestoreItem2(tempAccessory));
+                                }
+                            }
+                            else
+                            {
+                                if (tempAccessory.Image == null)
+                                {
+                                    tempAccessory.Image = "default.png";
+                                }
                                 result.Add(new Accessory_RestoreItem2(tempAccessory));
                             }
                         }
-                        
+                    }
+                    else
+                    {
+                        foreach (var conceptionPK in input.conceptionPKs)
+                        {
+                            if ((from unit in db.ConceptionAccessories
+                                 where unit.ConceptionPK == conceptionPK && unit.AccessoryPK == AccessoryPK
+                                 select unit).FirstOrDefault() != null)
+                            {
+                                Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
+                                if (input.accessorytypePKs.Contains(tempAccessory.AccessoryTypePK))
+                                {
+                                    if (onlyNonImagedAccessory == true)
+                                    {
+                                        if (tempAccessory.Image == null)
+                                        {
+                                            tempAccessory.Image = "default.png";
+                                            result.Add(new Accessory_RestoreItem2(tempAccessory));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (tempAccessory.Image == null)
+                                        {
+                                            tempAccessory.Image = "default.png";
+                                        }
+                                        result.Add(new Accessory_RestoreItem2(tempAccessory));
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

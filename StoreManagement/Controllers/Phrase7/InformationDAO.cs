@@ -14,12 +14,12 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public void CreateCustomer(string name, string code, string address, string phoneNumber, string taxID, string userID)
+        public void CreateCustomer(string name, string code, string address, string phoneNumber, string userID)
         {
             try
             {
                 // create customer
-                Customer customer = new Customer(name, code, address, phoneNumber, taxID);
+                Customer customer = new Customer(name, code, address, phoneNumber);
                 db.Customers.Add(customer);
 
                 // lưu activity create
@@ -206,12 +206,12 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void CreateSupplier(string name, string address, string phoneNumber, string taxID, string supplierCode, string userID)
+        public void CreateSupplier(string name, string address, string phoneNumber, string supplierCode, string userID)
         {
             try
             {
                 // create supplier
-                Supplier supplier = new Supplier(name, address, phoneNumber, taxID, supplierCode);
+                Supplier supplier = new Supplier(name, address, phoneNumber, supplierCode);
                 db.Suppliers.Add(supplier);
 
                 // lưu activity create
@@ -472,7 +472,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void ActiveAccessory(int accessoryPK, string userID)
+        public void ReactiveAccessory(int accessoryPK, string userID)
         {
             try
             {
@@ -482,7 +482,7 @@ namespace StoreManagement.Controllers
                 db.Entry(accessory).State = EntityState.Modified;
 
                 // lưu activity active
-                Activity activity = new Activity("active", accessory.AccessoryID, "Accessory", userID);
+                Activity activity = new Activity("reactive", accessory.AccessoryID, "Accessory", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();

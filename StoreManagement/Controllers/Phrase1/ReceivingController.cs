@@ -114,7 +114,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult CreateOrderBusiness(string orderID, int supplierPK, string userID, [FromBody] List<Client_Accessory_OrderedQuantity_Comment> list)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 OrdersDAO ordersController = new OrdersDAO();
                 Order order = null;
@@ -163,7 +163,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult UpdateOrderBusiness([FromBody] OrderedItem orderedItems, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 OrdersDAO ordersController = new OrdersDAO();
                 OrderedItemsDAO orderedItemsController = new OrderedItemsDAO();
@@ -199,7 +199,7 @@ namespace StoreManagement.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteOrderBusiness(int orderPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 List<OrderedItem> listOrderedItem;
                 OrdersDAO ordersController = new OrdersDAO();
@@ -251,7 +251,7 @@ namespace StoreManagement.Controllers
         [HttpPut]
         public IHttpActionResult SwiftOrderState(int orderPK, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Mechandiser"))
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
                 Order order = db.Orders.Find(orderPK);
                 OrdersDAO ordersController = new OrdersDAO();

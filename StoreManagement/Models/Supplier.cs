@@ -13,12 +13,12 @@ namespace StoreManagement.Models
         {
         }
 
-        public Supplier(string supplierName, string supplierAddress, string supplierPhoneNumber, string taxID, string supplierCode)
+        public Supplier(string supplierName, string supplierAddress, string supplierPhoneNumber, string supplierCode)
         {
             SupplierName = supplierName;
             SupplierAddress = supplierAddress;
             SupplierPhoneNumber = supplierPhoneNumber;
-            TaxID = taxID;
+            TaxID = "";
             IsActive = true;
             SupplierCode = supplierCode;
         }
@@ -34,7 +34,6 @@ namespace StoreManagement.Models
         [StringLength(100)]
         public string SupplierName { get; set; }
 
-        [StringLength(100)]
         public string SupplierAddress { get; set; }
 
         [StringLength(100)]

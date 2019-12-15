@@ -13,13 +13,13 @@ namespace StoreManagement.Models
         {
         }
 
-        public Customer(string customerName, string customerCode, string address, string phoneNumber, string taxID)
+        public Customer(string customerName, string customerCode, string address, string phoneNumber)
         {
             CustomerName = customerName;
             CustomerCode = customerCode;
             Address = address;
             PhoneNumber = phoneNumber;
-            TaxID = taxID;
+            TaxID = "";
             IsActive = true;
         }
 
