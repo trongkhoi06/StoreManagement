@@ -164,6 +164,24 @@ namespace StoreManagement.Controllers
             {
             }
 
+            public Client_AccessoryDetail_Angular(Accessory accessory, string supplierName, string customerName)
+            {
+                AccessoryPK = accessory.AccessoryPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                IsActive = accessory.IsActive;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                Comment = accessory.Comment;
+                Image = accessory.Image;
+                AccessoryTypePK = accessory.AccessoryTypePK;
+                SupplierPK = accessory.SupplierPK;
+                CustomerPK = accessory.CustomerPK;
+                SupplierName = supplierName;
+                CustomerName = customerName;
+            }
+
             public Client_AccessoryDetail_Angular(Accessory accessory, string accessoryTypeName, string supplierName, string customerName)
             {
                 AccessoryPK = accessory.AccessoryPK;
@@ -318,12 +336,18 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetAccessoriesByCustomerPK(int customerPK)
         {
-            List<Accessory> result;
+            List<Client_AccessoryDetail_Angular> result = new List<Client_AccessoryDetail_Angular>();
             try
             {
-                result = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
-                          where acc.CustomerPK == customerPK && acc.IsActive
-                          select acc).ToList();
+                List<Accessory> tempList = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
+                                            where acc.CustomerPK == customerPK && acc.IsActive
+                                            select acc).ToList();
+
+                foreach (var item in tempList)
+                {
+                    Supplier supplier = db.Suppliers.Find(item.SupplierPK);
+                    result.Add(new Client_AccessoryDetail_Angular(item, supplier.SupplierName, ""));
+                }
             }
             catch (Exception e)
             {
@@ -346,6 +370,124 @@ namespace StoreManagement.Controllers
                 {
                     string temp = conception.ConceptionCode + "-" + conception.Season + (conception.Year + "").Substring(2);
                     result.Add(new Client_ConceptionForAccessoryDetail(conception.ConceptionPK, temp));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetAccessoriesBySupplierPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesBySupplierPK(int supplierPK)
+        {
+            List<Client_AccessoryDetail_Angular> result = new List<Client_AccessoryDetail_Angular>();
+            try
+            {
+                List<Accessory> tempList = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
+                                            where acc.SupplierPK == supplierPK && acc.IsActive
+                                            select acc).ToList();
+
+                foreach (var item in tempList)
+                {
+                    Customer customer = db.Customers.Find(item.CustomerPK);
+                    result.Add(new Client_AccessoryDetail_Angular(item, "", customer.CustomerName));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetSupplierByPK")]
+        [HttpGet]
+        public IHttpActionResult GetSupplierByPK(int supplierPK)
+        {
+
+            Supplier result;
+            try
+            {
+                result = db.Suppliers.Find(supplierPK);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_ConceptionDetail
+        {
+            public Client_ConceptionDetail(Conception conception, string customerName)
+            {
+                ConceptionPK = conception.ConceptionPK;
+                ConceptionCode = conception.ConceptionCode;
+                Description = conception.Description;
+                Year = conception.Year;
+                Season = conception.Season;
+                IsActive = conception.IsActive;
+                CustomerPK = conception.CustomerPK;
+                CustomerName = customerName;
+            }
+
+            public int ConceptionPK { get; set; }
+
+            public string ConceptionCode { get; set; }
+
+            public string Description { get; set; }
+
+            public int Year { get; set; }
+
+            public string Season { get; set; }
+
+            public bool IsActive { get; set; }
+
+            public int CustomerPK { get; set; }
+
+            public string CustomerName { get; set; }
+        }
+
+        [Route("api/AngularController/GetConceptionByPK")]
+        [HttpGet]
+        public IHttpActionResult GetConceptionByPK(int conceptionPK)
+        {
+            Client_ConceptionDetail result;
+            try
+            {
+                Conception temp = db.Conceptions.Find(conceptionPK);
+                Customer customer = db.Customers.Find(temp.CustomerPK);
+                result = new Client_ConceptionDetail(temp, customer.CustomerName);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetAccessoriesByConceptionPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesByConceptionPK(int conceptionPK)
+        {
+            List<Client_AccessoryDetail_Angular> result = new List<Client_AccessoryDetail_Angular>();
+            try
+            {
+                List<ConceptionAccessory> tempList = (from acc in db.ConceptionAccessories.OrderByDescending(unit => unit.AccessoryPK)
+                                                      where acc.ConceptionPK == conceptionPK
+                                                      select acc).ToList();
+
+                foreach (var item in tempList)
+                {
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    if (accessory.IsActive)
+                    {
+                        Supplier supplier = db.Suppliers.Find(accessory.SupplierPK);
+                        result.Add(new Client_AccessoryDetail_Angular(accessory, supplier.SupplierName, ""));
+                    }
                 }
             }
             catch (Exception e)

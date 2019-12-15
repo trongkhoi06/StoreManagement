@@ -358,7 +358,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/ActiveSupplier")]
         [HttpPut]
-        public IHttpActionResult ActiveSupplier(int supplierPK, string address, string phoneNumber, string userID)
+        public IHttpActionResult ActiveSupplier(int supplierPK, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
