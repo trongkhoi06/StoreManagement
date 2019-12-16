@@ -204,7 +204,7 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public double GenerateFinalQuantity(int packedItemPK)
+        public double FinalQuantity(int packedItemPK)
         {
             double result = 0;
             try

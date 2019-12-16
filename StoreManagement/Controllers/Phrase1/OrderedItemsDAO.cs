@@ -50,9 +50,11 @@ namespace StoreManagement.Controllers
             return db.OrderedItems.Count(e => e.OrderedItemPK == pk) > 0;
         }
 
-        public bool isUpdatedOrderedItem(OrderedItem orderedItem)
+        public bool isUpdatedOrderedItem(OrderedItem orderedItem,string userID)
         {
             OrderedItem dbOrderedItem = GetOrderedItem(orderedItem.OrderedItemPK);
+            Order order = db.Orders.Find(orderedItem.OrderPK);
+            if (order.UserID != userID) throw new Exception("PHẢI LÀ NGƯỜI TẠO ORDER MỚI THAY ĐỔI ĐƯỢC");
             if (dbOrderedItem.OrderPK == orderedItem.OrderPK)
             {
                 if (orderedItem.OrderedQuantity == 0)

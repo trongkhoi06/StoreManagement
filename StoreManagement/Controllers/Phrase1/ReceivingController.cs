@@ -175,7 +175,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        if (!orderedItemsController.isUpdatedOrderedItem(orderedItems))
+                        if (!orderedItemsController.isUpdatedOrderedItem(orderedItems,userID))
                         {
                             return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
                         }

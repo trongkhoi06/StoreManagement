@@ -727,7 +727,7 @@ namespace StoreManagement.Controllers
                         // nếu chưa có classify item của packitem thì tạo mới
                         else
                         {
-                            double finalQuantity = identifyItemController.GenerateFinalQuantity(packedItemPK);
+                            double finalQuantity = identifyItemController.FinalQuantity(packedItemPK);
                             ClassifiedItem classifiedItem = new ClassifiedItem(qualityState, finalQuantity, packedItemPK);
 
                             // tạo classified item

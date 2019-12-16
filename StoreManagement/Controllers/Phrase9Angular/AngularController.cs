@@ -497,6 +497,160 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+
+        [Route("api/AngularController/GetPacksByOrderPK")]
+        [HttpGet]
+        public IHttpActionResult GetPacksByOrderPK(int orderPK)
+        {
+            List<Pack> result;
+            try
+            {
+                result = (from p in db.Packs
+                          where p.OrderPK == orderPK
+                          select p).ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_OrderedItem_Angular
+        {
+            public Client_OrderedItem_Angular()
+            {
+            }
+
+            public Client_OrderedItem_Angular(Accessory accessory, OrderedItem orderedItem, double packedQuantity, double finalQuantity)
+            {
+                OrderedItemPK = orderedItem.OrderedItemPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                OrderedQuantity = orderedItem.OrderedQuantity;
+                Comment = orderedItem.Comment;
+                PackedQuantity = packedQuantity;
+                FinalQuantity = finalQuantity;
+            }
+
+            public int OrderedItemPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double OrderedQuantity { get; set; }
+
+            public string Comment { get; set; }
+
+            public double PackedQuantity { get; set; }
+
+            public double FinalQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetOrderedItemsByOrderPK")]
+        [HttpGet]
+        public IHttpActionResult GetOrderedItemsByOrderPK(int orderPK)
+        {
+            List<Client_OrderedItem_Angular> result = new List<Client_OrderedItem_Angular>();
+            try
+            {
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems
+                                                  where oI.OrderPK == orderPK
+                                                  select oI).ToList();
+                foreach (var orderedItem in orderedItems)
+                {
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                   where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                   select pI).ToList();
+                    double packedQuantity = 0;
+                    double finalQuantity = 0;
+                    foreach (var item in packedItems)
+                    {
+                        packedQuantity += item.PackedQuantity;
+                        ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                         where cI.PackedItemPK == item.PackedItemPK
+                                                         select cI).FirstOrDefault();
+                        if (classifiedItem != null)
+                        {
+                            if (classifiedItem.QualityState == 2)
+                            {
+                                finalQuantity = new IdentifyItemDAO().FinalQuantity(item.PackedItemPK);
+                            }
+                        }
+                    }
+                    
+                    result.Add(new Client_OrderedItem_Angular(accessory,orderedItem,packedQuantity,finalQuantity));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_Order_Angular
+        {
+            public Client_Order_Angular(Order order, string supplierName,string systemUserName)
+            {
+                OrderPK = order.OrderPK;
+                OrderID = order.OrderID;
+                DateCreated = order.DateCreated;
+                IsOpened = order.IsOpened;
+                SupplierPK = order.SupplierPK;
+                SupplierName = supplierName;
+                UserID = order.UserID;
+                SystemUserName = systemUserName;
+            }
+
+            public int OrderPK { get; set; }
+            
+            public string OrderID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public bool IsOpened { get; set; }
+
+            public int SupplierPK { get; set; }
+
+            public string SupplierName { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+        }
+
+        [Route("api/AngularController/GetOrderByOrderPK")]
+        [HttpGet]
+        public IHttpActionResult GetOrderByOrderPK(int orderPK)
+        {
+            Client_Order_Angular result;
+            try
+            {
+                Order order = db.Orders.Find(orderPK);
+                Supplier supplier = db.Suppliers.Find(order.SupplierPK);
+                SystemUser systemUser = db.SystemUsers.Find(order.UserID);
+                result = new Client_Order_Angular(order, supplier.SupplierName,systemUser.Name);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+
     }
 }
 
