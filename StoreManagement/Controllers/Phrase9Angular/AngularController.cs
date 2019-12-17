@@ -571,8 +571,8 @@ namespace StoreManagement.Controllers
                 {
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                     List<PackedItem> packedItems = (from pI in db.PackedItems
-                                                   where pI.OrderedItemPK == orderedItem.OrderedItemPK
-                                                   select pI).ToList();
+                                                    where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                    select pI).ToList();
                     double packedQuantity = 0;
                     double finalQuantity = 0;
                     foreach (var item in packedItems)
@@ -589,8 +589,8 @@ namespace StoreManagement.Controllers
                             }
                         }
                     }
-                    
-                    result.Add(new Client_OrderedItem_Angular(accessory,orderedItem,packedQuantity,finalQuantity));
+
+                    result.Add(new Client_OrderedItem_Angular(accessory, orderedItem, packedQuantity, finalQuantity));
                 }
             }
             catch (Exception e)
@@ -602,7 +602,7 @@ namespace StoreManagement.Controllers
 
         public class Client_Order_Angular
         {
-            public Client_Order_Angular(Order order, string supplierName,string systemUserName)
+            public Client_Order_Angular(Order order, string supplierName, string systemUserName)
             {
                 OrderPK = order.OrderPK;
                 OrderID = order.OrderID;
@@ -615,7 +615,7 @@ namespace StoreManagement.Controllers
             }
 
             public int OrderPK { get; set; }
-            
+
             public string OrderID { get; set; }
 
             public DateTime DateCreated { get; set; }
@@ -641,12 +641,256 @@ namespace StoreManagement.Controllers
                 Order order = db.Orders.Find(orderPK);
                 Supplier supplier = db.Suppliers.Find(order.SupplierPK);
                 SystemUser systemUser = db.SystemUsers.Find(order.UserID);
-                result = new Client_Order_Angular(order, supplier.SupplierName,systemUser.Name);
+                result = new Client_Order_Angular(order, supplier.SupplierName, systemUser.Name);
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_Accessories_Angular
+        {
+            public Client_Accessories_Angular()
+            {
+            }
+
+            public Client_Accessories_Angular(Accessory accessory, double orderedQuantity, double packedQuantity, double finalQuantity)
+            {
+                AccessoryPK = accessory.AccessoryPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                OrderedQuantity = orderedQuantity;
+                PackedQuantity = packedQuantity;
+                FinalQuantity = finalQuantity;
+            }
+
+            public int AccessoryPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double OrderedQuantity { get; set; }
+
+            public double PackedQuantity { get; set; }
+
+            public double FinalQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetAccessoriesWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesWithFilter(DateTime start, DateTime end)
+        {
+            List<Client_Accessories_Angular> result = new List<Client_Accessories_Angular>();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                List<Accessory> accessories = db.Accessories.ToList();
+                foreach (var accessory in accessories)
+                {
+                    List<OrderedItem> orderedItems = new List<OrderedItem>();
+                    // if start > 1900 then select query
+                    if (start.Year > 1900)
+                    {
+
+                        List<OrderedItem> tempList = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
+                                                      where oI.AccessoryPK == accessory.AccessoryPK
+                                                      select oI).ToList();
+
+                        foreach (var orderedItem in tempList)
+                        {
+                            if (db.Orders.Find(orderedItem.OrderPK).DateCreated >= start
+                                && db.Orders.Find(orderedItem.OrderPK).DateCreated < end)
+                            {
+                                orderedItems.Add(orderedItem);
+                            }
+                        }
+                    }
+                    // if start <= 1900 then select all
+                    else
+                    {
+                        orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
+                                        where oI.AccessoryPK == accessory.AccessoryPK
+                                        select oI).ToList();
+                    }
+                    if (orderedItems.Count > 0)
+                    {
+                        double orderedQuantity = 0;
+                        double packedQuantity = 0;
+                        double finalQuantity = 0;
+                        foreach (var orderedItem in orderedItems)
+                        {
+                            // tổng các ordered quantity
+                            orderedQuantity += orderedItem.OrderedQuantity;
+                            List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                            where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                            select pI).ToList();
+
+                            foreach (var item in packedItems)
+                            {
+                                // tổng các packeditem quantity theo list ordereditem
+                                packedQuantity += item.PackedQuantity;
+                                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                                 where cI.PackedItemPK == item.PackedItemPK
+                                                                 select cI).FirstOrDefault();
+                                if (classifiedItem != null)
+                                {
+                                    if (classifiedItem.QualityState == 2)
+                                    {
+                                        // tổng các final quantity
+                                        finalQuantity += new IdentifyItemDAO().FinalQuantity(item.PackedItemPK);
+                                    }
+                                }
+                            }
+                        }
+                        result.Add(new Client_Accessories_Angular(accessory, orderedQuantity, packedQuantity, finalQuantity));
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetAccessoryByPKReceiving")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoryByPKReceiving(int accessoryPK)
+        {
+            Client_Accessories_Angular result;
+            try
+            {
+                Accessory accessory = db.Accessories.Find(accessoryPK);
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
+                                                  where oI.AccessoryPK == accessory.AccessoryPK
+                                                  select oI).ToList();
+
+                double orderedQuantity = 0;
+                double packedQuantity = 0;
+                double finalQuantity = 0;
+                foreach (var orderedItem in orderedItems)
+                {
+                    // tổng các ordered quantity
+                    orderedQuantity += orderedItem.OrderedQuantity;
+                    List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                    where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                    select pI).ToList();
+
+                    foreach (var item in packedItems)
+                    {
+                        // tổng các packeditem quantity theo list ordereditem
+                        packedQuantity += item.PackedQuantity;
+                        ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                         where cI.PackedItemPK == item.PackedItemPK
+                                                         select cI).FirstOrDefault();
+                        if (classifiedItem != null)
+                        {
+                            if (classifiedItem.QualityState == 2)
+                            {
+                                // tổng các final quantity
+                                finalQuantity += new IdentifyItemDAO().FinalQuantity(item.PackedItemPK);
+                            }
+                        }
+                    }
+                }
+                result = new Client_Accessories_Angular(accessory, orderedQuantity, packedQuantity, finalQuantity);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_PackedItem_Angular
+        {
+            public Client_PackedItem_Angular()
+            {
+            }
+
+            public Client_PackedItem_Angular(Pack pack, double packedQuantity, double finalQuantity)
+            {
+                PackPK = pack.PackPK;
+                PackID = pack.PackID;
+                DateCreated = pack.DateCreated;
+                PackedQuantity = packedQuantity;
+                FinalQuantity = finalQuantity;
+            }
+
+            public int PackPK { get; set; }
+
+            public string PackID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public double PackedQuantity { get; set; }
+
+            public double FinalQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetPackedItemsByAccessoryPKReceiving")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemsByAccessoryPKReceiving(int accessoryPK)
+        {
+            List<Client_PackedItem_Angular> result = new List<Client_PackedItem_Angular>();
+            try
+            {
+                Accessory accessory = db.Accessories.Find(accessoryPK);
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
+                                                  where oI.AccessoryPK == accessory.AccessoryPK
+                                                  select oI).ToList();
+
+                foreach (var orderedItem in orderedItems)
+                {
+                    List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                    where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                    select pI).ToList();
+
+                    foreach (var item in packedItems)
+                    {
+                        double packedQuantity = 0;
+                        double finalQuantity = 0;
+                        Pack pack = db.Packs.Find(item.PackPK);
+                        // packeditem quantity theo ordereditem
+                        packedQuantity = item.PackedQuantity;
+                        ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                         where cI.PackedItemPK == item.PackedItemPK
+                                                         select cI).FirstOrDefault();
+                        if (classifiedItem != null)
+                        {
+                            if (classifiedItem.QualityState == 2)
+                            {
+                                // final quantity
+                                finalQuantity = new IdentifyItemDAO().FinalQuantity(item.PackedItemPK);
+                            }
+                        }
+                        result.Add(new Client_PackedItem_Angular(pack, packedQuantity, finalQuantity));
+                    }
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
             return Content(HttpStatusCode.OK, result);
         }
 
