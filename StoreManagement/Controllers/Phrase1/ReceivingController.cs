@@ -136,10 +136,6 @@ namespace StoreManagement.Controllers
                             return Content(HttpStatusCode.Conflict, "Something is wrong!");
                         }
                     }
-                    else
-                    {
-                        //return Content(HttpStatusCode.Conflict, "PHỤ LIỆU KHÔNG ĐÚNG NHÀ CUNG CẤP");
-                    }
                 }
                 catch (Exception e)
                 {

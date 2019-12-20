@@ -407,6 +407,37 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public void LinkConception(List<int> accessoryPKs, int conceptionPK, string userID)
+        {
+            try
+            {
+                // link conception
+                Conception conception = db.Conceptions.Find(conceptionPK);
+                foreach (var accessoryPK in accessoryPKs)
+                {
+                    Accessory accessory = db.Accessories.Find(accessoryPK);
+                    if (conception.CustomerPK != accessory.CustomerPK)
+                    {
+                        throw new Exception("MÃ HÀNG VÀ ACCESSORY KHÔNG CÙNG CUSTOMER!");
+                    }
+                    ConceptionAccessory conceptionAccessory = new ConceptionAccessory(conceptionPK, accessoryPK);
+                    db.ConceptionAccessories.Add(conceptionAccessory);
+
+                    // lưu activity link
+                    Activity activity1 = new Activity("link", conception.ConceptionCode, "Conception", userID);
+                    Activity activity2 = new Activity("link", accessory.AccessoryID, "Accessory", userID);
+                    db.Activities.Add(activity1);
+                    db.Activities.Add(activity2);
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public void UnlinkConception(int accessoryPK, int conceptionPK, string userID)
         {
             try

@@ -119,8 +119,17 @@ namespace StoreManagement.Controllers
         {
             try
             {
+                HashSet<int> setToCheckDupplicateAccessory = new HashSet<int>();
                 foreach (var item in list)
                 {
+                    if (!setToCheckDupplicateAccessory.Contains(item.AccessoryPK))
+                    {
+                        setToCheckDupplicateAccessory.Add(item.AccessoryPK);
+                    }
+                    else
+                    {
+                        throw new Exception("PHỤ LIỆU KHÔNG ĐƯỢC TRÙNG");
+                    }
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
                     if (accessory == null) throw new Exception("PHỤ LIỆU KHÔNG TỒN TẠI");
                     if (accessory.SupplierPK != SupplierPK)

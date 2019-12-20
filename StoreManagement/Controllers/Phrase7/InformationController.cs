@@ -37,14 +37,65 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+        public class Client_Accessory_Information
+        {
+            public Client_Accessory_Information(Accessory accessory, string accessoryTypeName)
+            {
+                AccessoryPK = accessory.AccessoryPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                IsActive = accessory.IsActive;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                Comment = accessory.Comment;
+                Image = accessory.Image;
+                AccessoryTypePK = accessory.AccessoryTypePK;
+                SupplierPK = accessory.SupplierPK;
+                CustomerPK = accessory.CustomerPK;
+                AccessoryTypeName = accessoryTypeName;
+            }
+
+            public int AccessoryPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public bool IsActive { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string Comment { get; set; }
+
+            public string Image { get; set; }
+
+            public int AccessoryTypePK { get; set; }
+
+            public string AccessoryTypeName { get; set; }
+
+            public int SupplierPK { get; set; }
+
+            public int CustomerPK { get; set; }
+        }
+
         [Route("api/InformationController/GetAllAccessory")]
         [HttpGet]
         public IHttpActionResult GetAllAccessory()
         {
-            List<Accessory> result;
+            List<Client_Accessory_Information> result = new List<Client_Accessory_Information>();
             try
             {
-                result = db.Accessories.ToList();
+                List<Accessory> accessories = db.Accessories.ToList();
+                foreach (var accessory in accessories)
+                {
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                    result.Add(new Client_Accessory_Information(accessory, accessoryType.Name));
+                }
             }
             catch (Exception e)
             {
@@ -438,6 +489,29 @@ namespace StoreManagement.Controllers
                 try
                 {
                     informationDAO.LinkConception(accessoryPK, conceptionPK, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "LIÊN KẾT MÃ HÀNG VÀ PHỤ LIỆU THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/LinkConception2")]
+        [HttpPost]
+        public IHttpActionResult LinkConception2(List<int> accessoryPKs, int conceptionPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.LinkConception(accessoryPKs, conceptionPK, userID);
                 }
                 catch (Exception e)
                 {
