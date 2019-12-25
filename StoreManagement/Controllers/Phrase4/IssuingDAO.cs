@@ -130,9 +130,17 @@ namespace StoreManagement.Controllers
             try
             {
                 DemandedItem demandedItem = db.DemandedItems.Find(demandedItemPK);
-                demandedItem.DemandedQuantity = demandedQuantity;
-                demandedItem.Comment = comment;
-                db.Entry(demandedItem).State = EntityState.Modified;
+                if (demandedQuantity > 0)
+                {
+                    demandedItem.DemandedQuantity = demandedQuantity;
+                    demandedItem.Comment = comment;
+                    db.Entry(demandedItem).State = EntityState.Modified;
+                }
+                else
+                {
+                    db.DemandedItems.Remove(demandedItem);
+                }
+
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -908,7 +916,7 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                ConfirmingSession confirmingSession = new ConfirmingSession(requestPK,userID);
+                ConfirmingSession confirmingSession = new ConfirmingSession(requestPK, userID);
                 db.ConfirmingSessions.Add(confirmingSession);
                 db.SaveChanges();
                 confirmingSession = (from Css in db.ConfirmingSessions.OrderByDescending(unit => unit.ConfirmingSessionPK)

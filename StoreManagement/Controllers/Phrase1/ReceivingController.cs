@@ -77,10 +77,10 @@ namespace StoreManagement.Controllers
         {
             List<Client_OrderAngular> resutls = new List<Client_OrderAngular>();
             List<Order> orders;
-            // make it one more day to make sure < end will be right answer
-            end = end.AddDays(1);
             try
             {
+                // make it one more day to make sure < end will be right answer
+                end = end.AddDays(1);
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
@@ -171,7 +171,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        if (!orderedItemsController.isUpdatedOrderedItem(orderedItems,userID))
+                        if (!orderedItemsController.isUpdatedOrderedItem(orderedItems, userID))
                         {
                             return Content(HttpStatusCode.Conflict, "UPDATE THẤT BẠI");
                         }

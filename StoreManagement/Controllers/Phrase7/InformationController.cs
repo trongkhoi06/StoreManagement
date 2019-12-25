@@ -717,29 +717,44 @@ namespace StoreManagement.Controllers
                         var root = HttpContext.Current.Server.MapPath("~/Image");
                         var provider = new MultipartFormDataStreamProvider(root);
                         await Request.Content.ReadAsMultipartAsync(provider);
-                        foreach (var file in provider.FileData)
+                        //foreach (var file in provider.FileData)
+                        //{
+                        //    var name = file.Headers.ContentDisposition.FileName;
+                        //    string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+                        //    name = now.Replace('.', '8') + ".png";
+                        //    var localFileName = file.LocalFileName;
+                        //    var filePath = Path.Combine(root, name);
+                        //    File.Move(localFileName, filePath);
+                        //    if (accessory.Image != null)
+                        //    {
+                        //        File.Delete(Path.Combine(root, accessory.Image));
+                        //    }
+                        //    accessory.Image = name;
+                        //    db.Entry(accessory).State = EntityState.Modified;
+                        //    db.SaveChanges();
+                        //    return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+                        //}
+                        MultipartFileData file = provider.FileData[0];
+                        var name = file.Headers.ContentDisposition.FileName;
+                        string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+                        name = now.Replace('.', '8') + ".png";
+                        var localFileName = file.LocalFileName;
+                        var filePath = Path.Combine(root, name);
+                        File.Move(localFileName, filePath);
+                        if (accessory.Image != null)
                         {
-                            var name = file.Headers.ContentDisposition.FileName;
-
-                            string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
-                            name = now.Replace('.', '8') + ".png";
-                            var localFileName = file.LocalFileName;
-                            var filePath = Path.Combine(root, name);
-                            File.Move(localFileName, filePath);
-                            if (accessory.Image != null)
-                                File.Delete(Path.Combine(root, accessory.Image));
-                            accessory.Image = name;
-                            db.Entry(accessory).State = EntityState.Modified;
-                            db.SaveChanges();
-                            return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+                            File.Delete(Path.Combine(root, accessory.Image));
                         }
+                        accessory.Image = name;
+                        db.Entry(accessory).State = EntityState.Modified;
+                        db.SaveChanges();
+                        return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
                     }
                 }
                 catch (Exception e)
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
             }
             else
             {

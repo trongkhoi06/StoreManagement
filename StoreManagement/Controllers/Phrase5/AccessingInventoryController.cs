@@ -75,10 +75,10 @@ namespace StoreManagement.Controllers
                             List<Entry> entries = (from e in db.Entries
                                                    where e.StoredBoxPK == sBox.StoredBoxPK
                                                    select e).ToList();
-                            Dictionary<int, bool> listItemPK = new Dictionary<int, bool>();
+                            HashSet<KeyValuePair<int, bool>> listItemPK = new HashSet<KeyValuePair<int, bool>>();
                             foreach (var entry in entries)
                             {
-                                listItemPK.Add(entry.ItemPK, entry.IsRestored);
+                                listItemPK.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
                             }
                             foreach (var itemPK in listItemPK)
                             {
@@ -357,6 +357,6 @@ namespace StoreManagement.Controllers
             }
         }
 
-        
+
     }
 }
