@@ -11,7 +11,6 @@ namespace StoreManagement.Models
     {
         public AccessoryType()
         {
-
         }
 
         [Key]
@@ -25,8 +24,6 @@ namespace StoreManagement.Models
         [StringLength(2)]
         public string Abbreviation { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Kind { get; set; }
+        public bool IsTextile { get; set; }
     }
 }

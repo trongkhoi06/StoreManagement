@@ -9,13 +9,27 @@ namespace StoreManagement.Models
     [Table("DemandedItem")]
     public partial class DemandedItem
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int DemandedItemID { get; set; }
+        public DemandedItem()
+        {
+        }
 
-        public int? DemandedQuantity { get; set; }
+        public DemandedItem(double demandedQuantity, string comment, int demandPK, int accessoryPK)
+        {
+            DemandedQuantity = demandedQuantity;
+            Comment = comment;
+            DemandPK = demandPK;
+            AccessoryPK = accessoryPK;
+        }
+
+        [Key]
+        public int DemandedItemPK { get; set; }
+
+        public double DemandedQuantity { get; set; }
 
         public string Comment { get; set; }
 
-        public int? DemandID { get; set; }
+        public int DemandPK { get; set; }
+
+        public int AccessoryPK { get; set; }
     }
 }

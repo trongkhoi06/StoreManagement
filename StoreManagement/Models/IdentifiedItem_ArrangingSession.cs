@@ -8,8 +8,11 @@ namespace StoreManagement.Models
 
     public partial class IdentifiedItem_ArrangingSession
     {
+        public IdentifiedItem_ArrangingSession()
+        {
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdentifiedItem_ArrangingSessionPK { get; set; }
 
         public int IdentifiedItemPK { get; set; }

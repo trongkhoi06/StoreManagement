@@ -9,22 +9,20 @@ namespace StoreManagement.Models
     [Table("FailedItem")]
     public partial class FailedItem
     {
+        public FailedItem()
+        {
+        }
+        public FailedItem(int classifiedItemPK)
+        {
+            IsReturned = false;
+            ClassifiedItemPK = classifiedItemPK;
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int FailedItemPK { get; set; }
 
         public bool IsReturned { get; set; }
 
         public int ClassifiedItemPK { get; set; }
-
-        public FailedItem()
-        {
-        }
-
-        public FailedItem(int classifiedItemPK)
-        {
-            ClassifiedItemPK = classifiedItemPK;
-            IsReturned = false;
-        }
     }
 }

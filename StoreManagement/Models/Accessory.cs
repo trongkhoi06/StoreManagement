@@ -13,6 +13,20 @@ namespace StoreManagement.Models
         {
         }
 
+        public Accessory(string accessoryID, string accessoryDescription,string item, string art, string color, string comment, int accessoryTypePK, int supplierPK, int customerPK)
+        {
+            AccessoryID = accessoryID;
+            AccessoryDescription = accessoryDescription;
+            IsActive = true;
+            Item = item;
+            Art = art;
+            Color = color;
+            Comment = comment;
+            AccessoryTypePK = accessoryTypePK;
+            SupplierPK = supplierPK;
+            CustomerPK = customerPK;
+        }
+
         [Key]
         public int AccessoryPK { get; set; }
 
@@ -39,5 +53,9 @@ namespace StoreManagement.Models
         public string Image { get; set; }
 
         public int AccessoryTypePK { get; set; }
+
+        public int SupplierPK { get; set; }
+
+        public int CustomerPK { get; set; }
     }
 }

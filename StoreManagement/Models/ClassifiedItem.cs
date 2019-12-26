@@ -9,25 +9,25 @@ namespace StoreManagement.Models
     [Table("ClassifiedItem")]
     public partial class ClassifiedItem
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ClassifiedItemPK { get; set; }
-
-        public int FinalQuantity { get; set; }
-        
-        public int QualityState { get; set; }
-
-        public int PackedItemPK { get; set; }
-
         public ClassifiedItem()
         {
+
         }
 
-        public ClassifiedItem(int qualityState, int finalQuantity, int packedItemPK)
+        public ClassifiedItem(int qualityState, double finalQuantity, int packedItemPK)
         {
             FinalQuantity = finalQuantity;
             QualityState = qualityState;
             PackedItemPK = packedItemPK;
         }
+
+        [Key]
+        public int ClassifiedItemPK { get; set; }
+
+        public double FinalQuantity { get; set; }
+
+        public int QualityState { get; set; }
+
+        public int PackedItemPK { get; set; }
     }
 }

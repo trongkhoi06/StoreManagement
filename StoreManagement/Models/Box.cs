@@ -13,8 +13,14 @@ namespace StoreManagement.Models
         {
         }
 
+        public Box(string boxID)
+        {
+            BoxID = boxID;
+            DateCreated = DateTime.Now;
+            IsActive = true;
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int BoxPK { get; set; }
 
         [Required]

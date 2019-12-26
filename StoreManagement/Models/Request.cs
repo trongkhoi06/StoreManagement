@@ -9,24 +9,42 @@ namespace StoreManagement.Models
     [Table("Request")]
     public partial class Request
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Request()
         {
-            RequestedItems = new HashSet<RequestedItem>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int RequestID { get; set; }
+        public Request(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK, string userID)
+        {
+            RequestID = requestID;
+            DateCreated = DateTime.Now;
+            ExpectedDate = expectedDate;
+            IsIssued = isIssued;
+            IsConfirmed = isConfirmed;
+            Comment = comment;
+            DemandPK = demandPK;
+            UserID = userID;
+        }
 
-        public DateTime? DateCreated { get; set; }
+        [Key]
+        public int RequestPK { get; set; }
 
-        public DateTime? ExpectedDate { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string RequestID { get; set; }
 
-        public bool? isIssued { get; set; }
+        public DateTime DateCreated { get; set; }
 
-        public bool? isConformed { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime ExpectedDate { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RequestedItem> RequestedItems { get; set; }
+        public bool IsIssued { get; set; }
+
+        public bool IsConfirmed { get; set; }
+
+        public string Comment { get; set; }
+
+        public int DemandPK { get; set; }
+
+        public string UserID { get; set; }
     }
 }

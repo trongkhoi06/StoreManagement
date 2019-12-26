@@ -9,17 +9,6 @@ namespace StoreManagement.Models
     [Table("Device")]
     public partial class Device
     {
-        [Key]
-        public int DevicePK { get; set; }
-
-        [Required]
-        public string DeviceCode { get; set; }
-        [Required]
-        public string DeviceName { get; set; }
-
-        [Column(TypeName = "date")]
-        public DateTime DateCreated { get; set; }
-
         public Device()
         {
         }
@@ -30,5 +19,18 @@ namespace StoreManagement.Models
             DeviceName = deviceName;
             DateCreated = DateTime.Now;
         }
+
+        [Key]
+        public int DevicePK { get; set; }
+
+        [Required]
+        public string DeviceCode { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string DeviceName { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime DateCreated { get; set; }
     }
 }

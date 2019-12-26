@@ -13,9 +13,7 @@ namespace StoreManagement.Models
         {
         }
 
-        public int RoleID { get; set; }
-
-        [Required]
+        [Key]
         [StringLength(50)]
         public string RoleName { get; set; }
 

@@ -15,15 +15,16 @@ namespace StoreManagement.Models
 
         public IdentifyingSession(string userID)
         {
-            this.ExecutedDate = DateTime.Now;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdentifyingSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
+
+        [Required]
         [StringLength(50)]
         public string UserID { get; set; }
     }

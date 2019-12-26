@@ -11,18 +11,19 @@ namespace StoreManagement.Models
     {
         public Order()
         {
+
         }
-        public Order(string OrderID, int SupplierPK,string userID)
+
+        public Order(string orderID, int supplierPK, string userID)
         {
-            this.UserID = userID;
-            this.OrderID = OrderID;
-            this.SupplierPK = SupplierPK;
-            this.DateCreated = DateTime.Now;
-            this.IsOpened = true;
+            OrderID = orderID;
+            SupplierPK = supplierPK;
+            UserID = userID;
+            IsOpened = true;
+            DateCreated = DateTime.Now;
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderPK { get; set; }
 
         [Required]
@@ -31,11 +32,11 @@ namespace StoreManagement.Models
 
         public DateTime DateCreated { get; set; }
 
-        [Required]
         public bool IsOpened { get; set; }
 
         public int SupplierPK { get; set; }
 
+        [Required]
         [StringLength(50)]
         public string UserID { get; set; }
     }

@@ -9,19 +9,6 @@ namespace StoreManagement.Models
     [Table("ArrangingSession")]
     public partial class ArrangingSession
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ArrangingSessionPK { get; set; }
-
-        public DateTime ExecutedDate { get; set; }
-
-        public int StartBoxPK { get; set; }
-
-        public int DestinationBoxPK { get; set; }
-
-        [StringLength(50)]
-        public string UserID { get; set; }
-
         public ArrangingSession()
         {
         }
@@ -33,5 +20,18 @@ namespace StoreManagement.Models
             DestinationBoxPK = destinationBoxPK;
             UserID = userID;
         }
+
+        [Key]
+        public int ArrangingSessionPK { get; set; }
+
+        public DateTime ExecutedDate { get; set; }
+
+        public int StartBoxPK { get; set; }
+
+        public int DestinationBoxPK { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string UserID { get; set; }
     }
 }

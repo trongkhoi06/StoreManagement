@@ -11,14 +11,19 @@ namespace StoreManagement.Models
     {
         public StoredBox()
         {
-
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public StoredBox(int boxPK, int shelfPK)
+        {
+            BoxPK = boxPK;
+            ShelfPK = shelfPK;
+        }
+
         [Key]
         public int StoredBoxPK { get; set; }
 
         public int BoxPK { get; set; }
-        
+
+        public int ShelfPK { get; set; }
     }
 }
