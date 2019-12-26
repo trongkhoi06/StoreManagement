@@ -1567,16 +1567,131 @@ namespace StoreManagement.Controllers
                 {
                     result.Add(item.Value);
                 }
+
+                return Content(HttpStatusCode.OK, result);
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
-
-            return Content(HttpStatusCode.OK, result);
         }
 
+        public class Client_PackedItem_Angular2
+        {
+            public Client_PackedItem_Angular2(Pack pack, double packedQuantity, double passedQuantity, double instoredQuantity)
+            {
+                PackID = pack.PackID;
+                DateCreated = pack.DateCreated;
+                PackedQuantity = packedQuantity;
+                PassedQuantity = passedQuantity;
+                InstoredQuantity = instoredQuantity;
+            }
 
+            public string PackID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public double PackedQuantity { get; set; }
+
+            public double PassedQuantity { get; set; }
+
+            public double InstoredQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetPackedItemStoringByAccessoryPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemStoringByAccessoryPK(int AccessoryPK)
+        {
+            List<Client_PackedItem_Angular2> result = new List<Client_PackedItem_Angular2>();
+            StoringDAO storingDAO = new StoringDAO();
+            IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+            try
+            {
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
+                                                  where oI.AccessoryPK == AccessoryPK
+                                                  select oI).ToList();
+                foreach (var orderedItem in orderedItems)
+                {
+                    List<PackedItem> packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                                    where pI.OrderedItemPK == orderedItem.OrderedItemPK
+                                                    select pI).ToList();
+                    foreach (var packedItem in packedItems)
+                    {
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                         where cI.PackedItemPK == packedItem.PackedItemPK
+                                                         select cI).FirstOrDefault();
+                        if (classifiedItem != null)
+                        {
+                            // đã pass == 2
+                            if (classifiedItem.QualityState == 2)
+                            {
+                                PassedItem passedItem = (from pI in db.PassedItems
+                                                         where pI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                         select pI).FirstOrDefault();
+                                List<Entry> entries = (from e in db.Entries
+                                                       where e.ItemPK == passedItem.PassedItemPK && e.IsRestored == false
+                                                       select e).ToList();
+                                result.Add(new Client_PackedItem_Angular2(pack, packedItem.PackedQuantity,
+                                    identifyItemDAO.FinalQuantity(packedItem.PackedItemPK), storingDAO.EntriesQuantity(entries)));
+                            }
+                        }
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+        public class Client_RestoredItem_Angular
+        {
+            public Client_RestoredItem_Angular(Restoration restoration, double restoredQuantity, double storedQuantity)
+            {
+                RestorationID = restoration.RestorationID;
+                DateCreated = restoration.DateCreated;
+                RestoredQuantity = restoredQuantity;
+                InstoredQuantity = storedQuantity;
+            }
+
+            public string RestorationID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public double RestoredQuantity { get; set; }
+
+            public double InstoredQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetRestoredItemStoringByAccessoryPK")]
+        [HttpGet]
+        public IHttpActionResult GetRestoredItemStoringByAccessoryPK(int AccessoryPK)
+        {
+            List<Client_RestoredItem_Angular> result = new List<Client_RestoredItem_Angular>();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                List<RestoredItem> restoredItems = (from rI in db.RestoredItems
+                                                    where rI.AccessoryPK == AccessoryPK
+                                                    select rI).ToList();
+                foreach (var restoredItem in restoredItems)
+                {
+                    Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                    List<Entry> entries = (from e in db.Entries
+                                           where e.ItemPK == restoredItem.RestoredItemPK && e.IsRestored == true
+                                           select e).ToList();
+                    result.Add(new Client_RestoredItem_Angular(restoration,restoredItem.RestoredQuantity,storingDAO.EntriesQuantity(entries)));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
     }
 }
 

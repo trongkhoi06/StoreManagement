@@ -48,6 +48,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult GetHashByUserID([FromBody] UserClient userClient)
         {
+            List<string> result = new List<string>();
             try
             {
                 SqlParameter userID = new SqlParameter("@userID", userClient.Username);
@@ -57,7 +58,9 @@ namespace StoreManagement.Controllers
                 else
                 {
                     string hash = Base64Encode(userClient.Username + "~!~" + DateTime.Now.ToString());
-                    return Content(HttpStatusCode.OK, hash);
+                    result.Add(hash);
+                    result.Add(roleName);
+                    return Content(HttpStatusCode.OK, result);
                 }
 
             }
