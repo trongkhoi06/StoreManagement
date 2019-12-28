@@ -505,6 +505,36 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+        [Route("api/AngularController/GetAccessoriesAvailableByConceptionPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesAvailableByConceptionPK(int conceptionPK)
+        {
+            List<Client_AccessoryDetail_Angular> result = new List<Client_AccessoryDetail_Angular>();
+            try
+            {
+                Conception conception = db.Conceptions.Find(conceptionPK);
+                List<Accessory> accessories = (from acc in db.Accessories
+                                               where acc.CustomerPK == conception.CustomerPK
+                                               select acc).ToList();
+                foreach (var accessory in accessories)
+                {
+                    ConceptionAccessory temp = (from ca in db.ConceptionAccessories
+                                                where ca.ConceptionPK == conceptionPK && ca.AccessoryPK == accessory.AccessoryPK
+                                                select ca).FirstOrDefault();
+                    if (accessory.IsActive && temp == null)
+                    {
+                        Supplier supplier = db.Suppliers.Find(accessory.SupplierPK);
+                        result.Add(new Client_AccessoryDetail_Angular(accessory, supplier.SupplierName, ""));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
 
         [Route("api/AngularController/GetPacksByOrderPK")]
         [HttpGet]
@@ -1028,6 +1058,19 @@ namespace StoreManagement.Controllers
                 InstoredQuantity = instoredQuantity;
             }
 
+            public Client_Accessories_Stored_Angular(Accessory accessory, double instoredQuantity, string customerName, string supplierName)
+            {
+                AccessoryPK = accessory.AccessoryPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                InstoredQuantity = instoredQuantity;
+                CustomerName = customerName;
+                SupplierName = supplierName;
+            }
+
             public int AccessoryPK { get; set; }
 
             public string AccessoryID { get; set; }
@@ -1041,6 +1084,10 @@ namespace StoreManagement.Controllers
             public string Color { get; set; }
 
             public double InstoredQuantity { get; set; }
+
+            public string CustomerName { get; set; }
+
+            public string SupplierName { get; set; }
         }
 
         [Route("api/AngularController/GetAccessoriesStoring")]
@@ -1057,7 +1104,10 @@ namespace StoreManagement.Controllers
                     List<Entry> entries = (from e in db.Entries
                                            where e.AccessoryPK == accessory.AccessoryPK
                                            select e).ToList();
-                    result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries)));
+                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    {
+                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries)));
+                    }
                 }
             }
             catch (Exception e)
@@ -1067,6 +1117,29 @@ namespace StoreManagement.Controllers
 
             return Content(HttpStatusCode.OK, result);
         }
+
+        [Route("api/AngularController/GetAccessoryByPKStoring")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoryByPKStoring(int accessoryPK)
+        {
+            Client_Accessories_Stored_Angular result = new Client_Accessories_Stored_Angular();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                Accessory accessory = db.Accessories.Find(accessoryPK);
+                List<Entry> entries = (from e in db.Entries
+                                       where e.AccessoryPK == accessory.AccessoryPK
+                                       select e).ToList();
+                result = new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries));
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
+        }
+
         // có thể ko cần
         [Route("api/AngularController/GetAccessoriesStoringByCustomerPK")]
         [HttpGet]
@@ -1089,7 +1162,11 @@ namespace StoreManagement.Controllers
                     List<Entry> entries = (from e in db.Entries
                                            where e.AccessoryPK == accessory.AccessoryPK
                                            select e).ToList();
-                    result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries)));
+                    Supplier supplier = db.Suppliers.Find(accessory.SupplierPK);
+                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    {
+                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries), "", supplier.SupplierName));
+                    }
                 }
             }
             catch (Exception e)
@@ -1122,7 +1199,11 @@ namespace StoreManagement.Controllers
                     List<Entry> entries = (from e in db.Entries
                                            where e.AccessoryPK == accessory.AccessoryPK
                                            select e).ToList();
-                    result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries)));
+                    Customer customer = db.Customers.Find(accessory.CustomerPK);
+                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    {
+                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries), customer.CustomerName, ""));
+                    }
                 }
             }
             catch (Exception e)
@@ -1682,7 +1763,7 @@ namespace StoreManagement.Controllers
                     List<Entry> entries = (from e in db.Entries
                                            where e.ItemPK == restoredItem.RestoredItemPK && e.IsRestored == true
                                            select e).ToList();
-                    result.Add(new Client_RestoredItem_Angular(restoration,restoredItem.RestoredQuantity,storingDAO.EntriesQuantity(entries)));
+                    result.Add(new Client_RestoredItem_Angular(restoration, restoredItem.RestoredQuantity, storingDAO.EntriesQuantity(entries)));
                 }
 
                 return Content(HttpStatusCode.OK, result);

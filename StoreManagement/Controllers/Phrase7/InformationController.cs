@@ -777,6 +777,7 @@ namespace StoreManagement.Controllers
                 Art = accessory.Art;
                 Color = accessory.Color;
                 Image = accessory.Image;
+                AccessoryTypePK = accessory.AccessoryTypePK;
             }
 
             public int AccessoryPK { get; set; }
@@ -792,6 +793,8 @@ namespace StoreManagement.Controllers
             public string Color { get; set; }
 
             public string Image { get; set; }
+
+            public int AccessoryTypePK { get; set; }
         }
 
         [Route("api/IssuingController/GetAccessoriesForFilter")]

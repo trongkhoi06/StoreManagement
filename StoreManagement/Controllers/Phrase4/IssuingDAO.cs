@@ -17,8 +17,9 @@ namespace StoreManagement.Controllers
 
         private string KhoiNKTType(int num)
         {
-            if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
-            else if (num < 10)
+            //if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
+            //else
+            if (num < 10)
             {
                 return num + "";
             }
@@ -733,7 +734,29 @@ namespace StoreManagement.Controllers
                 // Add restoration
                 DateTime now = DateTime.Now;
                 // Generate Restoration
-                string restorationID = KhoiNKTType(now.Day) + KhoiNKTType(now.Month) + now.Year;
+                //string restorationID = KhoiNKTType(now.Second) + KhoiNKTType(now.Minute) + KhoiNKTType(now.Hour) + KhoiNKTType(now.Day) + KhoiNKTType(now.Month) + now.Year;
+                Restoration temp = db.Restorations.OrderByDescending(unit => unit.RestorationPK).FirstOrDefault();
+
+                string restorationID;
+                if (temp != null)
+                {
+                    string tempStr;
+                    Int32 tempInt;
+                    tempStr = temp.RestorationID.Substring(temp.RestorationID.Length - 5);
+                    tempInt = Int32.Parse(tempStr) + 1;
+
+                    tempStr = tempInt + "";
+                    if (tempStr.Length == 1) tempStr = "0000" + tempStr;
+                    if (tempStr.Length == 2) tempStr = "000" + tempStr;
+                    if (tempStr.Length == 3) tempStr = "00" + tempStr;
+                    if (tempStr.Length == 4) tempStr = "0" + tempStr;
+
+                    restorationID = "ASTRS" + tempStr ;
+                }
+                else
+                {
+                    restorationID = "ASTRS00001";
+                }
                 Restoration restoration = new Restoration(restorationID, userID, comment);
                 db.Restorations.Add(restoration);
                 db.SaveChanges();
