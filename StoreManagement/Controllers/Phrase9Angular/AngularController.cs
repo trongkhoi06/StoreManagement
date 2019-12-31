@@ -2941,6 +2941,161 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+        public class Client_PackedItem_Receiving_Angular
+        {
+            public Client_PackedItem_Receiving_Angular(Accessory accessory, PackedItem packedItem, double sumIdentifiedQuantity, double finalQuantity)
+            {
+                PackedItemPK = packedItem.PackedItemPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackedQuantity = packedItem.PackedQuantity;
+            }
+
+            public int PackedItemPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double PackedQuantity { get; set; }
+
+            public double SumIdentifiedQuantity { get; set; }
+
+            public double FinalQuantity { get; set; }
+            // pack property
+            public bool IsOpened { get; set; }
+            // classifiedItem property
+            public bool IsClassified { get; set; }
+        }
+
+        [Route("api/AngularController/GetPackedItemByPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByPK(int packedItemPK)
+        {
+            Client_PackedItem_Receiving_Angular result;
+            try
+            {
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                if (packedItem == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "ORDER KHÔNG TỒN TẠI");
+                }
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.PackedItemPK == packedItem.PackedItemPK
+                                                        select iI).ToList();
+                double sumIdentifiedQuantity = 0;
+                foreach (var item in identifiedItems)
+                {
+                    sumIdentifiedQuantity += item.IdentifiedQuantity;
+                }
+
+                result = new Client_PackedItem_Receiving_Angular(accessory, packedItem, sumIdentifiedQuantity
+                    , new IdentifyItemDAO().FinalQuantity(packedItem.PackedItemPK));
+
+                // query isopened and isclassified
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+                result.IsOpened = pack.IsOpened;
+
+                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                 where cI.PackedItemPK == packedItem.PackedItemPK
+                                                 select cI).FirstOrDefault();
+                if (classifiedItem != null)
+                {
+                    result.IsClassified = true;
+                }
+                else
+                {
+                    result.IsClassified = false;
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class Client_IdentifiedItem_Receiving_Angular
+        {
+            public Client_IdentifiedItem_Receiving_Angular(string boxID, string userID, DateTime executedDate, IdentifiedItem identifiedItem)
+            {
+                BoxID = boxID;
+                IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
+                UserID = userID;
+                ExecutedDate = executedDate;
+                IsChecked = identifiedItem.IsChecked;
+                IsCounted = identifiedItem.IsCounted;
+            }
+
+            public string BoxID { get; set; }
+
+            public double IdentifiedQuantity { get; set; }
+
+            public string UserID { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public int CheckingSessionPK { get; set; }
+
+            public bool IsChecked { get; set; }
+
+            public int CountingSessionPK { get; set; }
+
+            public bool IsCounted { get; set; }
+        }
+        [Route("api/AngularController/GetIdentifiedItemByPackedItemPK")]
+        [HttpGet]
+        public IHttpActionResult GetIdentifiedItemByPackedItemPK(int packedItemPK)
+        {
+            List<Client_IdentifiedItem_Receiving_Angular> result = new List<Client_IdentifiedItem_Receiving_Angular>();
+            try
+            {
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                if (packedItem == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "ORDER KHÔNG TỒN TẠI");
+                }
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.PackedItemPK == packedItem.PackedItemPK
+                                                        select iI).ToList();
+
+                foreach (var item in identifiedItems)
+                {
+                    IdentifyingSession ss = db.IdentifyingSessions.Find(item.IdentifyingSessionPK);
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(item.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+
+                    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                    result.Add(new Client_IdentifiedItem_Receiving_Angular(box.BoxID, ss.UserID + " (" + systemUser.Name + ")", ss.ExecutedDate, item));
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        // QR CODE GENERATOR
+
         private string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
@@ -3028,7 +3183,15 @@ namespace StoreManagement.Controllers
 
                 // pdf
                 var pdfPath = Path.Combine(excel, "stamp.pdf");
-                wb.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, pdfPath);
+
+                object misValue = System.Reflection.Missing.Value;
+                XlFixedFormatType paramExportFormat = XlFixedFormatType.xlTypePDF;
+                XlFixedFormatQuality paramExportQuality = XlFixedFormatQuality.xlQualityStandard;
+                bool paramOpenAfterPublish = false;
+                bool paramIncludeDocProps = true;
+                bool paramIgnorePrintAreas = true;
+
+                wb.ExportAsFixedFormat(paramExportFormat, pdfPath, paramExportQuality, paramIncludeDocProps, paramIgnorePrintAreas, 1, 1, paramOpenAfterPublish, misValue);
 
                 //var stream = new MemoryStream();
 
