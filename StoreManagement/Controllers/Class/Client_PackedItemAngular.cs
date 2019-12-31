@@ -25,7 +25,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
-            Comment = accessory.Comment;
+            Comment = packedItem.Comment;
         }
 
         public int PackedItemPK { get; set; }

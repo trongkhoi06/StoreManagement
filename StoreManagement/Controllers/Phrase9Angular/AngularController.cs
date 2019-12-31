@@ -1,18 +1,23 @@
-﻿using StoreManagement.Class;
+﻿using Microsoft.Office.Interop.Excel;
+using QRCoder;
+using StoreManagement.Class;
 using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using static StoreManagement.Controllers.IssuingController;
+
 
 namespace StoreManagement.Controllers
 {
@@ -1771,6 +1776,1282 @@ namespace StoreManagement.Controllers
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        ///// Manager API
+        [Route("api/AngularController/GetRestorationWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetRestorationWithFilter(DateTime start, DateTime end)
+        {
+            List<Restoration> result = new List<Restoration>();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    result = (from re in db.Restorations
+                              where re.DateCreated >= start && re.DateCreated <= end
+                              select re).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    result = db.Restorations.ToList();
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_Restoration_Angular
+        {
+            public Client_Restoration_Angular()
+            {
+            }
+
+            public Client_Restoration_Angular(Restoration restoration, string systemUserName)
+            {
+                RestorationPK = restoration.RestorationPK;
+                RestorationID = restoration.RestorationID;
+                DateCreated = restoration.DateCreated;
+                IsReceived = restoration.IsReceived;
+                UserID = restoration.UserID;
+                SystemUserName = systemUserName;
+                Comment = restoration.Comment;
+            }
+
+            public int RestorationPK { get; set; }
+
+            public string RestorationID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public bool IsReceived { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+
+            public string Comment { get; set; }
+        }
+
+        [Route("api/AngularController/GetRestorationByPK")]
+        [HttpGet]
+        public IHttpActionResult GetRestorationByPK(int restorationPK)
+        {
+            Client_Restoration_Angular result;
+            try
+            {
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                SystemUser systemUser = db.SystemUsers.Find(restoration.UserID);
+                result = new Client_Restoration_Angular(restoration, systemUser.Name);
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_ReceivingSession_Angular
+        {
+            public Client_ReceivingSession_Angular()
+            {
+            }
+
+            public Client_ReceivingSession_Angular(ReceivingSession receivingSession, string systemUserName)
+            {
+                ReceivingSessionPK = receivingSession.ReceivingSessionPK;
+                ExecutedDate = receivingSession.ExecutedDate;
+                UserID = receivingSession.UserID;
+                SystemUserName = systemUserName;
+                RestorationPK = receivingSession.RestorationPK;
+            }
+
+            public int ReceivingSessionPK { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+
+            public int RestorationPK { get; set; }
+
+        }
+
+        [Route("api/AngularController/GetReceivingSessionByRestorationPK")]
+        [HttpGet]
+        public IHttpActionResult GetReceivingSessionByRestorationPK(int restorationPK)
+        {
+            Client_ReceivingSession_Angular result;
+            try
+            {
+                ReceivingSession receivingSession = (from Rss in db.ReceivingSessions
+                                                     where Rss.RestorationPK == restorationPK
+                                                     select Rss).FirstOrDefault();
+                SystemUser systemUser = db.SystemUsers.Find(receivingSession.UserID);
+                result = new Client_ReceivingSession_Angular(receivingSession, systemUser.Name);
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_RestoredItem_Receiving_Angular
+        {
+            public Client_RestoredItem_Receiving_Angular()
+            {
+            }
+
+            public Client_RestoredItem_Receiving_Angular(Accessory accessory, double restoredQuantity)
+            {
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                RestoredQuantity = restoredQuantity;
+            }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double RestoredQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetRestoredItemByRestorationPK")]
+        [HttpGet]
+        public IHttpActionResult GetRestoredItemByRestorationPK(int restorationPK)
+        {
+            List<Client_RestoredItem_Receiving_Angular> result = new List<Client_RestoredItem_Receiving_Angular>();
+            try
+            {
+                List<RestoredItem> restoredItems = (from rI in db.RestoredItems.OrderByDescending(unit => unit.RestoredItemPK)
+                                                    where rI.RestorationPK == restorationPK
+                                                    select rI).ToList();
+                foreach (var restoredItem in restoredItems)
+                {
+                    Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                    result.Add(new Client_RestoredItem_Receiving_Angular(accessory, restoredItem.RestoredQuantity));
+                }
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_CountingSession_Angular
+        {
+
+            public Client_CountingSession_Angular(CountingSession countingSession, Accessory accessory, string packID, string boxID)
+            {
+                CountingSessionPK = countingSession.CountingSessionPK;
+                ExecutedDate = countingSession.ExecutedDate;
+                UserID = countingSession.UserID;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                BoxID = boxID;
+            }
+
+            public Client_CountingSession_Angular(CountingSession countingSession, Accessory accessory, string packID, string boxID, string systemUserName, double identifiedQuantity)
+            {
+                CountingSessionPK = countingSession.CountingSessionPK;
+                CountedQuantity = countingSession.CountedQuantity;
+                IdentifiedQuantity = identifiedQuantity;
+                ExecutedDate = countingSession.ExecutedDate;
+                UserID = countingSession.UserID;
+                SystemUserName = systemUserName;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                BoxID = boxID;
+            }
+
+            public int CountingSessionPK { get; set; }
+
+            public double CountedQuantity { get; set; }
+
+            public double IdentifiedQuantity { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string PackID { get; set; }
+
+            public string BoxID { get; set; }
+        }
+
+        [Route("api/AngularController/GetCountingListInspectingWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetCountingListInspectingWithFilter(DateTime start, DateTime end)
+        {
+            List<Client_CountingSession_Angular> result = new List<Client_CountingSession_Angular>();
+            List<CountingSession> tempCountingSessions;
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    tempCountingSessions = (from re in db.CountingSessions
+                                            where re.ExecutedDate >= start && re.ExecutedDate <= end
+                                            select re).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    tempCountingSessions = db.CountingSessions.ToList();
+                }
+                foreach (var ss in tempCountingSessions)
+                {
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+                    // query box
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+
+                    // query pack
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                    // query accessory
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                    result.Add(new Client_CountingSession_Angular(ss, accessory, pack.PackID, box.BoxID));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetCountingSessionByPK")]
+        [HttpGet]
+        public IHttpActionResult GetCountingSessionByPK(int countingSessionPK)
+        {
+            Client_CountingSession_Angular result;
+            try
+            {
+                CountingSession ss = db.CountingSessions.Find(countingSessionPK);
+
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+                // query box
+                UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                Box box = db.Boxes.Find(uBox.BoxPK);
+                string boxID = box.BoxID.Substring(0, box.BoxID.Length - 3);
+
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                result = new Client_CountingSession_Angular(ss, accessory, pack.PackID, box.BoxID, systemUser.Name, identifiedItem.IdentifiedQuantity);
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_PackedItem_Inspecting_Angular
+        {
+            public Client_PackedItem_Inspecting_Angular(string packID, Accessory accessory, PackedItem packedItem)
+            {
+                PackedItemPK = packedItem.PackedItemPK;
+                PackID = packID;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackedQuantity = packedItem.PackedQuantity;
+            }
+
+            public int PackedItemPK { get; set; }
+
+            public string PackID { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double PackedQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetPackedItemByCountingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByCountingSessionPK(int countingSessionPK)
+        {
+            Client_PackedItem_Inspecting_Angular result;
+            try
+            {
+                CountingSession ss = db.CountingSessions.Find(countingSessionPK);
+
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                result = new Client_PackedItem_Inspecting_Angular(pack.PackID, accessory, packedItem);
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_CheckingSession_Angular
+        {
+
+            public Client_CheckingSession_Angular(CheckingSession checkingSession, Accessory accessory, string packID, string boxID)
+            {
+                CheckingSessionPK = checkingSession.CheckingSessionPK;
+                ExecutedDate = checkingSession.ExecutedDate;
+                UserID = checkingSession.UserID;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                BoxID = boxID;
+            }
+
+            public Client_CheckingSession_Angular(CheckingSession checkingSession, Accessory accessory, string packID, string boxID, string systemUserName, double identifiedQuantity)
+            {
+                CheckingSessionPK = checkingSession.CheckingSessionPK;
+                CheckedQuantity = checkingSession.CheckedQuantity;
+                UnqualifiedQuantity = checkingSession.UnqualifiedQuantity;
+                IdentifiedQuantity = identifiedQuantity;
+                ExecutedDate = checkingSession.ExecutedDate;
+                UserID = checkingSession.UserID;
+                SystemUserName = systemUserName;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                BoxID = boxID;
+            }
+
+            public int CheckingSessionPK { get; set; }
+
+            public double CheckedQuantity { get; set; }
+
+            public double UnqualifiedQuantity { get; set; }
+
+            public double IdentifiedQuantity { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string PackID { get; set; }
+
+            public string BoxID { get; set; }
+        }
+
+
+        [Route("api/AngularController/GetCheckingListInspectingWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetCheckingListInspectingWithFilter(DateTime start, DateTime end)
+        {
+            List<Client_CheckingSession_Angular> result = new List<Client_CheckingSession_Angular>();
+            List<CheckingSession> tempCheckingSessions;
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    tempCheckingSessions = (from re in db.CheckingSessions
+                                            where re.ExecutedDate >= start && re.ExecutedDate <= end
+                                            select re).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    tempCheckingSessions = db.CheckingSessions.ToList();
+                }
+                foreach (var ss in tempCheckingSessions)
+                {
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+                    // query box
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+
+                    // query pack
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                    // query accessory
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                    result.Add(new Client_CheckingSession_Angular(ss, accessory, pack.PackID, box.BoxID));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetCheckingSessionByPK")]
+        [HttpGet]
+        public IHttpActionResult GetCheckingSessionByPK(int checkingSessionPK)
+        {
+            Client_CheckingSession_Angular result;
+            try
+            {
+                CheckingSession ss = db.CheckingSessions.Find(checkingSessionPK);
+
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+                // query box
+                UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                Box box = db.Boxes.Find(uBox.BoxPK);
+                string boxID = box.BoxID.Substring(0, box.BoxID.Length - 3);
+
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                result = new Client_CheckingSession_Angular(ss, accessory, pack.PackID, box.BoxID, systemUser.Name, identifiedItem.IdentifiedQuantity);
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetPackedItemByCheckingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByCheckingSessionPK(int checkingSessionPK)
+        {
+            Client_PackedItem_Inspecting_Angular result;
+            try
+            {
+                CheckingSession ss = db.CheckingSessions.Find(checkingSessionPK);
+
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
+
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                result = new Client_PackedItem_Inspecting_Angular(pack.PackID, accessory, packedItem);
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_ClassifyingSession_Angular
+        {
+            public Client_ClassifyingSession_Angular()
+            {
+
+            }
+
+            public Client_ClassifyingSession_Angular(ClassifyingSession classifyingSession, Accessory accessory, string packID, int qualityState, PackedItem packedItem)
+            {
+                CountedQuantity = 0;
+                IdentifiedQuantity = 0;
+                CheckedQuantity = 0;
+                UnqualifiedQuantity = 0;
+                FinalQuantity = 0;
+                PackedItemPK = packedItem.PackedItemPK;
+                ExecutedDate = classifyingSession.ExecutedDate;
+                UserID = classifyingSession.UserID;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                QualityState = qualityState;
+            }
+
+            public Client_ClassifyingSession_Angular(ClassifyingSession classifyingSession, Accessory accessory, string packID, int qualityState, string systemUserName, double finalQuantity)
+            {
+                CountedQuantity = 0;
+                IdentifiedQuantity = 0;
+                CheckedQuantity = 0;
+                UnqualifiedQuantity = 0;
+                FinalQuantity = 0;
+                FinalQuantity = finalQuantity;
+                ExecutedDate = classifyingSession.ExecutedDate;
+                UserID = classifyingSession.UserID;
+                SystemUserName = systemUserName;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                QualityState = qualityState;
+            }
+
+            public Client_ClassifyingSession_Angular(Accessory accessory, string packID, int qualityState)
+            {
+                CountedQuantity = 0;
+                IdentifiedQuantity = 0;
+                CheckedQuantity = 0;
+                UnqualifiedQuantity = 0;
+                FinalQuantity = 0;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                PackID = packID;
+                QualityState = qualityState;
+            }
+
+            public int PackedItemPK { get; set; }
+
+            public double CountedQuantity { get; set; }
+
+            public double IdentifiedQuantity { get; set; }
+
+            public double CheckedQuantity { get; set; }
+
+            public double UnqualifiedQuantity { get; set; }
+
+            public double FinalQuantity { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public int QualityState { get; set; }
+
+            public string UserID { get; set; }
+
+            public string SystemUserName { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string PackID { get; set; }
+
+            public double Sample { get; set; }
+
+            public double DefectLimit { get; set; }
+        }
+
+        [Route("api/AngularController/GetClassifyingListInspectingWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetClassifyingListInspectingWithFilter(DateTime start, DateTime end)
+        {
+            List<Client_ClassifyingSession_Angular> result = new List<Client_ClassifyingSession_Angular>();
+            List<ClassifyingSession> tempClassifyingSessions;
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    tempClassifyingSessions = (from re in db.ClassifyingSessions
+                                               where re.ExecutedDate >= start && re.ExecutedDate <= end
+                                               select re).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    tempClassifyingSessions = db.ClassifyingSessions.ToList();
+                }
+                foreach (var ss in tempClassifyingSessions)
+                {
+                    // query classify item
+                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(ss.ClassifiedItemPK);
+
+                    // query pack
+                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                    // query accessory
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                    result.Add(new Client_ClassifyingSession_Angular(ss, accessory, pack.PackID, classifiedItem.QualityState, packedItem));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetClassifyingSessionByPK")]
+        [HttpGet]
+        public IHttpActionResult GetClassifyingSessionByPK(int packedItemPK)
+        {
+            Client_ClassifyingSession_Angular result = new Client_ClassifyingSession_Angular();
+            try
+            {
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query classify item
+                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                 where cI.PackedItemPK == packedItem.PackedItemPK
+                                                 select cI).FirstOrDefault();
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                if (classifiedItem != null)
+                {
+
+                    ClassifyingSession ss = (from Css in db.ClassifyingSessions
+                                             where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                             select Css).FirstOrDefault();
+
+                    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                    result = new Client_ClassifyingSession_Angular(ss, accessory, pack.PackID, classifiedItem.QualityState, systemUser.Name,
+                        new IdentifyItemDAO().FinalQuantity(packedItem.PackedItemPK));
+                }
+                else
+                {
+                    result = new Client_ClassifyingSession_Angular(accessory, pack.PackID, classifiedItem.QualityState);
+                }
+
+                // query lấy sum count and check
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                        where iI.PackedItemPK == packedItem.PackedItemPK
+                                                        select iI).ToList();
+                foreach (var identifiedItem in identifiedItems)
+                {
+                    if (identifiedItem.IsCounted)
+                    {
+                        CountingSession countingSession = (from Css in db.CountingSessions
+                                                           where Css.IdentifiedItemPK == identifiedItem.IdentifiedItemPK
+                                                           select Css).FirstOrDefault();
+                        result.IdentifiedQuantity += identifiedItem.IdentifiedQuantity;
+                        result.CountedQuantity += countingSession.CountedQuantity;
+                    }
+                    if (identifiedItem.IsChecked)
+                    {
+                        CheckingSession checkingSession = (from Css in db.CheckingSessions
+                                                           where Css.IdentifiedItemPK == identifiedItem.IdentifiedItemPK
+                                                           select Css).FirstOrDefault();
+                        result.CheckedQuantity += checkingSession.CheckedQuantity;
+                        result.UnqualifiedQuantity += checkingSession.UnqualifiedQuantity;
+                    }
+                }
+
+                // sample & defect limit
+                PackedItemsDAO dao = new PackedItemsDAO();
+                dao.IsInitAllCalculate(packedItem.PackedItemPK);
+                result.Sample = dao.Sample;
+                result.DefectLimit = dao.DefectLimit;
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetPackedItemByClassifyingSessionPK")]
+        [HttpGet]
+        public IHttpActionResult GetPackedItemByClassifyingSessionPK(int packedItemPK)
+        {
+            Client_PackedItem_Inspecting_Angular result;
+            try
+            {
+                // query pack
+                PackedItem packedItem = db.PackedItems.Find(packedItemPK);
+                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                // query classify item
+                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                 where cI.PackedItemPK == packedItem.PackedItemPK
+                                                 select cI).FirstOrDefault();
+                ClassifyingSession ss = (from Css in db.ClassifyingSessions
+                                         where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                         select Css).FirstOrDefault();
+
+                // query accessory
+                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+
+                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+
+                result = new Client_PackedItem_Inspecting_Angular(pack.PackID, accessory, packedItem);
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetRequestsWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetRequestsWithFilter(DateTime start, DateTime end)
+        {
+            List<Request> result = new List<Request>();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    result = (from re in db.Requests
+                              where re.DateCreated >= start && re.DateCreated <= end
+                              select re).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    result = db.Requests.ToList();
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/AngularController/GetRequestByPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetRequestByPKIssuing(int requestPK)
+        {
+            Request result;
+            try
+            {
+                result = db.Requests.Find(requestPK);
+                SystemUser systemUser = db.SystemUsers.Find(result.UserID);
+                result.UserID = systemUser.Name + " (" + result.UserID + ")";
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_RequestedItem_Angular
+        {
+            public Client_RequestedItem_Angular()
+            {
+
+            }
+
+            public Client_RequestedItem_Angular(Accessory accessory, RequestedItem requestedItem)
+            {
+                RequestedItemPK = requestedItem.RequestedItemPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                RequestedQuantity = requestedItem.RequestedQuantity;
+            }
+
+            public int RequestedItemPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public double RequestedQuantity { get; set; }
+        }
+
+        [Route("api/AngularController/GetRequestedItemsByRequestPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetRequestedItemsByRequestPKIssuing(int requestPK)
+        {
+            List<Client_RequestedItem_Angular> result = new List<Client_RequestedItem_Angular>();
+            try
+            {
+                List<RequestedItem> temp = (from rI in db.RequestedItems
+                                            where rI.RequestPK == requestPK
+                                            select rI).ToList();
+                foreach (var requestedItem in temp)
+                {
+                    DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
+                    Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                    result.Add(new Client_RequestedItem_Angular(accessory, requestedItem));
+                }
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_Session_Activity_Angular
+        {
+            public Client_Session_Activity_Angular()
+            {
+            }
+
+            public Client_Session_Activity_Angular(DateTime executedDate, string userID, string content)
+            {
+                ExecutedDate = executedDate;
+                UserID = userID;
+                Content = content;
+            }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public string UserID { get; set; }
+
+            public string Content { get; set; }
+        }
+
+        [Route("api/AngularController/GetSessionsWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetSessionsWithFilter(DateTime start, DateTime end, int sessionNum)
+        {
+            List<Client_Session_Activity_Angular> result = new List<Client_Session_Activity_Angular>();
+            AngularDAO angularDAO = new AngularDAO();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    result = angularDAO.GetSessions(start, end, sessionNum);
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    result = angularDAO.GetSessions(sessionNum);
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_Session_Verification_Angular
+        {
+            public Client_Session_Verification_Angular(int sessionPK, string userID, DateTime executedDate, double quantity, bool isVerified, bool isDiscard)
+            {
+                SessionPK = sessionPK;
+                UserID = userID;
+                ExecutedDate = executedDate;
+                Quantity = quantity;
+                IsVerified = isVerified;
+                IsDiscard = isDiscard;
+            }
+
+            public int SessionPK { get; set; }
+
+            public string UserID { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public double Quantity { get; set; }
+
+            public bool IsVerified { get; set; }
+
+            public bool IsDiscard { get; set; }
+        }
+
+        [Route("api/AngularController/GetSessionsWithFilterVerification")]
+        [HttpGet]
+        public IHttpActionResult GetSessionsWithFilterVerification(DateTime start, DateTime end, int sessionNum)
+        {
+            List<Client_Session_Verification_Angular> result = new List<Client_Session_Verification_Angular>();
+            AngularDAO angularDAO = new AngularDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    // adjust
+                    if (sessionNum == 1)
+                    {
+                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
+                                                                    where Ass.ExecutedDate >= start && Ass.ExecutedDate <= end
+                                                                    select Ass).ToList();
+                        foreach (var ss in adjustingSessions)
+                        {
+                            SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                            Entry entry = (from e in db.Entries
+                                           where e.SessionPK == ss.AdjustingSessionPK
+                                           && e.KindRoleName == "AdjustingMinus"
+                                           && e.KindRoleName == "AdjustingPlus"
+                                           select e).FirstOrDefault();
+                            bool isDiscard = false;
+                            double adjustedQuantity = storingDAO.EntryQuantity(entry);
+                            if (entry.KindRoleName == "AdjustingMinus") adjustedQuantity *= -1;
+                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
+                        }
+                    }
+                    // discard
+                    else
+                    {
+                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
+                                                                      where Dss.ExecutedDate >= start && Dss.ExecutedDate <= end
+                                                                      select Dss).ToList();
+                        foreach (var ss in discardingSessions)
+                        {
+                            SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                            List<Entry> entries = (from e in db.Entries
+                                                   where e.SessionPK == ss.DiscardingSessionPK
+                                                   && e.KindRoleName == "Discarding"
+                                                   select e).ToList();
+                            bool isDiscard = true;
+                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            ss.ExecutedDate, storingDAO.EntriesQuantity(entries), ss.IsVerified, isDiscard));
+                        }
+                    }
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    // if start > 1900 then select query
+                    if (start.Year > 1900)
+                    {
+                        // adjust
+                        if (sessionNum == 1)
+                        {
+                            List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
+                                                                        select Ass).ToList();
+                            foreach (var ss in adjustingSessions)
+                            {
+                                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                                Entry entry = (from e in db.Entries
+                                               where e.SessionPK == ss.AdjustingSessionPK
+                                               && e.KindRoleName == "AdjustingMinus"
+                                               && e.KindRoleName == "AdjustingPlus"
+                                               select e).FirstOrDefault();
+                                bool isDiscard = false;
+                                double adjustedQuantity = storingDAO.EntryQuantity(entry);
+                                if (entry.KindRoleName == "AdjustingMinus") adjustedQuantity *= -1;
+                                result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                                ss.ExecutedDate, adjustedQuantity
+                                , ss.IsVerified, isDiscard));
+                            }
+                        }
+                        // discard
+                        else
+                        {
+                            List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
+                                                                          select Dss).ToList();
+                            foreach (var ss in discardingSessions)
+                            {
+                                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                                List<Entry> entries = (from e in db.Entries
+                                                       where e.SessionPK == ss.DiscardingSessionPK
+                                                       && e.KindRoleName == "Discarding"
+                                                       select e).ToList();
+                                bool isDiscard = true;
+                                result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                                ss.ExecutedDate, storingDAO.EntriesQuantity(entries), ss.IsVerified, isDiscard));
+                            }
+                        }
+                    }
+                }
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_OrderedItem_Receiving_Angular
+        {
+            public Client_OrderedItem_Receiving_Angular(int orderedItemPK, Accessory accessory)
+            {
+                OrderedItemPK = orderedItemPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+            }
+
+            public int OrderedItemPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+        }
+
+        [Route("api/AngularController/GetAccessoriesByOrderPK")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesByOrderPK(int orderPK)
+        {
+            List<Client_OrderedItem_Receiving_Angular> result = new List<Client_OrderedItem_Receiving_Angular>();
+            try
+            {
+                Order order = db.Orders.Find(orderPK);
+                if (order == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "ORDER KHÔNG TỒN TẠI");
+                }
+
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems
+                                                  where oI.OrderPK == orderPK
+                                                  select oI).ToList();
+                foreach (var item in orderedItems)
+                {
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    result.Add(new Client_OrderedItem_Receiving_Angular(item.OrderedItemPK, accessory));
+                }
+
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        private string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        private string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+        public class FileResult : IHttpActionResult
+        {
+            private readonly string filePath;
+            private readonly string contentType;
+
+            public FileResult(string filePath, string contentType = null)
+            {
+                this.filePath = filePath;
+                this.contentType = contentType;
+            }
+
+            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                return Task.Run(() =>
+                {
+                    var response = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StreamContent(File.OpenRead(filePath))
+                    };
+
+                    var contentType = this.contentType ?? MimeMapping.GetMimeMapping(Path.GetExtension(filePath));
+                    response.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+                    return response;
+                }, cancellationToken);
+            }
+        }
+
+        [Route("api/AngularController/GetBoxQRCODE")]
+        [HttpGet]
+        public IHttpActionResult GetBoxQRCODE(string boxID)
+        {
+            try
+            {
+                // generate qr code
+                var image = HttpContext.Current.Server.MapPath("~/Image");
+                var imgPath = Path.Combine(image, "logo.png");
+                var imgSavePath = Path.Combine(image, "temp.png");
+                string hash = Base64Encode(boxID);
+                QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                QRCodeData qrCodeData = qrGenerator.CreateQrCode(hash, QRCodeGenerator.ECCLevel.Q);
+                QRCode qrCode = new QRCode(qrCodeData);
+                Bitmap qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Bitmap.FromFile(imgPath));
+
+                if (File.Exists(imgSavePath))
+                {
+                    File.Delete(imgSavePath);
+                }
+                qrCodeImage.Save(imgSavePath, System.Drawing.Imaging.ImageFormat.Png);
+                qrCodeImage.Dispose();
+
+
+                // excel
+                var excel = HttpContext.Current.Server.MapPath("~/ExcelSheets");
+                var excelPath = Path.Combine(excel, "stampSample.xlsx");
+                Application excelApp = new Application();
+                Workbook wb;
+                Worksheet ws;
+                wb = excelApp.Workbooks.Open(excelPath);
+                ws = wb.Worksheets[1];
+                Microsoft.Office.Interop.Excel.Range oRange = (Microsoft.Office.Interop.Excel.Range)ws.Cells[15, 2];
+                float Left = (float)((double)oRange.Left + 25);
+                float Top = (float)((double)oRange.Top + 5);
+                const float ImageSize = 420;
+                ws.Shapes.AddPicture(imgSavePath, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoCTrue, Left, Top, ImageSize, ImageSize);
+
+                var boxStamp = Path.Combine(excel, "boxStamp.xlsx");
+                if (File.Exists(boxStamp))
+                {
+                    File.Delete(boxStamp);
+                }
+                wb.SaveAs(boxStamp);
+
+                // pdf
+                var pdfPath = Path.Combine(excel, "stamp.pdf");
+                wb.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, pdfPath);
+
+                //var stream = new MemoryStream();
+
+                //var result = new HttpResponseMessage(HttpStatusCode.OK)
+                //{
+                //    Content = new ByteArrayContent(stream.GetBuffer())
+                //};
+                //result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+                //{
+                //    FileName = pdfPath
+                //};
+                //result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                //var response = ResponseMessage(result);
+
+                // close excel
+                wb.Close();
+                excelApp.Quit();
+
+                return new FileResult(pdfPath);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.OK, e);
             }
         }
     }

@@ -87,7 +87,7 @@ namespace StoreManagement.Controllers
                                 {
                                     if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
                                 }
-                                if (tempEntries.Count > 0)
+                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
                                     Entry entry = tempEntries[0];
                                     PassedItem passedItem;
@@ -187,7 +187,7 @@ namespace StoreManagement.Controllers
                             {
                                 if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
                             }
-                            if (tempEntries.Count > 0)
+                            if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                             {
                                 Entry entry = tempEntries[0];
                                 PassedItem passedItem;
@@ -259,15 +259,24 @@ namespace StoreManagement.Controllers
             {
                 Client_InBoxItems_Shelf<List<string>> result;
                 List<string> shelfIDs = new List<string>();
+                List<Shelf> shelves;
                 Row row = (from r in db.Rows
                            where r.RowID == rowID
                            select r).FirstOrDefault();
-                if (row != null)
+                if (row != null || rowID == "TẠM THỜI")
                 {
-
-                    List<Shelf> shelves = (from sh in db.Shelves
-                                           where sh.RowPK == row.RowPK
-                                           select sh).ToList();
+                    if (rowID == "TẠM THỜI")
+                    {
+                        shelves = (from sh in db.Shelves
+                                   where sh.RowPK == null
+                                   select sh).ToList();
+                    }
+                    else
+                    {
+                        shelves = (from sh in db.Shelves
+                                   where sh.RowPK == row.RowPK
+                                   select sh).ToList();
+                    }
                     Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
                     foreach (var shelf in shelves)
                     {
@@ -296,7 +305,7 @@ namespace StoreManagement.Controllers
                                 {
                                     if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
                                 }
-                                if (tempEntries.Count > 0)
+                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
                                     Entry entry = tempEntries[0];
                                     PassedItem passedItem;
@@ -357,6 +366,25 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/AccessingInventoryController/GetAllRowIsActive")]
+        [HttpGet]
+        public IHttpActionResult GetAllRowIsActive()
+        {
+            List<Row> result = new List<Row>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                result = (from r in db.Rows
+                          where r.IsActive
+                          select r).ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
 
     }
 }

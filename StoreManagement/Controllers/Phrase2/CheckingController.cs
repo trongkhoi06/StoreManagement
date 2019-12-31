@@ -388,10 +388,9 @@ namespace StoreManagement.Controllers
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
                     PackedItemsDAO packedItemsController = new PackedItemsDAO();
-                    if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
-                    {
-                        client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
-                    }
+                    packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+                    client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
+
 
                 }
             }
@@ -653,17 +652,11 @@ namespace StoreManagement.Controllers
 
                 // lấy sum identified quantity, sample, defectlimit
                 // lấy sum counted quantity, sum checked quantity
-                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
-                {
-                    client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
-                    packedItemsController.Sample, packedItemsController.DefectLimit,
-                    packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
-                }
-                else
-                {
-                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
-                }
+                packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+                client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
+                packedItemsController.Sample, packedItemsController.DefectLimit,
+                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
             }
             catch (Exception e)
             {
@@ -851,17 +844,11 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
-                {
-                    client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
-                    packedItemsController.Sample, packedItemsController.DefectLimit,
-                    packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
-                }
-                else
-                {
-                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
-                }
+                packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+                client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
+                packedItemsController.Sample, packedItemsController.DefectLimit,
+                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
 
 
             }
@@ -965,14 +952,9 @@ namespace StoreManagement.Controllers
                     Accessory accessory = (from a in db.Accessories
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
-                    if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
-                    {
-                        client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, failedItem, packedItemsController.SumOfIdentifiedQuantity));
-                    }
-                    else
-                    {
-                        return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
-                    }
+                    packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+                    client_FailedItems.Add(new Client_FailedItem(accessory, pack, classifyingSession, failedItem, packedItemsController.SumOfIdentifiedQuantity));
+
                 }
             }
             catch (Exception e)
@@ -1023,30 +1005,25 @@ namespace StoreManagement.Controllers
                 Accessory accessory = (from a in db.Accessories
                                        where a.AccessoryPK == orderedItem.AccessoryPK
                                        select a).FirstOrDefault();
-                if (packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK))
-                {
-                    HashSet<string> boxIDs = new HashSet<string>();
-                    foreach (var identifiedItem in identifiedItems)
-                    {
-                        UnstoredBox unstoredBox = (from uBox in db.UnstoredBoxes
-                                                   where uBox.UnstoredBoxPK == identifiedItem.UnstoredBoxPK
-                                                   select uBox).FirstOrDefault();
 
-                        Box boxk = (from box in db.Boxes
-                                    where box.BoxPK == unstoredBox.BoxPK
-                                    select box).FirstOrDefault();
-                        boxIDs.Add(boxk.BoxID);
-                    }
-                    client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItems[0], failedItem, systemUser,
-                        packedItem, packedItemsController.Sample, packedItemsController.DefectLimit,
-                        packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                        packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity, boxIDs));
-
-                }
-                else
+                // init all caculate
+                packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+                HashSet<string> boxIDs = new HashSet<string>();
+                foreach (var identifiedItem in identifiedItems)
                 {
-                    return Content(HttpStatusCode.Conflict, "init all calculate bị lỗi !");
+                    UnstoredBox unstoredBox = (from uBox in db.UnstoredBoxes
+                                               where uBox.UnstoredBoxPK == identifiedItem.UnstoredBoxPK
+                                               select uBox).FirstOrDefault();
+
+                    Box boxk = (from box in db.Boxes
+                                where box.BoxPK == unstoredBox.BoxPK
+                                select box).FirstOrDefault();
+                    boxIDs.Add(boxk.BoxID);
                 }
+                client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItems[0], failedItem, systemUser,
+                    packedItem, packedItemsController.Sample, packedItemsController.DefectLimit,
+                    packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
+                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity, boxIDs));
 
             }
             catch (Exception e)

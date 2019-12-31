@@ -18,6 +18,7 @@ namespace StoreManagement.Class
             this.PackedQuantity = packedItem.PackedQuantity;
             this.AccessoryID = accessory.AccessoryID;
             this.AccessoryDescription = accessory.AccessoryDescription;
+            this.Comment = packedItem.Comment;
         }
 
         public int PackedItemPK { get; set; }
@@ -27,5 +28,7 @@ namespace StoreManagement.Class
         public string AccessoryID { get; set; }
 
         public string AccessoryDescription { get; set; }
+
+        public string Comment { get; set; }
     }
 }

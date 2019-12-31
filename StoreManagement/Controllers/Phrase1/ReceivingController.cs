@@ -450,6 +450,18 @@ namespace StoreManagement.Controllers
                 string supplierName = db.Suppliers.Find(order.SupplierPK).SupplierName;
                 SystemUser systemUser = db.SystemUsers.Find(pack.UserID);
                 client_Pack_Angular = (new Client_Pack_Angular(pack, supplierName, systemUser));
+                client_Pack_Angular.IsIdentified = false;
+                // check isIdentified
+                List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                where pI.PackPK == PackPK
+                                                select pI).ToList();
+                foreach (var packedItem in packedItems)
+                {
+                    List<IdentifiedItem> identifiedItems = (from pI in db.IdentifiedItems
+                                                            where pI.PackedItemPK == packedItem.PackedItemPK
+                                                            select pI).ToList();
+                    if (identifiedItems.Count > 0) client_Pack_Angular.IsIdentified = true;
+                }
             }
             catch (Exception e)
             {
@@ -671,7 +683,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditContractNumber")]
         [HttpPut]
-        public IHttpActionResult EditContractNumber(int packedItemPK, [FromBody] string contractNumber, string userID)
+        public IHttpActionResult EditContractNumber(int packedItemPK, string contractNumber, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {

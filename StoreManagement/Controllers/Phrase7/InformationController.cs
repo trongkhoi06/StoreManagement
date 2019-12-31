@@ -734,6 +734,8 @@ namespace StoreManagement.Controllers
                         //    db.SaveChanges();
                         //    return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
                         //}
+
+                        // nạp hình và tìm đường dẫn, ko đc upload nhiều hình cùng lúc
                         MultipartFileData file = provider.FileData[0];
                         var name = file.Headers.ContentDisposition.FileName;
                         string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
@@ -741,12 +743,19 @@ namespace StoreManagement.Controllers
                         var localFileName = file.LocalFileName;
                         var filePath = Path.Combine(root, name);
                         File.Move(localFileName, filePath);
+
+                        // nếu đã có hình thì xóa hình cũ
                         if (accessory.Image != null)
                         {
                             File.Delete(Path.Combine(root, accessory.Image));
                         }
                         accessory.Image = name;
                         db.Entry(accessory).State = EntityState.Modified;
+
+                        // create activity
+                        Activity activity = new Activity("photoUpdate", accessory.AccessoryID, "Accessory", userID);
+                        db.Activities.Add(activity);
+
                         db.SaveChanges();
                         return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
                     }
@@ -762,6 +771,46 @@ namespace StoreManagement.Controllers
 
             }
         }
+
+        [Route("api/InformationController/DeleteFile")]
+        [HttpPost]
+        public IHttpActionResult DeleteFile(int AccessoryPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+            {
+                try
+                {
+                    Accessory accessory = db.Accessories.Find(AccessoryPK);
+                    if (accessory == null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "ACCESSORY KHÔNG TỒN TẠI!");
+                    }
+                    else
+                    {
+                        // delete img
+                        var root = HttpContext.Current.Server.MapPath("~/Image");
+                        if (accessory.Image != null)
+                        {
+                            File.Delete(Path.Combine(root, accessory.Image));
+                        }
+                        accessory.Image = null;
+                        db.Entry(accessory).State = EntityState.Modified;
+                        db.SaveChanges();
+                        return Content(HttpStatusCode.OK, "XÓA HÌNH THÀNH CÔNG!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
         public class Accessory_RestoreItem2
         {
             public Accessory_RestoreItem2()

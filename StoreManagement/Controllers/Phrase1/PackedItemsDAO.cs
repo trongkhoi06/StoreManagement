@@ -82,7 +82,6 @@ namespace StoreManagement.Controllers
             {
                 dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
                 dbPackedItem.Comment = packedItem.Comment;
-                dbPackedItem.IsClassified = packedItem.IsClassified;
                 db.Entry(dbPackedItem).State = EntityState.Modified;
             }
 
@@ -126,7 +125,7 @@ namespace StoreManagement.Controllers
             return true;
         }
 
-        public bool IsInitAllCalculate(int packedItemPK)
+        public void IsInitAllCalculate(int packedItemPK)
         {
             try
             {
@@ -164,10 +163,8 @@ namespace StoreManagement.Controllers
             }
             catch (Exception e)
             {
-                throw e;
+                throw new Exception("HÀM TÍNH SAMPLE VÀ DEFECT LIMIT BỊ LỖI");
             }
-
-            return true;
         }
 
         public double SampleCaculate(double tempSample)
