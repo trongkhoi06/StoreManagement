@@ -77,12 +77,13 @@ namespace StoreManagement.Controllers
         public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
         {
             if (boxIDs != null)
-            foreach (var boxID in boxIDs)
-            {
-                Box box = GetBoxByBoxID(boxID);
-                box.IsActive = isActive;
-                db.Entry(box).State = EntityState.Modified;
-            }
+                foreach (var boxID in boxIDs)
+                {
+                    Box box = GetBoxByBoxID(boxID);
+                    box.IsActive = isActive;
+                    box.IsActive = isActive;
+                    db.Entry(box).State = EntityState.Modified;
+                }
             db.SaveChanges();
         }
 
@@ -121,9 +122,8 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = db.Boxes.Find(boxPK);
-                UnstoredBox unstoredBox = db.UnstoredBoxes.Find(box.BoxPK);
-                db.UnstoredBoxes.Remove(unstoredBox);
-                db.Boxes.Remove(box);
+                box.IsActive = false;
+                db.Entry(box).State = EntityState.Modified;
                 db.SaveChanges();
             }
             catch (Exception e)

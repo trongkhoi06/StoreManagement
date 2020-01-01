@@ -670,7 +670,7 @@ namespace StoreManagement.Controllers
         }
 
         [Route("api/InformationController/DeleteBox")]
-        [HttpPost]
+        [HttpDelete]
         public IHttpActionResult DeleteBox(int boxPK, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
@@ -773,7 +773,7 @@ namespace StoreManagement.Controllers
         }
 
         [Route("api/InformationController/DeleteFile")]
-        [HttpPost]
+        [HttpDelete]
         public IHttpActionResult DeleteFile(int AccessoryPK, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))

@@ -3094,6 +3094,153 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
+        public class Client_Box_Information_Angular
+        {
+            public Client_Box_Information_Angular(Box box, string status, int itemQuantity)
+            {
+                BoxPK = box.BoxPK;
+                BoxID = box.BoxID;
+                DateCreated = box.DateCreated;
+                Status = status;
+                ItemQuantity = itemQuantity;
+            }
+
+            public int BoxPK { get; set; }
+
+            public string BoxID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public string Status { get; set; }
+
+            public int ItemQuantity { get; set; }
+        }
+
+
+        [Route("api/AngularController/GetBoxesInformation")]
+        [HttpGet]
+        public IHttpActionResult GetBoxesInformation()
+        {
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            List<Client_Box_Information_Angular> result = new List<Client_Box_Information_Angular>();
+            try
+            {
+                List<Box> boxes = db.Boxes.Where(unit => unit.IsActive == true && unit.BoxID != "InvisibleBox")
+                    .OrderByDescending(unit => unit.BoxPK).ToList();
+                foreach (var box in boxes)
+                {
+                    StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+                    UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                    // Nếu box đã identify
+                    if (uBox.IsIdentified)
+                    {
+                        // nếu box chưa được store
+                        if (!(boxDAO.IsStored(box.BoxPK)))
+                        {
+                            List<Client_IdentifiedItemRead> client_IdentifiedItems = new List<Client_IdentifiedItemRead>();
+                            List<IdentifiedItem> identifiedItems;
+                            identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                               where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                               select iI).ToList();
+
+                            foreach (var identifiedItem in identifiedItems)
+                            {
+                                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                                // lấy pack ID
+                                Pack pack = db.Packs.Find(packedItem.PackPK);
+
+                                // lấy phụ liệu tương ứng
+                                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+
+                                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                                // lấy qualityState
+                                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                                 where cI.PackedItemPK == packedItem.PackedItemPK
+                                                                 select cI).FirstOrDefault();
+                                int? qualityState = null;
+                                if (classifiedItem != null) qualityState = classifiedItem.QualityState;
+                                client_IdentifiedItems.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState));
+                            }
+                            result.Add(new Client_Box_Information_Angular(box, "THÙNG ĐÃ GHI NHẬN", identifiedItems.Count));
+                        }
+                        else
+                        {
+                            Client_Shelf client_Shelf;
+                            List<Client_InBoxItem> client_InBoxItems = new List<Client_InBoxItem>();
+
+                            Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
+                            Row row = db.Rows.Find(shelf.RowPK);
+                            client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
+
+                            // Get list inBoxItem
+                            List<Entry> entries = (from e in db.Entries
+                                                   where e.StoredBoxPK == sBox.StoredBoxPK
+                                                   select e).ToList();
+                            HashSet<KeyValuePair<int, bool>> listItemPK = new HashSet<KeyValuePair<int, bool>>();
+                            foreach (var entry in entries)
+                            {
+                                listItemPK.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                            }
+                            foreach (var itemPK in listItemPK)
+                            {
+                                List<Entry> tempEntries = new List<Entry>();
+                                foreach (var entry in entries)
+                                {
+                                    if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
+                                }
+                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
+                                {
+                                    Entry entry = tempEntries[0];
+                                    PassedItem passedItem;
+                                    RestoredItem restoredItem;
+                                    if (entry.IsRestored)
+                                    {
+                                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, true));
+                                    }
+                                    else
+                                    {
+                                        passedItem = db.PassedItems.Find(entry.ItemPK);
+                                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                                        // lấy pack ID
+                                        Pack pack = (from p in db.Packs
+                                                     where p.PackPK == packedItem.PackPK
+                                                     select p).FirstOrDefault();
+
+                                        // lấy phụ liệu tương ứng
+                                        OrderedItem orderedItem = (from oI in db.OrderedItems
+                                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                                                   select oI).FirstOrDefault();
+
+                                        Accessory accessory = (from a in db.Accessories
+                                                               where a.AccessoryPK == orderedItem.AccessoryPK
+                                                               select a).FirstOrDefault();
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, false));
+                                    }
+                                }
+                            }
+
+                            result.Add(new Client_Box_Information_Angular(box, "THÙNG TRONG KHO", client_InBoxItems.Count));
+                        }
+                    }
+                    else
+                    {
+                        result.Add(new Client_Box_Information_Angular(box, "THÙNG TRẮNG", 0));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+
         // QR CODE GENERATOR
 
         private string Base64Encode(string plainText)
@@ -3136,9 +3283,9 @@ namespace StoreManagement.Controllers
             }
         }
 
-        [Route("api/AngularController/GetBoxQRCODE")]
+        [Route("api/AngularController/GetQRCODE")]
         [HttpGet]
-        public IHttpActionResult GetBoxQRCODE(string boxID)
+        public IHttpActionResult GetQRCODE(string id)
         {
             try
             {
@@ -3146,7 +3293,7 @@ namespace StoreManagement.Controllers
                 var image = HttpContext.Current.Server.MapPath("~/Image");
                 var imgPath = Path.Combine(image, "logo.png");
                 var imgSavePath = Path.Combine(image, "temp.png");
-                string hash = Base64Encode(boxID);
+                string hash = Base64Encode(id);
                 QRCodeGenerator qrGenerator = new QRCodeGenerator();
                 QRCodeData qrCodeData = qrGenerator.CreateQrCode(hash, QRCodeGenerator.ECCLevel.Q);
                 QRCode qrCode = new QRCode(qrCodeData);
@@ -3162,7 +3309,17 @@ namespace StoreManagement.Controllers
 
                 // excel
                 var excel = HttpContext.Current.Server.MapPath("~/ExcelSheets");
+                // chọn file excel ứng với loại id
+                if (id.Contains("box"))
+                {
+
+                }
+                else if (id.Contains("shelf"))
+                {
+
+                }
                 var excelPath = Path.Combine(excel, "stampSample.xlsx");
+
                 Application excelApp = new Application();
                 Workbook wb;
                 Worksheet ws;
@@ -3173,13 +3330,19 @@ namespace StoreManagement.Controllers
                 float Top = (float)((double)oRange.Top + 5);
                 const float ImageSize = 420;
                 ws.Shapes.AddPicture(imgSavePath, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoCTrue, Left, Top, ImageSize, ImageSize);
+                ws.PageSetup.BottomMargin = 0;
+                ws.PageSetup.FooterMargin = 0;
+                ws.PageSetup.HeaderMargin = 0;
+                ws.PageSetup.LeftMargin = 0;
+                ws.PageSetup.RightMargin = 0;
+                ws.PageSetup.TopMargin = 0;
 
-                var boxStamp = Path.Combine(excel, "boxStamp.xlsx");
-                if (File.Exists(boxStamp))
+                var stamp = Path.Combine(excel, "stamp.xlsx");
+                if (File.Exists(stamp))
                 {
-                    File.Delete(boxStamp);
+                    File.Delete(stamp);
                 }
-                wb.SaveAs(boxStamp);
+                wb.SaveAs(stamp);
 
                 // pdf
                 var pdfPath = Path.Combine(excel, "stamp.pdf");
@@ -3187,24 +3350,9 @@ namespace StoreManagement.Controllers
                 object misValue = System.Reflection.Missing.Value;
                 XlFixedFormatType paramExportFormat = XlFixedFormatType.xlTypePDF;
                 XlFixedFormatQuality paramExportQuality = XlFixedFormatQuality.xlQualityStandard;
-                bool paramOpenAfterPublish = false;
-                bool paramIncludeDocProps = true;
-                bool paramIgnorePrintAreas = true;
+                bool paramIgnorePrintAreas = false;
 
-                wb.ExportAsFixedFormat(paramExportFormat, pdfPath, paramExportQuality, paramIncludeDocProps, paramIgnorePrintAreas, 1, 1, paramOpenAfterPublish, misValue);
-
-                //var stream = new MemoryStream();
-
-                //var result = new HttpResponseMessage(HttpStatusCode.OK)
-                //{
-                //    Content = new ByteArrayContent(stream.GetBuffer())
-                //};
-                //result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-                //{
-                //    FileName = pdfPath
-                //};
-                //result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                //var response = ResponseMessage(result);
+                wb.ExportAsFixedFormat(paramExportFormat, pdfPath, paramExportQuality, true, paramIgnorePrintAreas, 1, 1, false, misValue);
 
                 // close excel
                 wb.Close();
