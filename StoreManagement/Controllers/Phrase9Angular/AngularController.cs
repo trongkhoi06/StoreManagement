@@ -3260,7 +3260,7 @@ namespace StoreManagement.Controllers
             private readonly string filePath;
             private readonly string contentType;
 
-            public FileResult(string filePath, string contentType = null)
+            public FileResult(string filePath, string contentType)
             {
                 this.filePath = filePath;
                 this.contentType = contentType;
@@ -3274,9 +3274,12 @@ namespace StoreManagement.Controllers
                     {
                         Content = new StreamContent(File.OpenRead(filePath))
                     };
-
-                    var contentType = this.contentType ?? MimeMapping.GetMimeMapping(Path.GetExtension(filePath));
-                    response.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+                    response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = "stamp.pdf"
+                    };
+                    //var contentType = this.contentType ?? MimeMapping.GetMimeMapping(Path.GetExtension(filePath));
+                    response.Content.Headers.ContentType = new MediaTypeHeaderValue(this.contentType);
 
                     return response;
                 }, cancellationToken);
@@ -3358,7 +3361,7 @@ namespace StoreManagement.Controllers
                 wb.Close();
                 excelApp.Quit();
 
-                return new FileResult(pdfPath);
+                return new FileResult(pdfPath, "application/octet-stream");
             }
             catch (Exception e)
             {
