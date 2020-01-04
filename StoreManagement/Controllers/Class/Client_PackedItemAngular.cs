@@ -12,11 +12,12 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItemAngular(Accessory accessory, PackedItem packedItem, double actualQuantity)
+        public Client_PackedItemAngular(Accessory accessory, PackedItem packedItem, double actualQuantity, double sumIdentifiedQuantity)
         {
 
             PackedItemPK = packedItem.PackedItemPK;
             PackedQuantity = packedItem.PackedQuantity;
+            SumIdentifiedQuantity = sumIdentifiedQuantity;
             ActualQuantity = actualQuantity;
             ContractNumber = packedItem.ContractNumber;
             AccessoryPK = accessory.AccessoryPK;
@@ -31,6 +32,8 @@ namespace StoreManagement.Class
         public int PackedItemPK { get; set; }
 
         public double PackedQuantity { get; set; }
+
+        public double SumIdentifiedQuantity { get; set; }
 
         public double ActualQuantity { get; set; }
 

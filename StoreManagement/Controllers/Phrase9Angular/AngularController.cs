@@ -2390,7 +2390,7 @@ namespace StoreManagement.Controllers
                 QualityState = qualityState;
             }
 
-            public Client_ClassifyingSession_Angular(Accessory accessory, string packID, int qualityState)
+            public Client_ClassifyingSession_Angular(Accessory accessory, string packID)
             {
                 CountedQuantity = 0;
                 IdentifiedQuantity = 0;
@@ -2403,7 +2403,7 @@ namespace StoreManagement.Controllers
                 Art = accessory.Art;
                 Color = accessory.Color;
                 PackID = packID;
-                QualityState = qualityState;
+                QualityState = 0;
             }
 
             public int PackedItemPK { get; set; }
@@ -2523,7 +2523,7 @@ namespace StoreManagement.Controllers
                 }
                 else
                 {
-                    result = new Client_ClassifyingSession_Angular(accessory, pack.PackID, classifiedItem.QualityState);
+                    result = new Client_ClassifyingSession_Angular(accessory, pack.PackID);
                 }
 
                 // query lấy sum count and check
@@ -2575,19 +2575,9 @@ namespace StoreManagement.Controllers
                 PackedItem packedItem = db.PackedItems.Find(packedItemPK);
                 Pack pack = db.Packs.Find(packedItem.PackPK);
 
-                // query classify item
-                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
-                                                 where cI.PackedItemPK == packedItem.PackedItemPK
-                                                 select cI).FirstOrDefault();
-                ClassifyingSession ss = (from Css in db.ClassifyingSessions
-                                         where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
-                                         select Css).FirstOrDefault();
-
                 // query accessory
                 OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                 Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-
-                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
 
                 result = new Client_PackedItem_Inspecting_Angular(pack.PackID, accessory, packedItem);
 
@@ -2945,6 +2935,8 @@ namespace StoreManagement.Controllers
                 Art = accessory.Art;
                 Color = accessory.Color;
                 PackedQuantity = packedItem.PackedQuantity;
+                SumIdentifiedQuantity = sumIdentifiedQuantity;
+                FinalQuantity = finalQuantity;
             }
 
             public int PackedItemPK { get; set; }
@@ -3077,7 +3069,7 @@ namespace StoreManagement.Controllers
 
                     SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
 
-                    result.Add(new Client_IdentifiedItem_Receiving_Angular(box.BoxID, ss.UserID + " (" + systemUser.Name + ")", ss.ExecutedDate, item));
+                    result.Add(new Client_IdentifiedItem_Receiving_Angular(box.BoxID, systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, item));
                 }
 
             }

@@ -406,17 +406,19 @@ namespace StoreManagement.Controllers
                 foreach (var packedItem in packedItems)
                 {
                     double actualQuantity = 0;
+                    double sumIdentifiedQuantity = 0;
                     ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
                                                      where cI.PackedItemPK == packedItem.PackedItemPK
                                                      select cI).FirstOrDefault();
-                    if (classifiedItem != null)
+                    List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                            where iI.PackedItemPK == packedItem.PackedItemPK
+                                                            select iI).ToList();
+                    foreach (var identifiedItem in identifiedItems)
                     {
-                        if (classifiedItem.QualityState == 2)
+                        sumIdentifiedQuantity += identifiedItem.IdentifiedQuantity;
+                        if (classifiedItem != null)
                         {
-                            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
-                                                                    where iI.PackedItemPK == packedItem.PackedItemPK
-                                                                    select iI).ToList();
-                            foreach (var identifiedItem in identifiedItems)
+                            if (classifiedItem.QualityState == 2)
                             {
                                 actualQuantity += identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK);
                             }
@@ -425,7 +427,7 @@ namespace StoreManagement.Controllers
 
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity));
+                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity, sumIdentifiedQuantity));
                 }
 
 
