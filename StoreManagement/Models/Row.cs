@@ -9,6 +9,18 @@ namespace StoreManagement.Models
     [Table("Row")]
     public partial class Row
     {
+        public Row()
+        {
+        }
+
+        public Row(string rowID, bool isActive, int floor, int col)
+        {
+            RowID = rowID;
+            IsActive = isActive;
+            Floor = floor;
+            Col = col;
+        }
+
         [Key]
         public int RowPK { get; set; }
 
@@ -18,5 +30,9 @@ namespace StoreManagement.Models
 
         [Required]
         public bool IsActive { get; set; }
+
+        public int? Floor { get; set; }
+
+        public int? Col { get; set; }
     }
 }

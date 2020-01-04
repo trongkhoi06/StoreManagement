@@ -214,11 +214,31 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Demand CreateDemand(int customerPK, string demandID, int conceptionPK, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID)
+        public Demand CreateDemand(int customerPK, int conceptionPK, double totalDemand, string receiveDevision, string userID)
         {
             try
             {
-                Demand demand = new Demand(demandID, startWeek, endWeek, totalDemand, conceptionPK, receiveDevision, userID);
+                DateTime now = DateTime.Now;
+                string tempDay = (now.Day + "").Length == 1 ? '0' + (now.Day + "") : (now.Day + "");
+                string tempMonth = (now.Month + "").Length == 1 ? '0' + (now.Month + "") : (now.Month + "");
+                string tempYear = (now.Year + "").Substring((now.Year + "").Length - 2);
+
+                string dateNow = tempDay + tempMonth + tempYear;
+                string demandID = "";
+                Demand demand = (from acc in db.Demands.OrderByDescending(unit => unit.DemandPK)
+                                 select acc).FirstOrDefault();
+                if (demand == null || !demand.DemandID.Contains(dateNow))
+                    demandID = "AST-PCP-" + dateNow + "01";
+                else
+                {
+                    int length = demand.DemandID.Length;
+                    string tempStr = (Int32.Parse(demand.DemandID.Substring(length - 2, 2)) + 1) + "";
+                    if (tempStr.Length == 1) tempStr = "0" + tempStr;
+                    demandID = demand.DemandID.Substring(0, length - 2) + tempStr;
+                }
+                // create demand
+
+                demand = new Demand(demandID, totalDemand, conceptionPK, receiveDevision, userID);
                 db.Demands.Add(demand);
                 db.SaveChanges();
                 demand = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
@@ -751,11 +771,11 @@ namespace StoreManagement.Controllers
                     if (tempStr.Length == 3) tempStr = "00" + tempStr;
                     if (tempStr.Length == 4) tempStr = "0" + tempStr;
 
-                    restorationID = "ASTRS" + tempStr ;
+                    restorationID = "AST-PT" + tempStr;
                 }
                 else
                 {
-                    restorationID = "ASTRS00001";
+                    restorationID = "AST-PT-00001";
                 }
                 Restoration restoration = new Restoration(restorationID, userID, comment);
                 db.Restorations.Add(restoration);

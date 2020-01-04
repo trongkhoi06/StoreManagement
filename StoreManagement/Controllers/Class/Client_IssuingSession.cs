@@ -31,9 +31,9 @@ namespace StoreManagement.Class
 
         public string DemandID { get; set; }
 
-        public int StartWeek { get; set; }
+        public int? StartWeek { get; set; }
 
-        public int EndWeek { get; set; }
+        public int? EndWeek { get; set; }
 
         public string ReceiveDivision { get; set; }
 

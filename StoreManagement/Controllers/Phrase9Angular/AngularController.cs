@@ -2456,7 +2456,7 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    tempClassifyingSessions = (from re in db.ClassifyingSessions
+                    tempClassifyingSessions = (from re in db.ClassifyingSessions.OrderByDescending(unit => unit.ClassifyingSessionPK)
                                                where re.ExecutedDate >= start && re.ExecutedDate <= end
                                                select re).ToList();
                 }
@@ -2803,12 +2803,11 @@ namespace StoreManagement.Controllers
                             SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                             Entry entry = (from e in db.Entries
                                            where e.SessionPK == ss.AdjustingSessionPK
-                                           && e.KindRoleName == "AdjustingMinus"
-                                           && e.KindRoleName == "AdjustingPlus"
+                                           && (e.KindRoleName == "AdjustingMinus"
+                                           || e.KindRoleName == "AdjustingPlus")
                                            select e).FirstOrDefault();
                             bool isDiscard = false;
                             double adjustedQuantity = storingDAO.EntryQuantity(entry);
-                            if (entry.KindRoleName == "AdjustingMinus") adjustedQuantity *= -1;
                             result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
                             ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
@@ -2835,46 +2834,40 @@ namespace StoreManagement.Controllers
                 // if start <= 1900 then select all
                 else
                 {
-                    // if start > 1900 then select query
-                    if (start.Year > 1900)
+                    // adjust
+                    if (sessionNum == 1)
                     {
-                        // adjust
-                        if (sessionNum == 1)
+                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
+                                                                    select Ass).ToList();
+                        foreach (var ss in adjustingSessions)
                         {
-                            List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
-                                                                        select Ass).ToList();
-                            foreach (var ss in adjustingSessions)
-                            {
-                                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                                Entry entry = (from e in db.Entries
-                                               where e.SessionPK == ss.AdjustingSessionPK
-                                               && e.KindRoleName == "AdjustingMinus"
-                                               && e.KindRoleName == "AdjustingPlus"
-                                               select e).FirstOrDefault();
-                                bool isDiscard = false;
-                                double adjustedQuantity = storingDAO.EntryQuantity(entry);
-                                if (entry.KindRoleName == "AdjustingMinus") adjustedQuantity *= -1;
-                                result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
-                                ss.ExecutedDate, adjustedQuantity
-                                , ss.IsVerified, isDiscard));
-                            }
+                            SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                            Entry entry = (from e in db.Entries
+                                           where e.SessionPK == ss.AdjustingSessionPK
+                                           && (e.KindRoleName == "AdjustingMinus"
+                                           || e.KindRoleName == "AdjustingPlus")
+                                           select e).FirstOrDefault();
+                            bool isDiscard = false;
+                            double adjustedQuantity = storingDAO.EntryQuantity(entry);
+                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
-                        // discard
-                        else
+                    }
+                    // discard
+                    else
+                    {
+                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
+                                                                      select Dss).ToList();
+                        foreach (var ss in discardingSessions)
                         {
-                            List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
-                                                                          select Dss).ToList();
-                            foreach (var ss in discardingSessions)
-                            {
-                                SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                                List<Entry> entries = (from e in db.Entries
-                                                       where e.SessionPK == ss.DiscardingSessionPK
-                                                       && e.KindRoleName == "Discarding"
-                                                       select e).ToList();
-                                bool isDiscard = true;
-                                result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
-                                ss.ExecutedDate, storingDAO.EntriesQuantity(entries), ss.IsVerified, isDiscard));
-                            }
+                            SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                            List<Entry> entries = (from e in db.Entries
+                                                   where e.SessionPK == ss.DiscardingSessionPK
+                                                   && e.KindRoleName == "Discarding"
+                                                   select e).ToList();
+                            bool isDiscard = true;
+                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            ss.ExecutedDate, (storingDAO.EntriesQuantity(entries)), ss.IsVerified, isDiscard));
                         }
                     }
                 }
@@ -3056,6 +3049,7 @@ namespace StoreManagement.Controllers
 
             public bool IsCounted { get; set; }
         }
+
         [Route("api/AngularController/GetIdentifiedItemByPackedItemPK")]
         [HttpGet]
         public IHttpActionResult GetIdentifiedItemByPackedItemPK(int packedItemPK)
@@ -3238,6 +3232,302 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
             return Content(HttpStatusCode.OK, result);
+        }
+
+        [Route("api/AngularController/GetActivitiesWithFilter")]
+        [HttpGet]
+        public IHttpActionResult GetActivitiesWithFilter(DateTime start, DateTime end, string actionType, string objectKind)
+        {
+            List<Activity> result = new List<Activity>();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                // if start > 1900 then select query
+                if (start.Year > 1900)
+                {
+                    result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind
+                    && act.ExecutedDate >= start && act.ExecutedDate <= end).ToList();
+                }
+                // if start <= 1900 then select all
+                else
+                {
+                    result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind).ToList();
+                }
+                foreach (var item in result)
+                {
+                    SystemUser systemUser = db.SystemUsers.Find(item.UserID);
+                    item.UserID = systemUser.Name + " (" + item.UserID + ")";
+                }
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_AccessoryID_Item_Angular
+        {
+            public List<string> accessoryID { get; set; }
+
+            public List<string> item { get; set; }
+        }
+
+        [Route("api/AngularController/GetAccessoryByAccessoryIDAndItemImportExcel")]
+        [HttpPost]
+        public IHttpActionResult GetAccessoryByAccessoryIDAndItemImportExcel(Client_AccessoryID_Item_Angular list)
+        {
+            try
+            {
+                List<Accessory> result = new List<Accessory>();
+                for (int i = 0; i < list.accessoryID.Count; i++)
+                {
+                    if (list.item[i] != null)
+                    {
+                        string str = list.item[i];
+                        Accessory temp = db.Accessories.Where(acc => acc.Item == str).FirstOrDefault();
+                        if (temp == null && list.accessoryID[i] != null)
+                        {
+                            str = list.accessoryID[i];
+                            temp = db.Accessories.Where(acc => acc.AccessoryID == str).FirstOrDefault();
+                        }
+                        if (temp != null)
+                        {
+                            result.Add(temp);
+                        }
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_InstoredItem_Angular
+        {
+            public Client_InstoredItem_Angular(string boxID, string containerID, bool isRestored, Accessory accessory)
+            {
+                BoxID = boxID;
+                ContainerID = containerID;
+                IsRestored = isRestored;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+            }
+
+            public string BoxID { get; set; }
+
+            public string ContainerID { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public bool IsRestored { get; set; }
+        }
+
+        [Route("api/AngularController/GetInstoredItemBySessionPKVerification")]
+        [HttpGet]
+        public IHttpActionResult GetInstoredItemBySessionPKVerification(int sessionPK, int sessionNum)
+        {
+            try
+            {
+                Client_InstoredItem_Angular result;
+                if (sessionNum == 1)
+                {
+                    AdjustingSession ss = db.AdjustingSessions.Find(sessionPK);
+                    Entry entry = (from e in db.Entries
+                                   where e.SessionPK == ss.AdjustingSessionPK
+                                   && (e.KindRoleName == "AdjustingMinus"
+                                   || e.KindRoleName == "AdjustingPlus")
+                                   select e).FirstOrDefault();
+
+                    //  query Accessory
+                    Accessory accessory = db.Accessories.Find(entry.AccessoryPK);
+
+                    //  query BoxID
+                    StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                    Box box = db.Boxes.Find(sBox.BoxPK);
+
+                    //  query ContainerID
+                    string containerID;
+                    if (entry.IsRestored)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                        containerID = restoration.RestorationID;
+                    }
+                    else
+                    {
+                        PassedItem passedItem = db.PassedItems.Find(entry.ItemPK);
+                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        containerID = pack.PackID;
+                    }
+
+                    result = new Client_InstoredItem_Angular(box.BoxID, containerID, entry.IsRestored, accessory);
+                }
+                else
+                {
+                    DiscardingSession ss = db.DiscardingSessions.Find(sessionPK);
+                    Entry entry = (from e in db.Entries
+                                   where e.SessionPK == ss.DiscardingSessionPK
+                                   && (e.KindRoleName == "Discarding")
+                                   select e).FirstOrDefault();
+
+                    //  query Accessory
+                    Accessory accessory = db.Accessories.Find(entry.AccessoryPK);
+
+                    //  query BoxID
+                    StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                    Box box = db.Boxes.Find(sBox.BoxPK);
+
+                    //  query ContainerID
+                    string containerID;
+                    if (entry.IsRestored)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                        containerID = restoration.RestorationID;
+                    }
+                    else
+                    {
+                        PassedItem passedItem = db.PassedItems.Find(entry.ItemPK);
+                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        containerID = pack.PackID;
+                    }
+
+                    result = new Client_InstoredItem_Angular(box.BoxID, containerID, entry.IsRestored, accessory);
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_Session_Detail_Verification_Angular
+        {
+            public Client_Session_Detail_Verification_Angular(double initialQuantity, double quantity, string userID, DateTime executedDate, bool isVerified)
+            {
+                InitialQuantity = initialQuantity;
+                Quantity = quantity;
+                UserID = userID;
+                ExecutedDate = executedDate;
+                IsVerified = isVerified;
+            }
+
+            public double InitialQuantity { get; set; }
+
+            public double Quantity { get; set; }
+
+            public string UserID { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public bool IsVerified { get; set; }
+        }
+
+        [Route("api/AngularController/GetSessionBySessionPKVerification")]
+        [HttpGet]
+        public IHttpActionResult GetSessionBySessionPKVerification(int sessionPK, int sessionNum)
+        {
+            try
+            {
+                Client_Session_Detail_Verification_Angular result;
+                if (sessionNum == 1)
+                {
+                    AdjustingSession ss = db.AdjustingSessions.Find(sessionPK);
+                    Entry entry = (from e in db.Entries
+                                   where e.SessionPK == ss.AdjustingSessionPK
+                                   && (e.KindRoleName == "AdjustingMinus"
+                                   || e.KindRoleName == "AdjustingPlus")
+                                   select e).FirstOrDefault();
+                    double initialQuantity = 0;
+
+                    List<Entry> entries = db.Entries.Where(unit => unit.ItemPK == entry.ItemPK).ToList();
+                    initialQuantity = new StoringDAO().EntriesQuantity(entries);
+
+                    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    result = new Client_Session_Detail_Verification_Angular(initialQuantity, new StoringDAO().EntryQuantity(entry)
+                        , systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, ss.IsVerified);
+                }
+                else
+                {
+                    DiscardingSession ss = db.DiscardingSessions.Find(sessionPK);
+                    Entry entry = (from e in db.Entries
+                                   where e.SessionPK == ss.DiscardingSessionPK
+                                   && (e.KindRoleName == "Discarding")
+                                   select e).FirstOrDefault();
+                    double initialQuantity = 0;
+
+                    List<Entry> entries = db.Entries.Where(unit => unit.ItemPK == entry.ItemPK).ToList();
+                    initialQuantity = new StoringDAO().EntriesQuantity(entries);
+
+                    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    result = new Client_Session_Detail_Verification_Angular(initialQuantity, new StoringDAO().EntryQuantity(entry)
+                        , systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, ss.IsVerified);
+
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+
+        [Route("api/AngularController/GetVerificationBySessionPKVerification")]
+        [HttpGet]
+        public IHttpActionResult GetVerificationBySessionPKVerification(int sessionPK, int sessionNum)
+        {
+            try
+            {
+                Verification result;
+                if (sessionNum == 1)
+                {
+                    result = db.Verifications.Where(unit => unit.SessionPK == sessionPK && unit.IsDiscard == false).FirstOrDefault();
+                    if (result != null)
+                    {
+                        SystemUser systemUser = db.SystemUsers.Find(result.UserID);
+                        result.UserID = systemUser.Name + " (" + systemUser.UserID + ")";
+                    }
+                }
+                else
+                {
+                    result = db.Verifications.Where(unit => unit.SessionPK == sessionPK && unit.IsDiscard == true).FirstOrDefault();
+                    if (result != null)
+                    {
+                        SystemUser systemUser = db.SystemUsers.Find(result.UserID);
+                        result.UserID = systemUser.Name + " (" + systemUser.UserID + ")";
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
         }
 
 

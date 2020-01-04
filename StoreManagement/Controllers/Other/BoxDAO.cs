@@ -70,7 +70,7 @@ namespace StoreManagement.Controllers
         public Shelf GetShelfByShelfID(string shelfID)
         {
             return (from sh in db.Shelves
-                    where sh.ShelfID == shelfID
+                    where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
                     select sh).FirstOrDefault();
         }
 
@@ -123,8 +123,64 @@ namespace StoreManagement.Controllers
             {
                 Box box = db.Boxes.Find(boxPK);
                 box.IsActive = false;
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
+                sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
                 db.Entry(box).State = EntityState.Modified;
+                db.Entry(sBox).State = EntityState.Modified;
                 db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Row CreateRow(string rowID, int floor, int col)
+        {
+            try
+            {
+                Row row = new Row(rowID, false, floor, col);
+                db.Rows.Add(row);
+                db.SaveChanges();
+                row = db.Rows.OrderByDescending(unit => unit.RowPK).FirstOrDefault();
+                return row;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteRow(int rowPK)
+        {
+            try
+            {
+                Row row = db.Rows.Find(rowPK);
+                List<Shelf> shelves = db.Shelves.Where(unit => unit.RowPK == row.RowPK).ToList();
+                bool isDeletable = true;
+                foreach (var shelf in shelves)
+                {
+                    List<StoredBox> storedBoxes = db.StoredBoxes.Where(unit => unit.ShelfPK == shelf.ShelfPK).ToList();
+                    if (storedBoxes.Count > 0)
+                    {
+                        isDeletable = false;
+                        break;
+                    }
+                }
+                if (isDeletable)
+                {
+                    foreach (var shelf in shelves)
+                    {
+                        db.Shelves.Remove(shelf);
+                    }
+                    row.IsActive = false;
+                    db.Entry(row).State = EntityState.Modified;
+                    db.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("KHÔNG THỂ XÓA DÃY VÌ TẤT CẢ KỆ TRONG DÃY CHƯA TRỐNG");
+                }
             }
             catch (Exception e)
             {

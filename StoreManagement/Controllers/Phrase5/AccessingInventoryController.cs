@@ -150,12 +150,12 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                Client_InBoxItems_Box<List<string>> result;
-                List<string> boxIDs = new List<string>();
+                Client_InBoxItems_Box<List<Box>> result;
+                List<Box> boxes = new List<Box>();
                 Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
 
                 Shelf shelf = (from sh in db.Shelves
-                               where sh.ShelfID == shelfID
+                               where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
                                select sh).FirstOrDefault();
                 if (shelf != null)
                 {
@@ -167,7 +167,10 @@ namespace StoreManagement.Controllers
                     foreach (var sBox in sBoxes)
                     {
                         Box box = db.Boxes.Find(sBox.BoxPK); db.Boxes.Find(sBox.BoxPK);
-                        boxIDs.Add(box.BoxID);
+                        if (box.IsActive)
+                        {
+                            boxes.Add(box);
+                        }
 
                         // Get list inBoxItem
                         List<Entry> entries = (from e in db.Entries
@@ -235,7 +238,7 @@ namespace StoreManagement.Controllers
 
                     }
 
-                    result = new Client_InBoxItems_Box<List<string>>(boxIDs, client_InBoxItems.Values.ToList(), rowID);
+                    result = new Client_InBoxItems_Box<List<Box>>(boxes, client_InBoxItems.Values.ToList(), rowID);
                     return Content(HttpStatusCode.OK, result);
                 }
                 else
@@ -268,13 +271,13 @@ namespace StoreManagement.Controllers
                     if (rowID == "TẠM THỜI")
                     {
                         shelves = (from sh in db.Shelves
-                                   where sh.RowPK == null
+                                   where sh.RowPK == null && sh.ShelfID != "InvisibleShelf"
                                    select sh).ToList();
                     }
                     else
                     {
                         shelves = (from sh in db.Shelves
-                                   where sh.RowPK == row.RowPK
+                                   where sh.RowPK == row.RowPK && sh.ShelfID != "InvisibleShelf"
                                    select sh).ToList();
                     }
                     Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
@@ -385,6 +388,27 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
         }
+
+        [Route("api/AccessingInventoryController/GetAllRow")]
+        [HttpGet]
+        public IHttpActionResult GetAllRow()
+        {
+            List<Row> result = new List<Row>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                result = (from r in db.Rows
+                          select r).ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+
 
     }
 }

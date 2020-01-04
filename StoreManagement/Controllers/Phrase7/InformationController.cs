@@ -694,6 +694,151 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/InformationController/CreateShelf")]
+        [HttpPost]
+        public IHttpActionResult CreateShelf(string shelfID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                try
+                {
+                    if (shelfID.Length > 10)
+                    {
+                        return Content(HttpStatusCode.Conflict, "TÊN KỆ KHÔNG ĐƯỢC QUÁ 10 KÝ TỰ!");
+                    }
+                    Shelf shelf = new Shelf(shelfID + "shelf", null);
+                    db.Shelves.Add(shelf);
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteShelf")]
+        [HttpDelete]
+        public IHttpActionResult DeleteShelf(int shelfPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                try
+                {
+                    Shelf shelf = db.Shelves.Find(shelfPK);
+                    db.Shelves.Remove(shelf);
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                }
+                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
+        [Route("api/InformationController/CreateRow")]
+        [HttpPost]
+        public IHttpActionResult CreateRow(string rowID, int floor, int col, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                try
+                {
+                    BoxDAO boxDAO = new BoxDAO();
+                    if (floor > 10 || floor < 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "SỐ TẦNG KỆ KHÔNG ĐƯỢC QUÁ 10!");
+                    }
+                    if (col > 50 || col < 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "SỐ KỆ MỖI TẦNG KHÔNG ĐƯỢC QUÁ 50!");
+                    }
+                    //tạo kệ kiểu cũ
+                    //Row row = boxDAO.CreateRow(rowID, floor, col);
+
+                    Row row = db.Rows.Where(unit => unit.RowID == rowID).FirstOrDefault();
+                    row.IsActive = true;
+                    row.Floor = floor;
+                    row.Col = col;
+                    db.Entry(row).State = EntityState.Modified;
+                    for (int i = 1; i <= floor; i++)
+                    {
+                        for (int j = 1; j <= col; j++)
+                        {
+                            string tempFloor = "";
+                            string tempCol = "";
+                            if (i < 10)
+                            {
+                                tempFloor = "0" + i;
+                            }
+                            else
+                            {
+                                tempFloor = i + "";
+                            }
+                            if (j < 10)
+                            {
+                                tempCol = "0" + j;
+                            }
+                            else
+                            {
+                                tempCol = j + "";
+                            }
+                            Shelf shelf = new Shelf(rowID.Substring(0, 1) + "." + tempFloor + "." + tempCol + "shelf", row.RowPK);
+                            db.Shelves.Add(shelf);
+                        }
+                    }
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteRow")]
+        [HttpDelete]
+        public IHttpActionResult DeleteRow(int rowPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                try
+                {
+                    BoxDAO boxDAO = new BoxDAO();
+                    Row row = db.Rows.Find(rowPK);
+                    boxDAO.DeleteRow(rowPK);
+                }
+                catch (Exception e)
+                {
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                }
+                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
         [Route("api/InformationController/UploadFile")]
         [HttpPost]
         public async Task<IHttpActionResult> UploadFile(int AccessoryPK, string userID)
