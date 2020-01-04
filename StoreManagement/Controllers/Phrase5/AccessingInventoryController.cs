@@ -142,6 +142,7 @@ namespace StoreManagement.Controllers
             }
         }
 
+
         [Route("api/AccessingInventoryController/GetItemByShelfID")]
         [HttpGet]
         public IHttpActionResult GetItemByShelfID(string shelfID)
@@ -152,7 +153,7 @@ namespace StoreManagement.Controllers
             {
                 Client_InBoxItems_Box<List<Box>> result;
                 List<Box> boxes = new List<Box>();
-                Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
+                Dictionary<Tuple<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<Tuple<int, bool>, Client_InBoxItem>();
 
                 Shelf shelf = (from sh in db.Shelves
                                where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
@@ -178,32 +179,32 @@ namespace StoreManagement.Controllers
                                                select e).ToList();
 
                         // Hiện thực cặp value ko được trùng 2 key là itemPK và isRestored
-                        HashSet<KeyValuePair<int, bool>> listItem = new HashSet<KeyValuePair<int, bool>>();
+                        HashSet<Tuple<int, bool>> listItem = new HashSet<Tuple<int, bool>>();
                         foreach (var entry in entries)
                         {
-                            listItem.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                            listItem.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                         }
                         foreach (var item in listItem)
                         {
                             List<Entry> tempEntries = new List<Entry>();
                             foreach (var entry in entries)
                             {
-                                if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
+                                if (entry.ItemPK == item.Item1 && entry.IsRestored == item.Item2) tempEntries.Add(entry);
                             }
                             if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                             {
                                 Entry entry = tempEntries[0];
                                 PassedItem passedItem;
                                 RestoredItem restoredItem;
-                                if (item.Value)
+                                if (item.Item2)
                                 {
-                                    restoredItem = db.RestoredItems.Find(item.Key);
+                                    restoredItem = db.RestoredItems.Find(item.Item1);
                                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                     Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                        storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Value));
+                                        storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Item2));
                                     }
                                     else
                                     {
@@ -213,7 +214,7 @@ namespace StoreManagement.Controllers
                                 }
                                 else
                                 {
-                                    passedItem = db.PassedItems.Find(item.Key);
+                                    passedItem = db.PassedItems.Find(item.Item1);
                                     ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                                     PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                                     // lấy pack ID
@@ -226,7 +227,7 @@ namespace StoreManagement.Controllers
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                        storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Value));
+                                        storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Item2));
                                     }
                                     else
                                     {
@@ -260,8 +261,8 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                Client_InBoxItems_Shelf<List<string>> result;
-                List<string> shelfIDs = new List<string>();
+                Client_InBoxItems_Shelf<List<Shelf>> result;
+                List<Shelf> shelfIDs = new List<Shelf>();
                 List<Shelf> shelves;
                 Row row = (from r in db.Rows
                            where r.RowID == rowID
@@ -287,7 +288,7 @@ namespace StoreManagement.Controllers
                                                   where sB.ShelfPK == shelf.ShelfPK
                                                   select sB).ToList();
 
-                        shelfIDs.Add(shelf.ShelfID);
+                        shelfIDs.Add(shelf);
                         foreach (var sBox in sBoxes)
                         {
                             // Get list inBoxItem
@@ -355,7 +356,7 @@ namespace StoreManagement.Controllers
                             }
                         }
                     }
-                    result = new Client_InBoxItems_Shelf<List<string>>(shelfIDs, client_InBoxItems.Values.ToList());
+                    result = new Client_InBoxItems_Shelf<List<Shelf>>(shelfIDs, client_InBoxItems.Values.ToList());
                     return Content(HttpStatusCode.OK, result);
                 }
                 else

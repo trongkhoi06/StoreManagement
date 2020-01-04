@@ -1666,12 +1666,15 @@ namespace StoreManagement.Controllers
         {
             public Client_PackedItem_Angular2(Pack pack, double packedQuantity, double passedQuantity, double instoredQuantity)
             {
+                PackPK = pack.PackPK;
                 PackID = pack.PackID;
                 DateCreated = pack.DateCreated;
                 PackedQuantity = packedQuantity;
                 PassedQuantity = passedQuantity;
                 InstoredQuantity = instoredQuantity;
             }
+
+            public int PackPK { get; set; }
 
             public string PackID { get; set; }
 
@@ -3104,7 +3107,19 @@ namespace StoreManagement.Controllers
 
                     SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
 
-                    result.Add(new Client_IdentifiedItem_Receiving_Angular(box.BoxID, systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, item));
+                    Client_IdentifiedItem_Receiving_Angular tempItem = new Client_IdentifiedItem_Receiving_Angular(box.BoxID, systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, item);
+
+                    CountingSession countingSession = db.CountingSessions.Where(unit => unit.IdentifiedItemPK == item.IdentifiedItemPK).FirstOrDefault();
+                    if (countingSession != null)
+                    {
+                        tempItem.CountingSessionPK = countingSession.CountingSessionPK;
+                    }
+                    CheckingSession checkingSession = db.CheckingSessions.Where(unit => unit.IdentifiedItemPK == item.IdentifiedItemPK).FirstOrDefault();
+                    if (checkingSession != null)
+                    {
+                        tempItem.CheckingSessionPK = checkingSession.CheckingSessionPK;
+                    }
+                    result.Add(tempItem);
                 }
 
             }

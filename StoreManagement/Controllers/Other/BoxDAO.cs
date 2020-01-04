@@ -123,10 +123,13 @@ namespace StoreManagement.Controllers
             {
                 Box box = db.Boxes.Find(boxPK);
                 box.IsActive = false;
-                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
-                sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
                 db.Entry(box).State = EntityState.Modified;
-                db.Entry(sBox).State = EntityState.Modified;
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
+                if (sBox != null)
+                {
+                    sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
+                    db.Entry(sBox).State = EntityState.Modified;
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

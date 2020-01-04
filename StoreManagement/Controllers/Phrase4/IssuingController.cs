@@ -472,7 +472,7 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_RequestedItemDetails);
         }
 
-        public class Algo_itempk_isRestored
+        public class Algo_itempk_isRestored : IEquatable<Algo_itempk_isRestored>
         {
             public Algo_itempk_isRestored()
             {
@@ -487,6 +487,26 @@ namespace StoreManagement.Controllers
             public int ItemPK { get; set; }
 
             public bool IsRestored { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as Algo_itempk_isRestored);
+            }
+
+            public bool Equals(Algo_itempk_isRestored other)
+            {
+                return other != null &&
+                       ItemPK == other.ItemPK &&
+                       IsRestored == other.IsRestored;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -1201230142;
+                hashCode = hashCode * -1521134295 + ItemPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + IsRestored.GetHashCode();
+                return hashCode;
+            }
         }
 
         [Route("api/IssuingController/GetEmptyBoxIDsPrepared")]
