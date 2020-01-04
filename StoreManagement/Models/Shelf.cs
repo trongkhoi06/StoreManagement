@@ -13,6 +13,12 @@ namespace StoreManagement.Models
         {
         }
 
+        public Shelf(string shelfID, int? rowPK)
+        {
+            ShelfID = shelfID;
+            RowPK = rowPK;
+        }
+
         [Key]
         public int ShelfPK { get; set; }
 

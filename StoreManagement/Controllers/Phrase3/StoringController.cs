@@ -96,7 +96,7 @@ namespace StoreManagement.Controllers
             try
             {
                 Shelf shelf = (from sh in db.Shelves
-                               where sh.ShelfID == shelfID
+                               where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
                                select sh).FirstOrDefault();
                 Row row = db.Rows.Find(shelf.RowPK);
                 client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
@@ -112,7 +112,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult StoreBoxBusiness(string boxID, string shelfID, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingItemDAO = new StoringDAO();
@@ -123,7 +123,7 @@ namespace StoreManagement.Controllers
                     // khởi tạo
                     Box box = boxDAO.GetBoxByBoxID(boxID);
                     Shelf shelf = (from s in db.Shelves
-                                   where s.ShelfID == shelfID
+                                   where s.ShelfID == shelfID && s.ShelfID != "InvisibleShelf"
                                    select s).FirstOrDefault();
                     if (boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK).IsIdentified && !boxDAO.IsStored(box.BoxPK))
                     {
@@ -243,7 +243,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult TransferStoredItems(string boxFromID, string boxToID, string userID, [FromBody] List<Client_ItemPK_TransferQuantity_IsRestored> list)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -302,7 +302,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult MoveStoredBox(string boxID, string shelfID, string userID)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -349,7 +349,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult AdjustInventory(string boxID, int itemPK, double adjustedQuantity, bool isRestored, string userID, string comment)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -438,7 +438,7 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult DiscardInventory(string boxID, int itemPK, double discardedQuantity, bool isRestored, string userID, string comment)
         {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff")) 
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingDAO = new StoringDAO();
@@ -455,11 +455,11 @@ namespace StoreManagement.Controllers
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
                         if (discardedQuantity > storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored,discardingSession);
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
                         }
                         if (discardedQuantity < storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored,discardingSession);
+                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
                         }
                         else
                         {

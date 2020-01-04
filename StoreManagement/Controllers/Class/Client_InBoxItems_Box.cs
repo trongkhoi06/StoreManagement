@@ -9,16 +9,16 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_InBoxItems_Box(T boxIDs, List<Client_InBoxItem> inBoxItems , string row)
+        public Client_InBoxItems_Box(T boxes, List<Client_InBoxItem> inBoxItems , string row)
         {
             Row = row;
-            BoxIDs = boxIDs;
+            Boxes = boxes;
             InBoxItems = inBoxItems;
         }
 
         public string Row { get; set; }
 
-        public T BoxIDs { get; set; }
+        public T Boxes { get; set; }
 
         public List<Client_InBoxItem> InBoxItems { get; set; }
     }

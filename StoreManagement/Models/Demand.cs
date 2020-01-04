@@ -13,11 +13,9 @@ namespace StoreManagement.Models
         {
         }
 
-        public Demand(string demandID, int startWeek, int endWeek, double totalDemand, int conceptionPK, string receiveDivision, string userID)
+        public Demand(string demandID, double totalDemand, int conceptionPK, string receiveDivision, string userID)
         {
             DemandID = demandID;
-            StartWeek = startWeek;
-            EndWeek = endWeek;
             TotalDemand = totalDemand;
             DateCreated = DateTime.Now;
             ConceptionPK = conceptionPK;
@@ -33,9 +31,9 @@ namespace StoreManagement.Models
         [StringLength(100)]
         public string DemandID { get; set; }
 
-        public int StartWeek { get; set; }
+        public int? StartWeek { get; set; }
 
-        public int EndWeek { get; set; }
+        public int? EndWeek { get; set; }
 
         public double TotalDemand { get; set; }
 

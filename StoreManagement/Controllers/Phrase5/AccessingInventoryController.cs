@@ -87,7 +87,7 @@ namespace StoreManagement.Controllers
                                 {
                                     if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
                                 }
-                                if (tempEntries.Count > 0)
+                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
                                     Entry entry = tempEntries[0];
                                     PassedItem passedItem;
@@ -150,12 +150,12 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                Client_InBoxItems_Box<List<string>> result;
-                List<string> boxIDs = new List<string>();
+                Client_InBoxItems_Box<List<Box>> result;
+                List<Box> boxes = new List<Box>();
                 Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
 
                 Shelf shelf = (from sh in db.Shelves
-                               where sh.ShelfID == shelfID
+                               where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
                                select sh).FirstOrDefault();
                 if (shelf != null)
                 {
@@ -167,7 +167,10 @@ namespace StoreManagement.Controllers
                     foreach (var sBox in sBoxes)
                     {
                         Box box = db.Boxes.Find(sBox.BoxPK); db.Boxes.Find(sBox.BoxPK);
-                        boxIDs.Add(box.BoxID);
+                        if (box.IsActive)
+                        {
+                            boxes.Add(box);
+                        }
 
                         // Get list inBoxItem
                         List<Entry> entries = (from e in db.Entries
@@ -187,7 +190,7 @@ namespace StoreManagement.Controllers
                             {
                                 if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
                             }
-                            if (tempEntries.Count > 0)
+                            if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                             {
                                 Entry entry = tempEntries[0];
                                 PassedItem passedItem;
@@ -235,7 +238,7 @@ namespace StoreManagement.Controllers
 
                     }
 
-                    result = new Client_InBoxItems_Box<List<string>>(boxIDs, client_InBoxItems.Values.ToList(), rowID);
+                    result = new Client_InBoxItems_Box<List<Box>>(boxes, client_InBoxItems.Values.ToList(), rowID);
                     return Content(HttpStatusCode.OK, result);
                 }
                 else
@@ -259,15 +262,24 @@ namespace StoreManagement.Controllers
             {
                 Client_InBoxItems_Shelf<List<string>> result;
                 List<string> shelfIDs = new List<string>();
+                List<Shelf> shelves;
                 Row row = (from r in db.Rows
                            where r.RowID == rowID
                            select r).FirstOrDefault();
-                if (row != null)
+                if (row != null || rowID == "TẠM THỜI")
                 {
-
-                    List<Shelf> shelves = (from sh in db.Shelves
-                                           where sh.RowPK == row.RowPK
-                                           select sh).ToList();
+                    if (rowID == "TẠM THỜI")
+                    {
+                        shelves = (from sh in db.Shelves
+                                   where sh.RowPK == null && sh.ShelfID != "InvisibleShelf"
+                                   select sh).ToList();
+                    }
+                    else
+                    {
+                        shelves = (from sh in db.Shelves
+                                   where sh.RowPK == row.RowPK && sh.ShelfID != "InvisibleShelf"
+                                   select sh).ToList();
+                    }
                     Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
                     foreach (var shelf in shelves)
                     {
@@ -296,7 +308,7 @@ namespace StoreManagement.Controllers
                                 {
                                     if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
                                 }
-                                if (tempEntries.Count > 0)
+                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
                                     Entry entry = tempEntries[0];
                                     PassedItem passedItem;
@@ -357,6 +369,189 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/AccessingInventoryController/GetAllRowIsActive")]
+        [HttpGet]
+        public IHttpActionResult GetAllRowIsActive()
+        {
+            List<Row> result = new List<Row>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                result = (from r in db.Rows
+                          where r.IsActive
+                          select r).ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
 
+        [Route("api/AccessingInventoryController/GetAllRow")]
+        [HttpGet]
+        public IHttpActionResult GetAllRow()
+        {
+            List<Row> result = new List<Row>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                result = (from r in db.Rows
+                          select r).ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_History_Flutter
+        {
+            public Client_History_Flutter(int pK, string kind, DateTime date)
+            {
+                PK = pK;
+                Kind = kind;
+                Date = date;
+            }
+
+            public int PK { get; set; }
+
+            public string Kind { get; set; }
+
+            public DateTime Date { get; set; }
+        }
+
+        [Route("api/AccessingInventoryController/GetHistory")]
+        [HttpGet]
+        public IHttpActionResult GetAllSession(string userID)
+        {
+            List<Client_History_Flutter> result = new List<Client_History_Flutter>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                {
+                    List<IdentifyingSession> ss = db.IdentifyingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.IdentifyingSessionPK, "identifying", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ArrangingSession> ss = db.ArrangingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ArrangingSessionPK, "arranging", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<CountingSession> ss = db.CountingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.CountingSessionPK, "counting", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<CheckingSession> ss = db.CheckingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.CheckingSessionPK, "checking", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<TransferringSession> ss = db.TransferringSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.TransferingSessionPK, "transferring", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<MovingSession> ss = db.MovingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.MovingSessionPK, "moving", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<IssuingSession> ss = db.IssuingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.IssuingSessionPK, "issuing", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ReceivingSession> ss = db.ReceivingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ReceivingSessionPK, "receiving", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<AdjustingSession> ss = db.AdjustingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.AdjustingSessionPK, "adjusting", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<DiscardingSession> ss = db.DiscardingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.DiscardingSessionPK, "discarding", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<StoringSession> ss = db.StoringSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.StoringSessionPK, "storing", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ClassifyingSession> ss = db.ClassifyingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ClassifyingSessionPK, "classifying", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ReturningSession> ss = db.ReturningSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ReturningSessionPK, "returning", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ConfirmingSession> ss = db.ConfirmingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ConfirmingSessionPK, "confirming", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<Request> containers = db.Requests.ToList();
+                    foreach (var item in containers)
+                    {
+                        result.Add(new Client_History_Flutter(item.RequestPK, "request", item.DateCreated));
+                    }
+                }
+                {
+                    List<Restoration> containers = db.Restorations.ToList();
+                    foreach (var item in containers)
+                    {
+                        result.Add(new Client_History_Flutter(item.RestorationPK, "restoration", item.DateCreated));
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
     }
 }

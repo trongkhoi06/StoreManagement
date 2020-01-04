@@ -51,6 +51,8 @@ namespace StoreManagement.Class
 
         public string SupplierName { get; set; }
 
+        public bool IsIdentified { get; set; }
+
     }
 
     public class Client_Pack_Detail_Angular

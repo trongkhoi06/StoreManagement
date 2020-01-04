@@ -406,17 +406,19 @@ namespace StoreManagement.Controllers
                 foreach (var packedItem in packedItems)
                 {
                     double actualQuantity = 0;
+                    double sumIdentifiedQuantity = 0;
                     ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
                                                      where cI.PackedItemPK == packedItem.PackedItemPK
                                                      select cI).FirstOrDefault();
-                    if (classifiedItem != null)
+                    List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                                                            where iI.PackedItemPK == packedItem.PackedItemPK
+                                                            select iI).ToList();
+                    foreach (var identifiedItem in identifiedItems)
                     {
-                        if (classifiedItem.QualityState == 2)
+                        sumIdentifiedQuantity += identifiedItem.IdentifiedQuantity;
+                        if (classifiedItem != null)
                         {
-                            List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
-                                                                    where iI.PackedItemPK == packedItem.PackedItemPK
-                                                                    select iI).ToList();
-                            foreach (var identifiedItem in identifiedItems)
+                            if (classifiedItem.QualityState == 2)
                             {
                                 actualQuantity += identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK);
                             }
@@ -425,7 +427,7 @@ namespace StoreManagement.Controllers
 
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity));
+                    client_PackedItemAngulars.Add(new Client_PackedItemAngular(accessory, packedItem, actualQuantity, sumIdentifiedQuantity));
                 }
 
 
@@ -450,6 +452,18 @@ namespace StoreManagement.Controllers
                 string supplierName = db.Suppliers.Find(order.SupplierPK).SupplierName;
                 SystemUser systemUser = db.SystemUsers.Find(pack.UserID);
                 client_Pack_Angular = (new Client_Pack_Angular(pack, supplierName, systemUser));
+                client_Pack_Angular.IsIdentified = false;
+                // check isIdentified
+                List<PackedItem> packedItems = (from pI in db.PackedItems
+                                                where pI.PackPK == PackPK
+                                                select pI).ToList();
+                foreach (var packedItem in packedItems)
+                {
+                    List<IdentifiedItem> identifiedItems = (from pI in db.IdentifiedItems
+                                                            where pI.PackedItemPK == packedItem.PackedItemPK
+                                                            select pI).ToList();
+                    if (identifiedItems.Count > 0) client_Pack_Angular.IsIdentified = true;
+                }
             }
             catch (Exception e)
             {
@@ -671,7 +685,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/ReceivingController/EditContractNumber")]
         [HttpPut]
-        public IHttpActionResult EditContractNumber(int packedItemPK, [FromBody] string contractNumber, string userID)
+        public IHttpActionResult EditContractNumber(int packedItemPK, string contractNumber, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {

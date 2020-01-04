@@ -18,7 +18,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/IssuingController/CreateDemand")]
         [HttpPost]
-        public IHttpActionResult CreateDemand(int customerPK, string demandID, string conceptionCode, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
+        public IHttpActionResult CreateDemand(int customerPK, int conceptionPK, double totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
@@ -27,20 +27,12 @@ namespace StoreManagement.Controllers
                 try
                 {
                     // kiểm khi chạy lệnh
-                    if (issuingDAO.GetDemandByDemandID(demandID) != null)
-                    {
-                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ TỒN TẠI");
-                    }
-                    Conception conception = issuingDAO.GetConceptionByConceptionCode(conceptionCode);
+                    Conception conception = db.Conceptions.Find(conceptionPK);
                     if (conception.CustomerPK != customerPK)
                     {
                         return Content(HttpStatusCode.Conflict, "KHÔNG ĐÚNG KHÁCH HÀNG");
                     }
-                    if (startWeek > 52 || startWeek < 1 || endWeek > 52 || endWeek < 1)
-                    {
-                        return Content(HttpStatusCode.Conflict, "SỐ LIỆU TUẦN KHÔNG HỢP LỆ");
-                    }
-                    demand = issuingDAO.CreateDemand(customerPK, demandID, conception.ConceptionPK, startWeek, endWeek, totalDemand, receiveDevision, userID);
+                    demand = issuingDAO.CreateDemand(customerPK, conception.ConceptionPK, totalDemand, receiveDevision, userID);
                     issuingDAO.CreateDemandedItems(demand, list, conception.ConceptionPK);
                 }
                 catch (Exception e)

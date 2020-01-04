@@ -670,7 +670,7 @@ namespace StoreManagement.Controllers
         }
 
         [Route("api/InformationController/DeleteBox")]
-        [HttpPost]
+        [HttpDelete]
         public IHttpActionResult DeleteBox(int boxPK, string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
@@ -679,6 +679,151 @@ namespace StoreManagement.Controllers
                 try
                 {
                     boxDAO.DeleteBox(boxPK, userID);
+                }
+                catch (Exception e)
+                {
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                }
+                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
+        [Route("api/InformationController/CreateShelf")]
+        [HttpPost]
+        public IHttpActionResult CreateShelf(string shelfID, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                try
+                {
+                    if (shelfID.Length > 10)
+                    {
+                        return Content(HttpStatusCode.Conflict, "TÊN KỆ KHÔNG ĐƯỢC QUÁ 10 KÝ TỰ!");
+                    }
+                    Shelf shelf = new Shelf(shelfID + "shelf", null);
+                    db.Shelves.Add(shelf);
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteShelf")]
+        [HttpDelete]
+        public IHttpActionResult DeleteShelf(int shelfPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                try
+                {
+                    Shelf shelf = db.Shelves.Find(shelfPK);
+                    db.Shelves.Remove(shelf);
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                }
+                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
+        [Route("api/InformationController/CreateRow")]
+        [HttpPost]
+        public IHttpActionResult CreateRow(string rowID, int floor, int col, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
+            {
+                try
+                {
+                    BoxDAO boxDAO = new BoxDAO();
+                    if (floor > 10 || floor < 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "SỐ TẦNG KỆ KHÔNG ĐƯỢC QUÁ 10!");
+                    }
+                    if (col > 50 || col < 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "SỐ KỆ MỖI TẦNG KHÔNG ĐƯỢC QUÁ 50!");
+                    }
+                    //tạo kệ kiểu cũ
+                    //Row row = boxDAO.CreateRow(rowID, floor, col);
+
+                    Row row = db.Rows.Where(unit => unit.RowID == rowID).FirstOrDefault();
+                    row.IsActive = true;
+                    row.Floor = floor;
+                    row.Col = col;
+                    db.Entry(row).State = EntityState.Modified;
+                    for (int i = 1; i <= floor; i++)
+                    {
+                        for (int j = 1; j <= col; j++)
+                        {
+                            string tempFloor = "";
+                            string tempCol = "";
+                            if (i < 10)
+                            {
+                                tempFloor = "0" + i;
+                            }
+                            else
+                            {
+                                tempFloor = i + "";
+                            }
+                            if (j < 10)
+                            {
+                                tempCol = "0" + j;
+                            }
+                            else
+                            {
+                                tempCol = j + "";
+                            }
+                            Shelf shelf = new Shelf(rowID.Substring(0, 1) + "." + tempFloor + "." + tempCol + "shelf", row.RowPK);
+                            db.Shelves.Add(shelf);
+                        }
+                    }
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/InformationController/DeleteRow")]
+        [HttpDelete]
+        public IHttpActionResult DeleteRow(int rowPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager") || new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                try
+                {
+                    BoxDAO boxDAO = new BoxDAO();
+                    Row row = db.Rows.Find(rowPK);
+                    boxDAO.DeleteRow(rowPK);
                 }
                 catch (Exception e)
                 {
@@ -734,6 +879,8 @@ namespace StoreManagement.Controllers
                         //    db.SaveChanges();
                         //    return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
                         //}
+
+                        // nạp hình và tìm đường dẫn, ko đc upload nhiều hình cùng lúc
                         MultipartFileData file = provider.FileData[0];
                         var name = file.Headers.ContentDisposition.FileName;
                         string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
@@ -741,12 +888,19 @@ namespace StoreManagement.Controllers
                         var localFileName = file.LocalFileName;
                         var filePath = Path.Combine(root, name);
                         File.Move(localFileName, filePath);
+
+                        // nếu đã có hình thì xóa hình cũ
                         if (accessory.Image != null)
                         {
                             File.Delete(Path.Combine(root, accessory.Image));
                         }
                         accessory.Image = name;
                         db.Entry(accessory).State = EntityState.Modified;
+
+                        // create activity
+                        Activity activity = new Activity("photoUpdate", accessory.AccessoryID, "Accessory", userID);
+                        db.Activities.Add(activity);
+
                         db.SaveChanges();
                         return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
                     }
@@ -762,6 +916,46 @@ namespace StoreManagement.Controllers
 
             }
         }
+
+        [Route("api/InformationController/DeleteFile")]
+        [HttpDelete]
+        public IHttpActionResult DeleteFile(int AccessoryPK, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+            {
+                try
+                {
+                    Accessory accessory = db.Accessories.Find(AccessoryPK);
+                    if (accessory == null)
+                    {
+                        return Content(HttpStatusCode.Conflict, "ACCESSORY KHÔNG TỒN TẠI!");
+                    }
+                    else
+                    {
+                        // delete img
+                        var root = HttpContext.Current.Server.MapPath("~/Image");
+                        if (accessory.Image != null)
+                        {
+                            File.Delete(Path.Combine(root, accessory.Image));
+                        }
+                        accessory.Image = null;
+                        db.Entry(accessory).State = EntityState.Modified;
+                        db.SaveChanges();
+                        return Content(HttpStatusCode.OK, "XÓA HÌNH THÀNH CÔNG!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+            }
+        }
+
         public class Accessory_RestoreItem2
         {
             public Accessory_RestoreItem2()
@@ -777,6 +971,7 @@ namespace StoreManagement.Controllers
                 Art = accessory.Art;
                 Color = accessory.Color;
                 Image = accessory.Image;
+                AccessoryTypePK = accessory.AccessoryTypePK;
             }
 
             public int AccessoryPK { get; set; }
@@ -792,6 +987,8 @@ namespace StoreManagement.Controllers
             public string Color { get; set; }
 
             public string Image { get; set; }
+
+            public int AccessoryTypePK { get; set; }
         }
 
         [Route("api/IssuingController/GetAccessoriesForFilter")]

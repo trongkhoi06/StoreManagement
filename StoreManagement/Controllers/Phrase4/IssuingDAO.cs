@@ -17,8 +17,9 @@ namespace StoreManagement.Controllers
 
         private string KhoiNKTType(int num)
         {
-            if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
-            else if (num < 10)
+            //if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
+            //else
+            if (num < 10)
             {
                 return num + "";
             }
@@ -213,11 +214,31 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Demand CreateDemand(int customerPK, string demandID, int conceptionPK, int startWeek, int endWeek, double totalDemand, string receiveDevision, string userID)
+        public Demand CreateDemand(int customerPK, int conceptionPK, double totalDemand, string receiveDevision, string userID)
         {
             try
             {
-                Demand demand = new Demand(demandID, startWeek, endWeek, totalDemand, conceptionPK, receiveDevision, userID);
+                DateTime now = DateTime.Now;
+                string tempDay = (now.Day + "").Length == 1 ? '0' + (now.Day + "") : (now.Day + "");
+                string tempMonth = (now.Month + "").Length == 1 ? '0' + (now.Month + "") : (now.Month + "");
+                string tempYear = (now.Year + "").Substring((now.Year + "").Length - 2);
+
+                string dateNow = tempDay + tempMonth + tempYear;
+                string demandID = "";
+                Demand demand = (from acc in db.Demands.OrderByDescending(unit => unit.DemandPK)
+                                 select acc).FirstOrDefault();
+                if (demand == null || !demand.DemandID.Contains(dateNow))
+                    demandID = "AST-PCP-" + dateNow + "01";
+                else
+                {
+                    int length = demand.DemandID.Length;
+                    string tempStr = (Int32.Parse(demand.DemandID.Substring(length - 2, 2)) + 1) + "";
+                    if (tempStr.Length == 1) tempStr = "0" + tempStr;
+                    demandID = demand.DemandID.Substring(0, length - 2) + tempStr;
+                }
+                // create demand
+
+                demand = new Demand(demandID, totalDemand, conceptionPK, receiveDevision, userID);
                 db.Demands.Add(demand);
                 db.SaveChanges();
                 demand = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
@@ -511,7 +532,7 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public class StoredBox_ItemPK_IsRestored
+        public class StoredBox_ItemPK_IsRestored : IEquatable<StoredBox_ItemPK_IsRestored>
         {
             public StoredBox_ItemPK_IsRestored()
             {
@@ -529,6 +550,46 @@ namespace StoreManagement.Controllers
             public int ItemPK { get; set; }
 
             public bool IsRestored { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as StoredBox_ItemPK_IsRestored);
+            }
+
+            public bool Equals(StoredBox_ItemPK_IsRestored other)
+            {
+                return other != null &&
+                       StoredBoxPK == other.StoredBoxPK &&
+                       ItemPK == other.ItemPK &&
+                       IsRestored == other.IsRestored;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -1297919728;
+                hashCode = hashCode * -1521134295 + StoredBoxPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + ItemPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + IsRestored.GetHashCode();
+                return hashCode;
+            }
+
+        }
+
+        public class InBoxQuantity_AvailableQuantity
+        {
+            public InBoxQuantity_AvailableQuantity()
+            {
+            }
+
+            public InBoxQuantity_AvailableQuantity(double inBoxQuantity, double availableQuantity)
+            {
+                InBoxQuantity = inBoxQuantity;
+                AvailableQuantity = availableQuantity;
+            }
+
+            public double InBoxQuantity { get; set; }
+
+            public double AvailableQuantity { get; set; }
         }
         public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
         {
@@ -542,10 +603,37 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();
-                Dictionary<StoredBox_ItemPK_IsRestored, double> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, double>();
+                Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity>();
                 foreach (var entry in entries)
                 {
+                    double inBoxQuantity = 0;
                     StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+
+                    if (entry.KindRoleName == "AdjustingMinus" || entry.KindRoleName == "AdjustingPlus")
+                    {
+                        AdjustingSession adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == adjustingSession.AdjustingSessionPK
+                                                                            && unit.IsDiscard == false).FirstOrDefault();
+                        if (verification != null && verification.IsApproved)
+                        {
+                            inBoxQuantity = storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                    else if (entry.KindRoleName == "Discarding")
+                    {
+                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == discardingSession.DiscardingSessionPK
+                                                                            && unit.IsDiscard == true).FirstOrDefault();
+                        if (verification != null && verification.IsApproved)
+                        {
+                            inBoxQuantity = storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                    else
+                    {
+                        inBoxQuantity = storingDAO.EntryQuantity(entry);
+                    }
+
                     Box box = db.Boxes.Find(storedBox.BoxPK);
                     PassedItem passedItem;
                     RestoredItem restoredItem;
@@ -562,21 +650,22 @@ namespace StoreManagement.Controllers
                     }
                     if (box.IsActive)
                     {
-
+                        InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(inBoxQuantity, storingDAO.EntryQuantity(entry));
                         if (!tempDictionary.ContainsKey(key))
                         {
-                            tempDictionary.Add(key, storingDAO.EntryQuantity(entry));
+                            tempDictionary.Add(key, tmp);
                         }
                         else
                         {
-                            tempDictionary[key] += storingDAO.EntryQuantity(entry);
+                            tempDictionary[key].InBoxQuantity += tmp.InBoxQuantity;
+                            tempDictionary[key].AvailableQuantity += tmp.AvailableQuantity;
                         }
                     }
                 }
 
                 foreach (var item in tempDictionary)
                 {
-                    if (item.Value > 0)
+                    if (item.Value.AvailableQuantity > 0)
                     {
                         StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
                         Box box = db.Boxes.Find(storedBox.BoxPK);
@@ -586,7 +675,7 @@ namespace StoreManagement.Controllers
                         {
                             RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
                             Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, restoration.RestorationID));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, restoration.RestorationID, item.Value.AvailableQuantity));
                         }
                         else
                         {
@@ -594,7 +683,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                             PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                             Pack pack = db.Packs.Find(packedItem.PackPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, pack.PackID));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, pack.PackID, item.Value.AvailableQuantity));
                         }
 
                     }
@@ -733,7 +822,29 @@ namespace StoreManagement.Controllers
                 // Add restoration
                 DateTime now = DateTime.Now;
                 // Generate Restoration
-                string restorationID = KhoiNKTType(now.Day) + KhoiNKTType(now.Month) + now.Year;
+                //string restorationID = KhoiNKTType(now.Second) + KhoiNKTType(now.Minute) + KhoiNKTType(now.Hour) + KhoiNKTType(now.Day) + KhoiNKTType(now.Month) + now.Year;
+                Restoration temp = db.Restorations.OrderByDescending(unit => unit.RestorationPK).FirstOrDefault();
+
+                string restorationID;
+                if (temp != null)
+                {
+                    string tempStr;
+                    Int32 tempInt;
+                    tempStr = temp.RestorationID.Substring(temp.RestorationID.Length - 5);
+                    tempInt = Int32.Parse(tempStr) + 1;
+
+                    tempStr = tempInt + "";
+                    if (tempStr.Length == 1) tempStr = "0000" + tempStr;
+                    if (tempStr.Length == 2) tempStr = "000" + tempStr;
+                    if (tempStr.Length == 3) tempStr = "00" + tempStr;
+                    if (tempStr.Length == 4) tempStr = "0" + tempStr;
+
+                    restorationID = "AST-PT" + tempStr;
+                }
+                else
+                {
+                    restorationID = "AST-PT-00001";
+                }
                 Restoration restoration = new Restoration(restorationID, userID, comment);
                 db.Restorations.Add(restoration);
                 db.SaveChanges();
