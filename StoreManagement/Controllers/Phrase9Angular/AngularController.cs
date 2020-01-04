@@ -2727,12 +2727,46 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    result = angularDAO.GetSessions(start, end, sessionNum);
+                    if (sessionNum == 12)
+                    {
+                        for (int i = 1; i <= 6; i++)
+                        {
+                            result.AddRange(angularDAO.GetSessions(start, end, i));
+                        }
+                    }
+                    else if (sessionNum == 13)
+                    {
+                        for (int i = 7; i <= 11; i++)
+                        {
+                            result = angularDAO.GetSessions(start, end, i);
+                        }
+                    }
+                    else
+                    {
+                        result = angularDAO.GetSessions(start, end, sessionNum);
+                    }
                 }
                 // if start <= 1900 then select all
                 else
                 {
-                    result = angularDAO.GetSessions(sessionNum);
+                    if (sessionNum == 12)
+                    {
+                        for (int i = 1; i <= 6; i++)
+                        {
+                            result.AddRange(angularDAO.GetSessions(i));
+                        }
+                    }
+                    else if (sessionNum == 13)
+                    {
+                        for (int i = 7; i <= 11; i++)
+                        {
+                            result.AddRange(angularDAO.GetSessions(i));
+                        }
+                    }
+                    else
+                    {
+                        result = angularDAO.GetSessions(sessionNum);
+                    }
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -2798,7 +2832,7 @@ namespace StoreManagement.Controllers
                                            select e).FirstOrDefault();
                             bool isDiscard = false;
                             double adjustedQuantity = storingDAO.EntryQuantity(entry);
-                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
                     }
@@ -2816,7 +2850,7 @@ namespace StoreManagement.Controllers
                                                    && e.KindRoleName == "Discarding"
                                                    select e).ToList();
                             bool isDiscard = true;
-                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, storingDAO.EntriesQuantity(entries), ss.IsVerified, isDiscard));
                         }
                     }
@@ -2839,7 +2873,7 @@ namespace StoreManagement.Controllers
                                            select e).FirstOrDefault();
                             bool isDiscard = false;
                             double adjustedQuantity = storingDAO.EntryQuantity(entry);
-                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
                     }
@@ -2856,11 +2890,12 @@ namespace StoreManagement.Controllers
                                                    && e.KindRoleName == "Discarding"
                                                    select e).ToList();
                             bool isDiscard = true;
-                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, ss.UserID + " (" + systemUser.Name + ")",
+                            result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, (storingDAO.EntriesQuantity(entries)), ss.IsVerified, isDiscard));
                         }
                     }
                 }
+
                 return Content(HttpStatusCode.OK, result);
             }
             catch (Exception e)
@@ -3595,14 +3630,18 @@ namespace StoreManagement.Controllers
                 // excel
                 var excel = HttpContext.Current.Server.MapPath("~/ExcelSheets");
                 // chọn file excel ứng với loại id
-                if (id.Contains("box"))
-                {
+                //if (id.Contains("box"))
+                //{
 
-                }
-                else if (id.Contains("shelf"))
-                {
+                //}
+                //else if (id.Contains("shelf"))
+                //{
 
-                }
+                //}
+                //else if (id.Contains("row"))
+                //{
+
+                //}
                 var excelPath = Path.Combine(excel, "stampSample.xlsx");
 
                 Application excelApp = new Application();
@@ -3622,6 +3661,18 @@ namespace StoreManagement.Controllers
                 ws.PageSetup.RightMargin = 0;
                 ws.PageSetup.TopMargin = 0;
 
+                //if (id.Contains("box"))
+                //{
+
+                //}
+                //else if (id.Contains("shelf"))
+                //{
+
+                //}
+                //else if (id.Contains("row"))
+                //{
+
+                //}
                 var stamp = Path.Combine(excel, "stamp.xlsx");
                 if (File.Exists(stamp))
                 {

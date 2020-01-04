@@ -532,7 +532,7 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public class StoredBox_ItemPK_IsRestored
+        public class StoredBox_ItemPK_IsRestored : IEquatable<StoredBox_ItemPK_IsRestored>
         {
             public StoredBox_ItemPK_IsRestored()
             {
@@ -550,6 +550,46 @@ namespace StoreManagement.Controllers
             public int ItemPK { get; set; }
 
             public bool IsRestored { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as StoredBox_ItemPK_IsRestored);
+            }
+
+            public bool Equals(StoredBox_ItemPK_IsRestored other)
+            {
+                return other != null &&
+                       StoredBoxPK == other.StoredBoxPK &&
+                       ItemPK == other.ItemPK &&
+                       IsRestored == other.IsRestored;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -1297919728;
+                hashCode = hashCode * -1521134295 + StoredBoxPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + ItemPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + IsRestored.GetHashCode();
+                return hashCode;
+            }
+
+        }
+
+        public class InBoxQuantity_AvailableQuantity
+        {
+            public InBoxQuantity_AvailableQuantity()
+            {
+            }
+
+            public InBoxQuantity_AvailableQuantity(double inBoxQuantity, double availableQuantity)
+            {
+                InBoxQuantity = inBoxQuantity;
+                AvailableQuantity = availableQuantity;
+            }
+
+            public double InBoxQuantity { get; set; }
+
+            public double AvailableQuantity { get; set; }
         }
         public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
         {
@@ -563,10 +603,37 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();
-                Dictionary<StoredBox_ItemPK_IsRestored, double> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, double>();
+                Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity>();
                 foreach (var entry in entries)
                 {
+                    double inBoxQuantity = 0;
                     StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+
+                    if (entry.KindRoleName == "AdjustingMinus" || entry.KindRoleName == "AdjustingPlus")
+                    {
+                        AdjustingSession adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == adjustingSession.AdjustingSessionPK
+                                                                            && unit.IsDiscard == false).FirstOrDefault();
+                        if (verification != null && verification.IsApproved)
+                        {
+                            inBoxQuantity = storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                    else if (entry.KindRoleName == "Discarding")
+                    {
+                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == discardingSession.DiscardingSessionPK
+                                                                            && unit.IsDiscard == true).FirstOrDefault();
+                        if (verification != null && verification.IsApproved)
+                        {
+                            inBoxQuantity = storingDAO.EntryQuantity(entry);
+                        }
+                    }
+                    else
+                    {
+                        inBoxQuantity = storingDAO.EntryQuantity(entry);
+                    }
+
                     Box box = db.Boxes.Find(storedBox.BoxPK);
                     PassedItem passedItem;
                     RestoredItem restoredItem;
@@ -583,21 +650,22 @@ namespace StoreManagement.Controllers
                     }
                     if (box.IsActive)
                     {
-
+                        InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(inBoxQuantity, storingDAO.EntryQuantity(entry));
                         if (!tempDictionary.ContainsKey(key))
                         {
-                            tempDictionary.Add(key, storingDAO.EntryQuantity(entry));
+                            tempDictionary.Add(key, tmp);
                         }
                         else
                         {
-                            tempDictionary[key] += storingDAO.EntryQuantity(entry);
+                            tempDictionary[key].InBoxQuantity += tmp.InBoxQuantity;
+                            tempDictionary[key].AvailableQuantity += tmp.AvailableQuantity;
                         }
                     }
                 }
 
                 foreach (var item in tempDictionary)
                 {
-                    if (item.Value > 0)
+                    if (item.Value.AvailableQuantity > 0)
                     {
                         StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
                         Box box = db.Boxes.Find(storedBox.BoxPK);
@@ -607,7 +675,7 @@ namespace StoreManagement.Controllers
                         {
                             RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
                             Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, restoration.RestorationID));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, restoration.RestorationID, item.Value.AvailableQuantity));
                         }
                         else
                         {
@@ -615,7 +683,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                             PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                             Pack pack = db.Packs.Find(packedItem.PackPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value, pack.PackID));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, pack.PackID, item.Value.AvailableQuantity));
                         }
 
                     }

@@ -408,7 +408,150 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public class Client_History_Flutter
+        {
+            public Client_History_Flutter(int pK, string kind, DateTime date)
+            {
+                PK = pK;
+                Kind = kind;
+                Date = date;
+            }
 
+            public int PK { get; set; }
 
+            public string Kind { get; set; }
+
+            public DateTime Date { get; set; }
+        }
+
+        [Route("api/AccessingInventoryController/GetHistory")]
+        [HttpGet]
+        public IHttpActionResult GetAllSession(string userID)
+        {
+            List<Client_History_Flutter> result = new List<Client_History_Flutter>();
+            BoxDAO boxDAO = new BoxDAO();
+            StoringDAO storingDAO = new StoringDAO();
+            try
+            {
+                {
+                    List<IdentifyingSession> ss = db.IdentifyingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.IdentifyingSessionPK, "identifying", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ArrangingSession> ss = db.ArrangingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ArrangingSessionPK, "arranging", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<CountingSession> ss = db.CountingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.CountingSessionPK, "counting", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<CheckingSession> ss = db.CheckingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.CheckingSessionPK, "checking", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<TransferringSession> ss = db.TransferringSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.TransferingSessionPK, "transferring", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<MovingSession> ss = db.MovingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.MovingSessionPK, "moving", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<IssuingSession> ss = db.IssuingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.IssuingSessionPK, "issuing", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ReceivingSession> ss = db.ReceivingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ReceivingSessionPK, "receiving", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<AdjustingSession> ss = db.AdjustingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.AdjustingSessionPK, "adjusting", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<DiscardingSession> ss = db.DiscardingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.DiscardingSessionPK, "discarding", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<StoringSession> ss = db.StoringSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.StoringSessionPK, "storing", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ClassifyingSession> ss = db.ClassifyingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ClassifyingSessionPK, "classifying", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ReturningSession> ss = db.ReturningSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ReturningSessionPK, "returning", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<ConfirmingSession> ss = db.ConfirmingSessions.ToList();
+                    foreach (var item in ss)
+                    {
+                        result.Add(new Client_History_Flutter(item.ConfirmingSessionPK, "confirming", item.ExecutedDate));
+                    }
+                }
+                {
+                    List<Request> containers = db.Requests.ToList();
+                    foreach (var item in containers)
+                    {
+                        result.Add(new Client_History_Flutter(item.RequestPK, "request", item.DateCreated));
+                    }
+                }
+                {
+                    List<Restoration> containers = db.Restorations.ToList();
+                    foreach (var item in containers)
+                    {
+                        result.Add(new Client_History_Flutter(item.RestorationPK, "restoration", item.DateCreated));
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
     }
 }

@@ -34,8 +34,8 @@ namespace StoreManagement.Controllers
                                                          select iI).FirstOrDefault();
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Ghi nhận " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 2:
@@ -49,8 +49,8 @@ namespace StoreManagement.Controllers
                         IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Kiểm số lượng " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 3:
@@ -63,8 +63,8 @@ namespace StoreManagement.Controllers
                         IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Kiểm chất lượng " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 4:
@@ -77,8 +77,8 @@ namespace StoreManagement.Controllers
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(ss.ClassifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Đánh giá " + "phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 5:
@@ -92,8 +92,8 @@ namespace StoreManagement.Controllers
                         Box box1 = db.Boxes.Find(uBox1.BoxPK);
                         UnstoredBox uBox2 = db.UnstoredBoxes.Find(ss.DestinationBoxPK);
                         Box box2 = db.Boxes.Find(uBox2.BoxPK);
-                        string content = box1.BoxID.Substring(0,box1.BoxID.Length-3) + "~!~Div~!~" + box2.BoxID.Substring(0,box2.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 6:
@@ -107,8 +107,8 @@ namespace StoreManagement.Controllers
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(failedItem.ClassifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Trả hàng lỗi " + "thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 7:
@@ -119,8 +119,8 @@ namespace StoreManagement.Controllers
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Box box = db.Boxes.Find(ss.BoxPK);
-                        string content = box.BoxID.Substring(0,box.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 8:
@@ -134,8 +134,9 @@ namespace StoreManagement.Controllers
                         Box box = db.Boxes.Find(sBox.BoxPK);
                         Shelf shelf1 = db.Shelves.Find(ss.StartShelfPK);
                         Shelf shelf2 = db.Shelves.Find(ss.DestinationShelfPK);
-                        string content = box.BoxID.Substring(0, box.BoxID.Length - 3) + "~!~Div~!~" + shelf1.ShelfID + "~!~Div~!~" + shelf2.ShelfID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Di chuyển thùng " + "mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3)
+                            + "từ kệ " + shelf1.ShelfID + "sang kệ " + shelf2.ShelfID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 9:
@@ -151,20 +152,21 @@ namespace StoreManagement.Controllers
                         StoredBox sBox2 = db.StoredBoxes.Find(ss.StartBoxPK);
                         Box box2 = db.Boxes.Find(sBox2.BoxPK);
 
-                        string content = box1.BoxID.Substring(0,box1.BoxID.Length-3) + "~!~Div~!~" + box2.BoxID.Substring(0,box2.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Chuyển phụ liệu " + "tồn kho từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3)
+                            + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 10:
                     List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions
-                                                           where ss.ExecutedDate >= start && ss.ExecutedDate <= end
-                                                           select ss).ToList();
+                                                            where ss.ExecutedDate >= start && ss.ExecutedDate <= end
+                                                            select ss).ToList();
                     foreach (var ss in issuingSessions)
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Request request = db.Requests.Find(ss.RequestPK);
-                        string content = request.RequestID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 11:
@@ -175,8 +177,8 @@ namespace StoreManagement.Controllers
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Restoration restoration = db.Restorations.Find(ss.RestorationPK);
-                        string content = restoration.RestorationID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Nhận tồn " + "phụ liệu thuộc Phiếu trả mã số " + restoration.RestorationID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 default:
@@ -203,8 +205,8 @@ namespace StoreManagement.Controllers
                                                          select iI).FirstOrDefault();
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Ghi nhận " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 2:
@@ -217,8 +219,8 @@ namespace StoreManagement.Controllers
                         IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Kiểm số lượng " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 3:
@@ -230,8 +232,8 @@ namespace StoreManagement.Controllers
                         IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Kiểm chất lượng " + "cụm phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 4:
@@ -243,8 +245,8 @@ namespace StoreManagement.Controllers
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(ss.ClassifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Đánh giá " + "phụ liệu thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 5:
@@ -257,8 +259,8 @@ namespace StoreManagement.Controllers
                         Box box1 = db.Boxes.Find(uBox1.BoxPK);
                         UnstoredBox uBox2 = db.UnstoredBoxes.Find(ss.DestinationBoxPK);
                         Box box2 = db.Boxes.Find(uBox2.BoxPK);
-                        string content = box1.BoxID.Substring(0,box1.BoxID.Length-3) + "~!~Div~!~" + box2.BoxID.Substring(0,box2.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 6:
@@ -271,8 +273,8 @@ namespace StoreManagement.Controllers
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(failedItem.ClassifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                         Pack pack = db.Packs.Find(packedItem.PackPK);
-                        string content = pack.PackID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Trả hàng lỗi " + "thuộc Phiếu nhập mã số " + pack.PackID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 7:
@@ -282,8 +284,8 @@ namespace StoreManagement.Controllers
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Box box = db.Boxes.Find(ss.BoxPK);
-                        string content = box.BoxID.Substring(0,box.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 8:
@@ -296,8 +298,9 @@ namespace StoreManagement.Controllers
                         Box box = db.Boxes.Find(sBox.BoxPK);
                         Shelf shelf1 = db.Shelves.Find(ss.StartShelfPK);
                         Shelf shelf2 = db.Shelves.Find(ss.DestinationShelfPK);
-                        string content = box.BoxID.Substring(0,box.BoxID.Length-3) + "~!~Div~!~" + shelf1.ShelfID + "~!~Div~!~" + shelf2.ShelfID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Di chuyển thùng " + "mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3)
+                            + "từ kệ " + shelf1.ShelfID + "sang kệ " + shelf2.ShelfID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 9:
@@ -312,8 +315,9 @@ namespace StoreManagement.Controllers
                         StoredBox sBox2 = db.StoredBoxes.Find(ss.StartBoxPK);
                         Box box2 = db.Boxes.Find(sBox2.BoxPK);
 
-                        string content = box1.BoxID.Substring(0,box1.BoxID.Length-3) + "~!~Div~!~" + box2.BoxID.Substring(0,box2.BoxID.Length-3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Chuyển phụ liệu " + "tồn kho từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3)
+                            + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 10:
@@ -323,8 +327,8 @@ namespace StoreManagement.Controllers
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Request request = db.Requests.Find(ss.RequestPK);
-                        string content = request.RequestID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 case 11:
@@ -334,8 +338,8 @@ namespace StoreManagement.Controllers
                     {
                         SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
                         Restoration restoration = db.Restorations.Find(ss.RestorationPK);
-                        string content = restoration.RestorationID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, ss.UserID + " (" + systemUser.Name + ")", content));
+                        string content = "Nhận tồn " + "phụ liệu thuộc Phiếu trả mã số " + restoration.RestorationID;
+                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
                 default:
@@ -344,6 +348,8 @@ namespace StoreManagement.Controllers
 
             return result;
         }
+
+
     }
 }
 
