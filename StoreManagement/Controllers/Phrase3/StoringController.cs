@@ -184,17 +184,17 @@ namespace StoreManagement.Controllers
                                        select e).ToList();
 
                 // Hiện thực cặp value ko được trùng 2 key là itemPK và isRestored
-                HashSet<KeyValuePair<int, bool>> listItemPK = new HashSet<KeyValuePair<int, bool>>();
+                HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
                 foreach (var entry in entries)
                 {
-                    listItemPK.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                    listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                 }
                 foreach (var itemPK in listItemPK)
                 {
                     List<Entry> tempEntries = new List<Entry>();
                     foreach (var entry in entries)
                     {
-                        if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
+                        if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
                     }
                     if (tempEntries.Count > 0)
                     {
@@ -366,11 +366,11 @@ namespace StoreManagement.Controllers
                         adjustingSession = storingDAO.CreateAdjustingSession(comment, false, userID);
                         if (adjustedQuantity > storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, false, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity - storingDAO.EntriesQuantity(entries), isRestored, false, adjustingSession);
                         }
-                        if (adjustedQuantity < storingDAO.EntriesQuantity(entries))
+                        else if (adjustedQuantity < storingDAO.EntriesQuantity(entries))
                         {
-                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity, isRestored, true, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, storingDAO.EntriesQuantity(entries) - adjustedQuantity, isRestored, true, adjustingSession);
                         }
                         else
                         {
@@ -379,15 +379,15 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        if (adjustingSession != null)
-                        {
-                            storingDAO.DeleteAdjustingSession(adjustingSession.AdjustingSessionPK);
-                        }
                         return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
                     }
                 }
                 catch (Exception e)
                 {
+                    if (adjustingSession != null)
+                    {
+                        storingDAO.DeleteAdjustingSession(adjustingSession.AdjustingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");
@@ -453,14 +453,14 @@ namespace StoreManagement.Controllers
                                                where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
                                                select e).ToList();
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
-                        if (discardedQuantity > storingDAO.EntriesQuantity(entries))
+                        if (discardedQuantity >= storingDAO.EntriesQuantity(entries))
                         {
                             storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
                         }
-                        if (discardedQuantity < storingDAO.EntriesQuantity(entries))
-                        {
-                            storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
-                        }
+                        //if (discardedQuantity < storingDAO.EntriesQuantity(entries))
+                        //{
+                        //    storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
+                        //}
                         else
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
@@ -468,15 +468,15 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        if (discardingSession != null)
-                        {
-                            storingDAO.DeleteDiscardingSession(discardingSession.DiscardingSessionPK);
-                        }
                         return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
                     }
                 }
                 catch (Exception e)
                 {
+                    if (discardingSession != null)
+                    {
+                        storingDAO.DeleteDiscardingSession(discardingSession.DiscardingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");

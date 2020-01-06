@@ -29,13 +29,15 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                SqlParameter userID = new SqlParameter("@userID", userClient.Username);
-                SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
-                if (db.Roles.Find(roleName) == null) return NotFound();
+                //SqlParameter userID = new SqlParameter("@userID", userClient.Username);
+                //SqlParameter Password = new SqlParameter("@Password", userClient.Password);
+                //string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
+                SystemUser systemUser = db.SystemUsers.Where(unit => unit.UserID == userClient.Username && unit.Password == userClient.Password).FirstOrDefault();
+
+                if (systemUser == null) return NotFound();
                 else
                 {
-                    return Ok(roleName);
+                    return Ok(systemUser.RoleName);
                 }
             }
             catch (Exception e)

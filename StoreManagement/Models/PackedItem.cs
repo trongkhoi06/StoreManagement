@@ -8,7 +8,7 @@ namespace StoreManagement.Models
     using System.Data.Entity.Spatial;
 
     [Table("PackedItem")]
-    public partial class PackedItem
+    public partial class PackedItem : IEquatable<PackedItem>
     {
         public PackedItem()
         {
@@ -37,5 +37,35 @@ namespace StoreManagement.Models
         public int OrderedItemPK { get; set; }
 
         public int PackPK { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PackedItem);
+        }
+
+        public bool Equals(PackedItem other)
+        {
+            return other != null &&
+                   PackedItemPK == other.PackedItemPK &&
+                   PackedQuantity == other.PackedQuantity &&
+                   IsClassified == other.IsClassified &&
+                   Comment == other.Comment &&
+                   ContractNumber == other.ContractNumber &&
+                   OrderedItemPK == other.OrderedItemPK &&
+                   PackPK == other.PackPK;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1104046818;
+            hashCode = hashCode * -1521134295 + PackedItemPK.GetHashCode();
+            hashCode = hashCode * -1521134295 + PackedQuantity.GetHashCode();
+            hashCode = hashCode * -1521134295 + IsClassified.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Comment);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContractNumber);
+            hashCode = hashCode * -1521134295 + OrderedItemPK.GetHashCode();
+            hashCode = hashCode * -1521134295 + PackPK.GetHashCode();
+            return hashCode;
+        }
     }
 }

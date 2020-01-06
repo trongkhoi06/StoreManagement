@@ -518,7 +518,7 @@ namespace StoreManagement.Controllers
             try
             {
                 Conception conception = db.Conceptions.Find(conceptionPK);
-                List<Accessory> accessories = (from acc in db.Accessories
+                List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
                                                where acc.CustomerPK == conception.CustomerPK
                                                select acc).ToList();
                 foreach (var accessory in accessories)
@@ -548,7 +548,7 @@ namespace StoreManagement.Controllers
             List<Pack> result;
             try
             {
-                result = (from p in db.Packs
+                result = (from p in db.Packs.OrderByDescending(unit => unit.PackPK)
                           where p.OrderPK == orderPK
                           select p).ToList();
             }
@@ -607,13 +607,13 @@ namespace StoreManagement.Controllers
             List<Client_OrderedItem_Angular> result = new List<Client_OrderedItem_Angular>();
             try
             {
-                List<OrderedItem> orderedItems = (from oI in db.OrderedItems
+                List<OrderedItem> orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
                                                   where oI.OrderPK == orderPK
                                                   select oI).ToList();
                 foreach (var orderedItem in orderedItems)
                 {
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    List<PackedItem> packedItems = (from pI in db.PackedItems
+                    List<PackedItem> packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
                                                     where pI.OrderedItemPK == orderedItem.OrderedItemPK
                                                     select pI).ToList();
                     double packedQuantity = 0;
@@ -740,7 +740,7 @@ namespace StoreManagement.Controllers
             end = end.AddDays(1);
             try
             {
-                List<Accessory> accessories = db.Accessories.ToList();
+                List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
                 foreach (var accessory in accessories)
                 {
                     List<OrderedItem> orderedItems = new List<OrderedItem>();
@@ -777,7 +777,7 @@ namespace StoreManagement.Controllers
                         {
                             // tổng các ordered quantity
                             orderedQuantity += orderedItem.OrderedQuantity;
-                            List<PackedItem> packedItems = (from pI in db.PackedItems
+                            List<PackedItem> packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
                                                             where pI.OrderedItemPK == orderedItem.OrderedItemPK
                                                             select pI).ToList();
 
@@ -855,7 +855,7 @@ namespace StoreManagement.Controllers
             end = end.AddDays(1);
             try
             {
-                List<Accessory> accessories = db.Accessories.ToList();
+                List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
                 foreach (var accessory in accessories)
                 {
                     List<DemandedItem> demandedItems = new List<DemandedItem>();
@@ -1009,7 +1009,7 @@ namespace StoreManagement.Controllers
 
                 foreach (var orderedItem in orderedItems)
                 {
-                    List<PackedItem> packedItems = (from pI in db.PackedItems
+                    List<PackedItem> packedItems = (from pI in db.PackedItems.OrderByDescending(unit => unit.PackedItemPK)
                                                     where pI.OrderedItemPK == orderedItem.OrderedItemPK
                                                     select pI).ToList();
 
@@ -1103,7 +1103,7 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                List<Accessory> accessories = db.Accessories.ToList();
+                List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
                 foreach (var accessory in accessories)
                 {
                     List<Entry> entries = (from e in db.Entries
@@ -1159,7 +1159,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, "KHÁCH HÀNG KHÔNG TỒN TẠI!");
                 }
-                List<Accessory> accessories = (from acc in db.Accessories
+                List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
                                                where acc.CustomerPK == customerPK
                                                select acc).ToList();
                 foreach (var accessory in accessories)
@@ -1196,7 +1196,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, "NHÀ CUNG CẤP KHÔNG TỒN TẠI!");
                 }
-                List<Accessory> accessories = (from acc in db.Accessories
+                List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
                                                where acc.SupplierPK == supplierPK
                                                select acc).ToList();
                 foreach (var accessory in accessories)
@@ -1300,7 +1300,7 @@ namespace StoreManagement.Controllers
             List<Client_Demand_Angular> result = new List<Client_Demand_Angular>();
             try
             {
-                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
                                                     where dI.AccessoryPK == accessoryPK
                                                     select dI).ToList();
                 foreach (var demandedItem in demandedItems)
@@ -1452,7 +1452,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, "PHIẾU CẤP PHÁT KHÔNG TỒN TẠI");
                 }
-                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
                                                     where dI.DemandPK == demand.DemandPK
 
                                                     select dI).ToList();
@@ -1461,7 +1461,7 @@ namespace StoreManagement.Controllers
                     double demandedQuantity = 0;
                     double issuedQuantity = 0;
                     demandedQuantity += demandedItem.DemandedQuantity;
-                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
+                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems.OrderByDescending(unit => unit.RequestedItemPK)
                                                           where rI.DemandedItemPK == demandedItem.DemandedItemPK
                                                           select rI).ToList();
                     Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
@@ -1762,7 +1762,7 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                List<RestoredItem> restoredItems = (from rI in db.RestoredItems
+                List<RestoredItem> restoredItems = (from rI in db.RestoredItems.OrderByDescending(unit => unit.RestoredItemPK)
                                                     where rI.AccessoryPK == AccessoryPK
                                                     select rI).ToList();
                 foreach (var restoredItem in restoredItems)
@@ -1795,7 +1795,7 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    result = (from re in db.Restorations
+                    result = (from re in db.Restorations.OrderByDescending(unit => unit.RestorationPK)
                               where re.DateCreated >= start && re.DateCreated <= end
                               select re).ToList();
                 }
@@ -2036,14 +2036,14 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    tempCountingSessions = (from re in db.CountingSessions
+                    tempCountingSessions = (from re in db.CountingSessions.OrderByDescending(unit => unit.CountingSessionPK)
                                             where re.ExecutedDate >= start && re.ExecutedDate <= end
                                             select re).ToList();
                 }
                 // if start <= 1900 then select all
                 else
                 {
-                    tempCountingSessions = db.CountingSessions.ToList();
+                    tempCountingSessions = db.CountingSessions.OrderByDescending(unit => unit.CountingSessionPK).ToList();
                 }
                 foreach (var ss in tempCountingSessions)
                 {
@@ -2246,14 +2246,14 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    tempCheckingSessions = (from re in db.CheckingSessions
+                    tempCheckingSessions = (from re in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
                                             where re.ExecutedDate >= start && re.ExecutedDate <= end
                                             select re).ToList();
                 }
                 // if start <= 1900 then select all
                 else
                 {
-                    tempCheckingSessions = db.CheckingSessions.ToList();
+                    tempCheckingSessions = db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK).ToList();
                 }
                 foreach (var ss in tempCheckingSessions)
                 {
@@ -2466,7 +2466,7 @@ namespace StoreManagement.Controllers
                 // if start <= 1900 then select all
                 else
                 {
-                    tempClassifyingSessions = db.ClassifyingSessions.ToList();
+                    tempClassifyingSessions = db.ClassifyingSessions.OrderByDescending(unit => unit.ClassifyingSessionPK).ToList();
                 }
                 foreach (var ss in tempClassifyingSessions)
                 {
@@ -2604,7 +2604,7 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    result = (from re in db.Requests
+                    result = (from re in db.Requests.OrderByDescending(unit => unit.RequestPK)
                               where re.DateCreated >= start && re.DateCreated <= end
                               select re).ToList();
                 }
@@ -2680,7 +2680,7 @@ namespace StoreManagement.Controllers
             List<Client_RequestedItem_Angular> result = new List<Client_RequestedItem_Angular>();
             try
             {
-                List<RequestedItem> temp = (from rI in db.RequestedItems
+                List<RequestedItem> temp = (from rI in db.RequestedItems.OrderByDescending(unit => unit.RequestedItemPK)
                                             where rI.RequestPK == requestPK
                                             select rI).ToList();
                 foreach (var requestedItem in temp)
@@ -2822,7 +2822,7 @@ namespace StoreManagement.Controllers
                     // adjust
                     if (sessionNum == 1)
                     {
-                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
+                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions.OrderByDescending(unit => unit.AdjustingSessionPK)
                                                                     where Ass.ExecutedDate >= start && Ass.ExecutedDate <= end
                                                                     select Ass).ToList();
                         foreach (var ss in adjustingSessions)
@@ -2842,7 +2842,7 @@ namespace StoreManagement.Controllers
                     // discard
                     else
                     {
-                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
+                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions.OrderByDescending(unit => unit.DiscardingSessionPK)
                                                                       where Dss.ExecutedDate >= start && Dss.ExecutedDate <= end
                                                                       select Dss).ToList();
                         foreach (var ss in discardingSessions)
@@ -2864,7 +2864,7 @@ namespace StoreManagement.Controllers
                     // adjust
                     if (sessionNum == 1)
                     {
-                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions
+                        List<AdjustingSession> adjustingSessions = (from Ass in db.AdjustingSessions.OrderByDescending(unit => unit.AdjustingSessionPK)
                                                                     select Ass).ToList();
                         foreach (var ss in adjustingSessions)
                         {
@@ -2876,6 +2876,7 @@ namespace StoreManagement.Controllers
                                            select e).FirstOrDefault();
                             bool isDiscard = false;
                             double adjustedQuantity = storingDAO.EntryQuantity(entry);
+                            double test = 0;
                             result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
@@ -2883,7 +2884,7 @@ namespace StoreManagement.Controllers
                     // discard
                     else
                     {
-                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions
+                        List<DiscardingSession> discardingSessions = (from Dss in db.DiscardingSessions.OrderByDescending(unit => unit.DiscardingSessionPK)
                                                                       select Dss).ToList();
                         foreach (var ss in discardingSessions)
                         {
@@ -2912,6 +2913,7 @@ namespace StoreManagement.Controllers
             public Client_OrderedItem_Receiving_Angular(int orderedItemPK, Accessory accessory)
             {
                 OrderedItemPK = orderedItemPK;
+                AccessoryPK = accessory.AccessoryPK;
                 AccessoryID = accessory.AccessoryID;
                 AccessoryDescription = accessory.AccessoryDescription;
                 Item = accessory.Item;
@@ -2920,6 +2922,8 @@ namespace StoreManagement.Controllers
             }
 
             public int OrderedItemPK { get; set; }
+
+            public int AccessoryPK { get; set; }
 
             public string AccessoryID { get; set; }
 
@@ -2964,7 +2968,7 @@ namespace StoreManagement.Controllers
 
         public class Client_PackedItem_Receiving_Angular
         {
-            public Client_PackedItem_Receiving_Angular(Accessory accessory, PackedItem packedItem, double sumIdentifiedQuantity, double finalQuantity)
+            public Client_PackedItem_Receiving_Angular(Accessory accessory, PackedItem packedItem, double sumIdentifiedQuantity)
             {
                 PackedItemPK = packedItem.PackedItemPK;
                 AccessoryID = accessory.AccessoryID;
@@ -2974,7 +2978,6 @@ namespace StoreManagement.Controllers
                 Color = accessory.Color;
                 PackedQuantity = packedItem.PackedQuantity;
                 SumIdentifiedQuantity = sumIdentifiedQuantity;
-                FinalQuantity = finalQuantity;
             }
 
             public int PackedItemPK { get; set; }
@@ -3024,8 +3027,7 @@ namespace StoreManagement.Controllers
                     sumIdentifiedQuantity += item.IdentifiedQuantity;
                 }
 
-                result = new Client_PackedItem_Receiving_Angular(accessory, packedItem, sumIdentifiedQuantity
-                    , new IdentifyItemDAO().FinalQuantity(packedItem.PackedItemPK));
+                result = new Client_PackedItem_Receiving_Angular(accessory, packedItem, sumIdentifiedQuantity);
 
                 // query isopened and isclassified
                 Pack pack = db.Packs.Find(packedItem.PackPK);
@@ -3037,6 +3039,7 @@ namespace StoreManagement.Controllers
                 if (classifiedItem != null)
                 {
                     result.IsClassified = true;
+                    result.FinalQuantity = new IdentifyItemDAO().FinalQuantity(packedItem.PackedItemPK);
                 }
                 else
                 {
@@ -3095,7 +3098,7 @@ namespace StoreManagement.Controllers
                 OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                 Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
 
-                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
+                List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.IdentifiedItemPK)
                                                         where iI.PackedItemPK == packedItem.PackedItemPK
                                                         select iI).ToList();
 
@@ -3213,17 +3216,17 @@ namespace StoreManagement.Controllers
                             List<Entry> entries = (from e in db.Entries
                                                    where e.StoredBoxPK == sBox.StoredBoxPK
                                                    select e).ToList();
-                            HashSet<KeyValuePair<int, bool>> listItemPK = new HashSet<KeyValuePair<int, bool>>();
+                            HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
                             foreach (var entry in entries)
                             {
-                                listItemPK.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                                listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                             }
                             foreach (var itemPK in listItemPK)
                             {
                                 List<Entry> tempEntries = new List<Entry>();
                                 foreach (var entry in entries)
                                 {
-                                    if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
+                                    if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
                                 }
                                 if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
@@ -3288,13 +3291,46 @@ namespace StoreManagement.Controllers
                 // if start > 1900 then select query
                 if (start.Year > 1900)
                 {
-                    result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind
-                    && act.ExecutedDate >= start && act.ExecutedDate <= end).ToList();
+                    if (actionType != "all" && objectKind != "all")
+                    {
+                        result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind
+                        && act.ExecutedDate >= start && act.ExecutedDate <= end).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType != "all" && objectKind == "all")
+                    {
+                        result = db.Activities.Where(act => act.Action == actionType
+                        && act.ExecutedDate >= start && act.ExecutedDate <= end).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType == "all" && objectKind != "all")
+                    {
+                        result = db.Activities.Where(act => act.Object == objectKind
+                        && act.ExecutedDate >= start && act.ExecutedDate <= end).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType == "all" && objectKind == "all")
+                    {
+                        result = db.Activities.Where(act => act.ExecutedDate >= start && act.ExecutedDate <= end).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
                 }
                 // if start <= 1900 then select all
                 else
                 {
-                    result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind).ToList();
+                    if (actionType != "all" && objectKind != "all")
+                    {
+                        result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType != "all" && objectKind == "all")
+                    {
+                        result = db.Activities.Where(act => act.Action == actionType).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType == "all" && objectKind != "all")
+                    {
+                        result = db.Activities.Where(act => act.Object == objectKind).OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    if (actionType == "all" && objectKind == "all")
+                    {
+                        result = db.Activities.OrderByDescending(unit => unit.ActivityPK).ToList();
+                    }
+                    //result = db.Activities.Where(act => act.Action == actionType && act.Object == objectKind).ToList();
                 }
                 foreach (var item in result)
                 {
@@ -3622,6 +3658,8 @@ namespace StoreManagement.Controllers
         [HttpGet]
         public IHttpActionResult GetQRCODE(string id)
         {
+
+            Application excelApp = new Application();
             try
             {
                 // generate qr code
@@ -3645,28 +3683,34 @@ namespace StoreManagement.Controllers
                 // excel
                 var excel = HttpContext.Current.Server.MapPath("~/ExcelSheets");
                 // chọn file excel ứng với loại id
-                //if (id.Contains("box"))
-                //{
+                string excelPath = "";
+                if (id.Contains("box"))
+                {
+                    id = id.Substring(0, id.Length - 3);
+                    excelPath = Path.Combine(excel, "stampSampleBox.xlsx");
+                }
+                else if (id.Contains("shelf"))
+                {
+                    id = id.Substring(0, id.Length - 5);
+                    excelPath = Path.Combine(excel, "stampSampleShelf.xlsx");
+                }
+                else if (id.Contains("row"))
+                {
+                    id = id.Substring(0, id.Length - 3);
+                    excelPath = Path.Combine(excel, "stampSampleRow.xlsx");
+                }
 
-                //}
-                //else if (id.Contains("shelf"))
-                //{
-
-                //}
-                //else if (id.Contains("row"))
-                //{
-
-                //}
-                var excelPath = Path.Combine(excel, "stampSample.xlsx");
-
-                Application excelApp = new Application();
                 Workbook wb;
                 Worksheet ws;
                 wb = excelApp.Workbooks.Open(excelPath);
                 ws = wb.Worksheets[1];
-                Microsoft.Office.Interop.Excel.Range oRange = (Microsoft.Office.Interop.Excel.Range)ws.Cells[15, 2];
-                float Left = (float)((double)oRange.Left + 25);
-                float Top = (float)((double)oRange.Top + 5);
+
+                //Microsoft.Office.Interop.Excel.Range oRangeText = (Microsoft.Office.Interop.Excel.Range)ws.Cells[15, 2];
+                excelApp.Cells[47, 1] = id;
+
+                Microsoft.Office.Interop.Excel.Range oRangeImage = (Microsoft.Office.Interop.Excel.Range)ws.Cells[15, 2];
+                float Left = (float)((double)oRangeImage.Left + 25);
+                float Top = (float)((double)oRangeImage.Top + 5);
                 const float ImageSize = 420;
                 ws.Shapes.AddPicture(imgSavePath, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoCTrue, Left, Top, ImageSize, ImageSize);
                 ws.PageSetup.BottomMargin = 0;
@@ -3705,15 +3749,15 @@ namespace StoreManagement.Controllers
 
                 wb.ExportAsFixedFormat(paramExportFormat, pdfPath, paramExportQuality, true, paramIgnorePrintAreas, 1, 1, false, misValue);
 
-                // close excel
-                wb.Close();
-                excelApp.Quit();
-
                 return new FileResult(pdfPath, "application/octet-stream");
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.OK, e);
+            }
+            finally
+            {
+                excelApp.Quit();
             }
         }
     }

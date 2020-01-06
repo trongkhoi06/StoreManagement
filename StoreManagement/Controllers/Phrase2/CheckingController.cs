@@ -144,18 +144,18 @@ namespace StoreManagement.Controllers
                             }
                             else
                             {
-                                return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ ĐẾM RỒI, KHÔNG ĐẾM LẠI");
+                                return Content(HttpStatusCode.Conflict, "CỤM PHỤ LIỆU ĐÃ ĐẾM RỒI, KHÔNG THỂ ĐẾM LẠI");
                             }
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
+                            return Content(HttpStatusCode.Conflict, "CỤM PHỤ LIỆU ĐÃ ĐÁNH GIÁ");
                         }
 
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
+                        return Content(HttpStatusCode.Conflict, "PHIẾU NHẬP CHƯA ĐÓNG");
                     }
                 }
                 catch (Exception e)
@@ -163,7 +163,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "Counting THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "ĐẾM CỤM PHỤ LIỆU THÀNH CÔNG");
             }
             else
             {
@@ -194,14 +194,14 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "PACKED ITEM ĐÃ CLASSIFY");
+                            return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC ĐÁNH GIÁ");
                         }
                     }
                     else
                     {
                         return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                     }
-                    return Content(HttpStatusCode.OK, "EDIT COUNTING THÀNH CÔNG");
+                    return Content(HttpStatusCode.OK, "SỬA PHIÊN ĐẾM THÀNH CÔNG");
                 }
                 catch (Exception e)
                 {
@@ -239,7 +239,7 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "PACKED ITEM ĐÃ CLASSIFY");
+                            return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC ĐÁNH GIÁ");
                         }
                     }
                     else
@@ -304,7 +304,7 @@ namespace StoreManagement.Controllers
                 }
                 else
                 {
-                    return Content(HttpStatusCode.Conflict, "Box đã được store hoặc chưa identified");
+                    return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO HOẶC CHƯA GHI NHẬN");
                 }
             }
             catch (Exception e)
@@ -429,8 +429,8 @@ namespace StoreManagement.Controllers
                                 if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
                                 {
                                     // tạo session update và ischecked
-                                    checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID, comment));
-                                    checkingItemController.updateIsCheckedOfIdentifiedItem(identifiedItemPK, true);
+                                    checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID, comment)
+                                        , identifiedItemPK);
                                 }
                                 else
                                 {
@@ -444,12 +444,12 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "Identified Item ĐÃ PHÂN LOẠI");
+                            return Content(HttpStatusCode.Conflict, "CỤM PHỤ LIỆU ĐÃ ĐƯỢC ĐÁNH GIÁ");
                         }
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "Pack CHƯA ĐÓNG");
+                        return Content(HttpStatusCode.Conflict, "PHIẾU NHẬP CHƯA ĐÓNG");
                     }
                 }
                 catch (Exception e)
@@ -457,7 +457,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "Checking THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "KIỂM CỤM PHỤ LIỆU THÀNH CÔNG");
             }
             else
             {
@@ -497,6 +497,14 @@ namespace StoreManagement.Controllers
                                 }
 
                             }
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP CHƯA ĐƯỢC KIỂM");
+                            }
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC ĐÁNH GIÁ");
                         }
                     }
                     else
@@ -509,7 +517,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "Edit Checking THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "THAY ĐỔI PHIÊN KIỂM THÀNH CÔNG");
             }
             else
             {
@@ -536,9 +544,16 @@ namespace StoreManagement.Controllers
                     {
                         if (!packedItemsController.IsPackedItemClassified(identifiedItem))
                         {
-                            checkingItemController.updateIsCheckedOfIdentifiedItem(checkingSession.IdentifiedItemPK, false);
-                            checkingItemController.deleteCheckingSession(checkingSessionPK);
+                            checkingItemController.deleteCheckingSession(checkingSessionPK, identifiedItem.IdentifiedItemPK);
                         }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC ĐÁNH GIÁ");
+                        }
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                     }
                 }
                 catch (Exception e)
@@ -546,7 +561,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "Delete Checking THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "XÓA PHIÊN KIỂM PHỤ LIỆU THÀNH CÔNG");
             }
             else
             {
@@ -703,17 +718,18 @@ namespace StoreManagement.Controllers
                                     classifyingItemController.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
                                     // edit
 
+
                                     classifyingItemController.updateClassifiedItem(tempItem.ClassifiedItemPK, qualityState);
                                     classifyingItemController.updateClassifyingSession(tempSS.ClassifyingSessionPK, comment);
                                 }
                                 else
                                 {
-                                    return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                                    return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
                                 }
                             }
                             else
                             {
-                                return Content(HttpStatusCode.Conflict, "UserID KHÔNG HỢP LỆ VÌ KHÔNG PHẢI LÀ NGƯỜI TẠO");
+                                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN THỰC HIỆN VIỆC NÀY");
                             }
 
                         }
@@ -739,7 +755,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "PACK CHƯA ĐÓNG, KHÔNG THỂ CLASSIFY");
+                        return Content(HttpStatusCode.Conflict, "PHIẾU NHẬP CHƯA ĐÓNG, KHÔNG THỂ ĐÁNH GIÁ");
                     }
                 }
                 catch (Exception e)
@@ -747,7 +763,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "CLASSIFY THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "ĐÁNH GIÁ PHỤ LIỆU PHIẾU NHẬP THÀNH CÔNG");
             }
             else
             {
@@ -890,7 +906,7 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "ITEM ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
+                            return Content(HttpStatusCode.Conflict, "PHỤ LIỆU PHIẾU NHẬP ĐÃ ĐƯỢC TRẢ HOẶC LƯU KHO");
                         }
                     }
                     else
@@ -903,7 +919,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "DELETE CLASSIFY THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "XÓA PHIÊN ĐÁNH GIÁ THÀNH CÔNG");
             }
             else
             {
@@ -921,7 +937,7 @@ namespace StoreManagement.Controllers
             try
             {
 
-                List<FailedItem> failedItems = db.FailedItems.ToList();
+                List<FailedItem> failedItems = db.FailedItems.Where(unit => unit.IsReturned == false).ToList();
 
                 foreach (var failedItem in failedItems)
                 {
@@ -1054,7 +1070,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
-                return Content(HttpStatusCode.OK, "RETURN THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "TRẢ PHỤ LIỆU PHIẾU NHẬP THÀNH CÔNG");
             }
             else
             {

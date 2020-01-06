@@ -13,24 +13,16 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        internal void createCheckingSession(CheckingSession checkingSession)
+        internal void createCheckingSession(CheckingSession checkingSession, int identifiedItemPK)
         {
             try
             {
+                // create checking session
                 db.CheckingSessions.Add(checkingSession);
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-        public void updateIsCheckedOfIdentifiedItem(int identifiedItemPK, bool IsChecked)
-        {
-            try
-            {
+
+                // update identifiedItem IsChecked
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                identifiedItem.IsChecked = IsChecked;
+                identifiedItem.IsChecked = true;
                 db.Entry(identifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }
@@ -57,12 +49,18 @@ namespace StoreManagement.Controllers
                 throw e;
             }
         }
-        public void deleteCheckingSession(int checkingSessionPK)
+        public void deleteCheckingSession(int checkingSessionPK, int identifiedItemPK)
         {
             try
             {
+                // delete checking session
                 CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
                 db.CheckingSessions.Remove(checkingSession);
+
+                // update identifiedItem IsChecked
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
+                identifiedItem.IsChecked = true;
+                db.Entry(identifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }
             catch (Exception e)

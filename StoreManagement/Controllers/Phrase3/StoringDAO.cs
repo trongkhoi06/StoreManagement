@@ -153,30 +153,31 @@ namespace StoreManagement.Controllers
                     verification = (from ver in db.Verifications
                                     where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
                                     select ver).FirstOrDefault();
-                    if (!(discardingSession.IsVerified && !verification.IsApproved))
-                    {
-                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                    }
+                    //if (!(discardingSession.IsVerified && !verification.IsApproved))
+                    //{
+                    //}
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "AdjustingMinus":
                     adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
                     verification = (from ver in db.Verifications
                                     where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
                                     select ver).FirstOrDefault();
-                    if (!(adjustingSession.IsVerified && !verification.IsApproved))
-                    {
-                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                    }
+                    //if (!(adjustingSession.IsVerified && !verification.IsApproved))
+                    //{
+
+                    //}
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "AdjustingPlus":
                     adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
                     verification = (from ver in db.Verifications
                                     where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
                                     select ver).FirstOrDefault();
-                    if (adjustingSession.IsVerified && verification.IsApproved)
-                    {
-                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                    }
+                    //if (adjustingSession.IsVerified && verification.IsApproved)
+                    //{
+                    //}
+                    result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "In":
                     result += entry.Quantity * (kindRole.Sign ? 1 : -1);
@@ -214,30 +215,30 @@ namespace StoreManagement.Controllers
                         verification = (from ver in db.Verifications
                                         where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
                                         select ver).FirstOrDefault();
-                        if (!(discardingSession.IsVerified && !verification.IsApproved))
-                        {
-                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                        }
+                        //if (!(discardingSession.IsVerified && !verification.IsApproved))
+                        //{
+                        //}
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "AdjustingMinus":
                         adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
                         verification = (from ver in db.Verifications
                                         where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
                                         select ver).FirstOrDefault();
-                        if (!(adjustingSession.IsVerified && !verification.IsApproved))
-                        {
-                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                        }
+                        //if (!(adjustingSession.IsVerified && !verification.IsApproved))
+                        //{
+                        //}
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "AdjustingPlus":
                         adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
                         verification = (from ver in db.Verifications
                                         where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
                                         select ver).FirstOrDefault();
-                        if (adjustingSession.IsVerified && verification.IsApproved)
-                        {
-                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
-                        }
+                        //if (adjustingSession.IsVerified && verification.IsApproved)
+                        //{
+                        //}
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "In":
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);

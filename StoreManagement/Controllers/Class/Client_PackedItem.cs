@@ -12,13 +12,17 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItem(Accessory accessory, PackedItem packedItem)
+        public Client_PackedItem(Accessory accessory, PackedItem packedItem, string accessoryTypeName)
         {
-            this.PackedItemPK = packedItem.PackedItemPK;
-            this.PackedQuantity = packedItem.PackedQuantity;
-            this.AccessoryID = accessory.AccessoryID;
-            this.AccessoryDescription = accessory.AccessoryDescription;
-            this.Comment = packedItem.Comment;
+            PackedItemPK = packedItem.PackedItemPK;
+            PackedQuantity = packedItem.PackedQuantity;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Comment = packedItem.Comment;
+            AccessoryTypeName = accessoryTypeName;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
         }
 
         public int PackedItemPK { get; set; }
@@ -28,6 +32,14 @@ namespace StoreManagement.Class
         public string AccessoryID { get; set; }
 
         public string AccessoryDescription { get; set; }
+
+        public string Art { get; set; }
+
+        public string Color { get; set; }
+
+        public string Item { get; set; }
+
+        public string AccessoryTypeName { get; set; }
 
         public string Comment { get; set; }
     }

@@ -75,17 +75,17 @@ namespace StoreManagement.Controllers
                             List<Entry> entries = (from e in db.Entries
                                                    where e.StoredBoxPK == sBox.StoredBoxPK
                                                    select e).ToList();
-                            HashSet<KeyValuePair<int, bool>> listItemPK = new HashSet<KeyValuePair<int, bool>>();
+                            HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
                             foreach (var entry in entries)
                             {
-                                listItemPK.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                                listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                             }
                             foreach (var itemPK in listItemPK)
                             {
                                 List<Entry> tempEntries = new List<Entry>();
                                 foreach (var entry in entries)
                                 {
-                                    if (entry.ItemPK == itemPK.Key && entry.IsRestored == itemPK.Value) tempEntries.Add(entry);
+                                    if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
                                 }
                                 if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
@@ -281,7 +281,7 @@ namespace StoreManagement.Controllers
                                    where sh.RowPK == row.RowPK && sh.ShelfID != "InvisibleShelf"
                                    select sh).ToList();
                     }
-                    Dictionary<KeyValuePair<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<KeyValuePair<int, bool>, Client_InBoxItem>();
+                    Dictionary<Tuple<int, bool>, Client_InBoxItem> client_InBoxItems = new Dictionary<Tuple<int, bool>, Client_InBoxItem>();
                     foreach (var shelf in shelves)
                     {
                         List<StoredBox> sBoxes = (from sB in db.StoredBoxes
@@ -297,32 +297,32 @@ namespace StoreManagement.Controllers
                                                    select e).ToList();
 
                             // Hiện thực cặp value ko được trùng 2 key là itemPK và isRestored
-                            HashSet<KeyValuePair<int, bool>> listItem = new HashSet<KeyValuePair<int, bool>>();
+                            HashSet<Tuple<int, bool>> listItem = new HashSet<Tuple<int, bool>>();
                             foreach (var entry in entries)
                             {
-                                listItem.Add(new KeyValuePair<int, bool>(entry.ItemPK, entry.IsRestored));
+                                listItem.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                             }
                             foreach (var item in listItem)
                             {
                                 List<Entry> tempEntries = new List<Entry>();
                                 foreach (var entry in entries)
                                 {
-                                    if (entry.ItemPK == item.Key && entry.IsRestored == item.Value) tempEntries.Add(entry);
+                                    if (entry.ItemPK == item.Item1 && entry.IsRestored == item.Item2) tempEntries.Add(entry);
                                 }
                                 if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
                                 {
                                     Entry entry = tempEntries[0];
                                     PassedItem passedItem;
                                     RestoredItem restoredItem;
-                                    if (item.Value)
+                                    if (item.Item2)
                                     {
-                                        restoredItem = db.RestoredItems.Find(item.Key);
+                                        restoredItem = db.RestoredItems.Find(item.Item1);
                                         Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                            storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Value));
+                                            storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Item2));
                                         }
                                         else
                                         {
@@ -332,7 +332,7 @@ namespace StoreManagement.Controllers
                                     }
                                     else
                                     {
-                                        passedItem = db.PassedItems.Find(item.Key);
+                                        passedItem = db.PassedItems.Find(item.Item1);
                                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                                         // lấy pack ID
@@ -345,7 +345,7 @@ namespace StoreManagement.Controllers
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                            storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Value));
+                                            storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Item2));
                                         }
                                         else
                                         {
@@ -427,7 +427,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/AccessingInventoryController/GetHistory")]
         [HttpGet]
-        public IHttpActionResult GetAllSession(string userID)
+        public IHttpActionResult GetHistory(string userID)
         {
             List<Client_History_Flutter> result = new List<Client_History_Flutter>();
             BoxDAO boxDAO = new BoxDAO();
@@ -435,112 +435,112 @@ namespace StoreManagement.Controllers
             try
             {
                 {
-                    List<IdentifyingSession> ss = db.IdentifyingSessions.ToList();
+                    List<IdentifyingSession> ss = db.IdentifyingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.IdentifyingSessionPK, "identifying", item.ExecutedDate));
                     }
                 }
                 {
-                    List<ArrangingSession> ss = db.ArrangingSessions.ToList();
+                    List<ArrangingSession> ss = db.ArrangingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.ArrangingSessionPK, "arranging", item.ExecutedDate));
                     }
                 }
                 {
-                    List<CountingSession> ss = db.CountingSessions.ToList();
+                    List<CountingSession> ss = db.CountingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.CountingSessionPK, "counting", item.ExecutedDate));
                     }
                 }
                 {
-                    List<CheckingSession> ss = db.CheckingSessions.ToList();
+                    List<CheckingSession> ss = db.CheckingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.CheckingSessionPK, "checking", item.ExecutedDate));
                     }
                 }
                 {
-                    List<TransferringSession> ss = db.TransferringSessions.ToList();
+                    List<TransferringSession> ss = db.TransferringSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.TransferingSessionPK, "transferring", item.ExecutedDate));
                     }
                 }
                 {
-                    List<MovingSession> ss = db.MovingSessions.ToList();
+                    List<MovingSession> ss = db.MovingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.MovingSessionPK, "moving", item.ExecutedDate));
                     }
                 }
                 {
-                    List<IssuingSession> ss = db.IssuingSessions.ToList();
+                    List<IssuingSession> ss = db.IssuingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.IssuingSessionPK, "issuing", item.ExecutedDate));
                     }
                 }
                 {
-                    List<ReceivingSession> ss = db.ReceivingSessions.ToList();
+                    List<ReceivingSession> ss = db.ReceivingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.ReceivingSessionPK, "receiving", item.ExecutedDate));
                     }
                 }
                 {
-                    List<AdjustingSession> ss = db.AdjustingSessions.ToList();
+                    List<AdjustingSession> ss = db.AdjustingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.AdjustingSessionPK, "adjusting", item.ExecutedDate));
                     }
                 }
                 {
-                    List<DiscardingSession> ss = db.DiscardingSessions.ToList();
+                    List<DiscardingSession> ss = db.DiscardingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.DiscardingSessionPK, "discarding", item.ExecutedDate));
                     }
                 }
                 {
-                    List<StoringSession> ss = db.StoringSessions.ToList();
+                    List<StoringSession> ss = db.StoringSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.StoringSessionPK, "storing", item.ExecutedDate));
                     }
                 }
                 {
-                    List<ClassifyingSession> ss = db.ClassifyingSessions.ToList();
+                    List<ClassifyingSession> ss = db.ClassifyingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.ClassifyingSessionPK, "classifying", item.ExecutedDate));
                     }
                 }
                 {
-                    List<ReturningSession> ss = db.ReturningSessions.ToList();
+                    List<ReturningSession> ss = db.ReturningSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.ReturningSessionPK, "returning", item.ExecutedDate));
                     }
                 }
                 {
-                    List<ConfirmingSession> ss = db.ConfirmingSessions.ToList();
+                    List<ConfirmingSession> ss = db.ConfirmingSessions.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in ss)
                     {
                         result.Add(new Client_History_Flutter(item.ConfirmingSessionPK, "confirming", item.ExecutedDate));
                     }
                 }
                 {
-                    List<Request> containers = db.Requests.ToList();
+                    List<Request> containers = db.Requests.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in containers)
                     {
                         result.Add(new Client_History_Flutter(item.RequestPK, "request", item.DateCreated));
                     }
                 }
                 {
-                    List<Restoration> containers = db.Restorations.ToList();
+                    List<Restoration> containers = db.Restorations.Where(unit => unit.UserID == userID).ToList();
                     foreach (var item in containers)
                     {
                         result.Add(new Client_History_Flutter(item.RestorationPK, "restoration", item.DateCreated));

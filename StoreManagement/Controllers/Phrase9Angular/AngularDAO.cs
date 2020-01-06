@@ -22,7 +22,7 @@ namespace StoreManagement.Controllers
             switch (sessionNum)
             {
                 case 1:
-                    List<IdentifyingSession> identifyingSessions = (from ss in db.IdentifyingSessions
+                    List<IdentifyingSession> identifyingSessions = (from ss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
                                                                     where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                     select ss).ToList();
                     foreach (var ss in identifyingSessions)
@@ -39,7 +39,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 2:
-                    List<CountingSession> countingSessions = (from ss in db.CountingSessions
+                    List<CountingSession> countingSessions = (from ss in db.CountingSessions.OrderByDescending(unit => unit.CountingSessionPK)
                                                               where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                               select ss).ToList();
                     foreach (var ss in countingSessions)
@@ -54,7 +54,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 3:
-                    List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions
+                    List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
                                                               where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                               select ss).ToList();
                     foreach (var ss in checkingSessions)
@@ -68,7 +68,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 4:
-                    List<ClassifyingSession> classifyingSessions = (from ss in db.ClassifyingSessions
+                    List<ClassifyingSession> classifyingSessions = (from ss in db.ClassifyingSessions.OrderByDescending(unit => unit.ClassifyingSessionPK)
                                                                     where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                     select ss).ToList();
                     foreach (var ss in classifyingSessions)
@@ -82,7 +82,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 5:
-                    List<ArrangingSession> arrangingSessions = (from ss in db.ArrangingSessions
+                    List<ArrangingSession> arrangingSessions = (from ss in db.ArrangingSessions.OrderByDescending(unit => unit.ArrangingSessionPK)
                                                                 where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                 select ss).ToList();
                     foreach (var ss in arrangingSessions)
@@ -97,7 +97,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 6:
-                    List<ReturningSession> returningSessions = (from ss in db.ReturningSessions
+                    List<ReturningSession> returningSessions = (from ss in db.ReturningSessions.OrderByDescending(unit => unit.ReturningSessionPK)
                                                                 where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                 select ss).ToList();
                     foreach (var ss in returningSessions)
@@ -112,7 +112,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 7:
-                    List<StoringSession> storingSessions = (from ss in db.StoringSessions
+                    List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
                                                             where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                             select ss).ToList();
                     foreach (var ss in storingSessions)
@@ -124,7 +124,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 8:
-                    List<MovingSession> movingSessions = (from ss in db.MovingSessions
+                    List<MovingSession> movingSessions = (from ss in db.MovingSessions.OrderByDescending(unit => unit.MovingSessionPK)
                                                           where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                           select ss).ToList();
                     foreach (var ss in movingSessions)
@@ -140,7 +140,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 9:
-                    List<TransferringSession> tranferringSessions = (from ss in db.TransferringSessions
+                    List<TransferringSession> tranferringSessions = (from ss in db.TransferringSessions.OrderByDescending(unit => unit.TransferingSessionPK)
                                                                      where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                      select ss).ToList();
                     foreach (var ss in tranferringSessions)
@@ -158,7 +158,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 10:
-                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions
+                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
                                                             where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                             select ss).ToList();
                     foreach (var ss in issuingSessions)
@@ -170,7 +170,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 11:
-                    List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions
+                    List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions.OrderByDescending(unit => unit.ReceivingSessionPK)
                                                                 where ss.ExecutedDate >= start && ss.ExecutedDate <= end
                                                                 select ss).ToList();
                     foreach (var ss in restoringSessions)
@@ -187,6 +187,7 @@ namespace StoreManagement.Controllers
 
             return result;
         }
+
         public List<Client_Session_Activity_Angular> GetSessions(int sessionNum)
         {
             List<Client_Session_Activity_Angular> result = new List<Client_Session_Activity_Angular>();
@@ -194,7 +195,7 @@ namespace StoreManagement.Controllers
             switch (sessionNum)
             {
                 case 1:
-                    List<IdentifyingSession> identifyingSessions = (from ss in db.IdentifyingSessions
+                    List<IdentifyingSession> identifyingSessions = (from ss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
                                                                     select ss).ToList();
                     foreach (var ss in identifyingSessions)
                     {
@@ -210,7 +211,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 2:
-                    List<CountingSession> countingSessions = (from ss in db.CountingSessions
+                    List<CountingSession> countingSessions = (from ss in db.CountingSessions.OrderByDescending(unit => unit.CountingSessionPK)
                                                               select ss).ToList();
                     foreach (var ss in countingSessions)
                     {
@@ -224,7 +225,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 3:
-                    List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions
+                    List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
                                                               select ss).ToList();
                     foreach (var ss in checkingSessions)
                     {
@@ -237,7 +238,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 4:
-                    List<ClassifyingSession> classifyingSessions = (from ss in db.ClassifyingSessions
+                    List<ClassifyingSession> classifyingSessions = (from ss in db.ClassifyingSessions.OrderByDescending(unit => unit.ClassifyingSessionPK)
                                                                     select ss).ToList();
                     foreach (var ss in classifyingSessions)
                     {
@@ -250,7 +251,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 5:
-                    List<ArrangingSession> arrangingSessions = (from ss in db.ArrangingSessions
+                    List<ArrangingSession> arrangingSessions = (from ss in db.ArrangingSessions.OrderByDescending(unit => unit.ArrangingSessionPK)
                                                                 select ss).ToList();
                     foreach (var ss in arrangingSessions)
                     {
@@ -264,7 +265,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 6:
-                    List<ReturningSession> returningSessions = (from ss in db.ReturningSessions
+                    List<ReturningSession> returningSessions = (from ss in db.ReturningSessions.OrderByDescending(unit => unit.ReturningSessionPK)
                                                                 select ss).ToList();
                     foreach (var ss in returningSessions)
                     {
@@ -278,7 +279,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 7:
-                    List<StoringSession> storingSessions = (from ss in db.StoringSessions
+                    List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
                                                             select ss).ToList();
                     foreach (var ss in storingSessions)
                     {
@@ -289,7 +290,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 8:
-                    List<MovingSession> movingSessions = (from ss in db.MovingSessions
+                    List<MovingSession> movingSessions = (from ss in db.MovingSessions.OrderByDescending(unit => unit.MovingSessionPK)
                                                           select ss).ToList();
                     foreach (var ss in movingSessions)
                     {
@@ -304,7 +305,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 9:
-                    List<TransferringSession> tranferringSessions = (from ss in db.TransferringSessions
+                    List<TransferringSession> tranferringSessions = (from ss in db.TransferringSessions.OrderByDescending(unit => unit.TransferingSessionPK)
                                                                      select ss).ToList();
                     foreach (var ss in tranferringSessions)
                     {
@@ -321,7 +322,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 10:
-                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions
+                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
                                                             select ss).ToList();
                     foreach (var ss in issuingSessions)
                     {
@@ -332,7 +333,7 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 11:
-                    List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions
+                    List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions.OrderByDescending(unit => unit.ReceivingSessionPK)
                                                                 select ss).ToList();
                     foreach (var ss in restoringSessions)
                     {
@@ -348,8 +349,7 @@ namespace StoreManagement.Controllers
 
             return result;
         }
-
-
+        
     }
 }
 

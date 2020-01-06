@@ -122,14 +122,37 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = db.Boxes.Find(boxPK);
-                box.IsActive = false;
-                db.Entry(box).State = EntityState.Modified;
+                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                 StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                 if (sBox != null)
                 {
-                    sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
-                    db.Entry(sBox).State = EntityState.Modified;
+                    if (!isStoredBoxContainItem(sBox))
+                    {
+                        box.IsActive = false;
+                        db.Entry(box).State = EntityState.Modified;
+
+                        sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
+                        db.Entry(sBox).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        throw new Exception("THÙNG TRONG KHO CÓ CHỨA ĐỒ");
+                    }
                 }
+                else
+                {
+                    List<IdentifiedItem> identifiedItems = db.IdentifiedItems.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
+                    if (identifiedItems.Count == 0)
+                    {
+                        box.IsActive = false;
+                        db.Entry(box).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        throw new Exception("THÙNG NGOÀI KHO CÓ CHỨA ĐỒ");
+                    }
+                }
+
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -189,6 +212,42 @@ namespace StoreManagement.Controllers
             {
                 throw e;
             }
+        }
+
+        public bool isStoredBoxContainItem(StoredBox sBox)
+        {
+            StoringDAO storingDAO = new StoringDAO();
+            double inBoxQuantity = 0;
+            List<Entry> entries = db.Entries.Where(e => e.StoredBoxPK == sBox.StoredBoxPK).ToList();
+            foreach (var entry in entries)
+            {
+                if (entry.KindRoleName == "AdjustingMinus" || entry.KindRoleName == "AdjustingPlus")
+                {
+                    AdjustingSession adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                    Verification verification = db.Verifications.Where(unit => unit.SessionPK == adjustingSession.AdjustingSessionPK
+                                                                        && unit.IsDiscard == false).FirstOrDefault();
+                    if (verification != null && verification.IsApproved)
+                    {
+                        inBoxQuantity += storingDAO.EntryQuantity(entry);
+                    }
+                }
+                else if (entry.KindRoleName == "Discarding")
+                {
+                    DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                    Verification verification = db.Verifications.Where(unit => unit.SessionPK == discardingSession.DiscardingSessionPK
+                                                                        && unit.IsDiscard == true).FirstOrDefault();
+                    if (verification != null && verification.IsApproved)
+                    {
+                        inBoxQuantity += storingDAO.EntryQuantity(entry);
+                    }
+                }
+                else
+                {
+                    inBoxQuantity += storingDAO.EntryQuantity(entry);
+                }
+            }
+            if (inBoxQuantity == 0) return false;
+            else return true;
         }
     }
 }

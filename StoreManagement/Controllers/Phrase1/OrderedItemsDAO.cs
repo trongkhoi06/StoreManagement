@@ -17,12 +17,12 @@ namespace StoreManagement.Controllers
     public class OrderedItemsDAO
     {
         private UserModel db = new UserModel();
-        
+
         public IQueryable<OrderedItem> GetOrderedItems()
         {
             return db.OrderedItems;
         }
-        
+
         public OrderedItem GetOrderedItem(int pk)
         {
             OrderedItem orderedItem = db.OrderedItems.Find(pk);
@@ -36,8 +36,8 @@ namespace StoreManagement.Controllers
                 //SqlParameter OrderParam = new SqlParameter("@OrderPK", orderPK);
                 //result = (db.Database.SqlQuery<OrderedItem>("exec GetOrderedItemByOrderPK @OrderPK", OrderParam).ToList());
                 return (from oi in db.OrderedItems
-                       where oi.OrderPK == orderPK
-                       select oi);
+                        where oi.OrderPK == orderPK
+                        select oi);
             }
             catch (Exception e)
             {
@@ -50,7 +50,7 @@ namespace StoreManagement.Controllers
             return db.OrderedItems.Count(e => e.OrderedItemPK == pk) > 0;
         }
 
-        public bool isUpdatedOrderedItem(OrderedItem orderedItem,string userID)
+        public bool isUpdatedOrderedItem(OrderedItem orderedItem, string userID)
         {
             OrderedItem dbOrderedItem = GetOrderedItem(orderedItem.OrderedItemPK);
             Order order = db.Orders.Find(orderedItem.OrderPK);
@@ -60,12 +60,18 @@ namespace StoreManagement.Controllers
                 if (orderedItem.OrderedQuantity == 0)
                 {
                     db.OrderedItems.Remove(dbOrderedItem);
+
+                    order.DateCreated = DateTime.Now;
+                    db.Entry(order).State = EntityState.Modified;
                 }
                 else
                 {
                     dbOrderedItem.Comment = orderedItem.Comment;
                     dbOrderedItem.OrderedQuantity = orderedItem.OrderedQuantity;
                     db.Entry(dbOrderedItem).State = EntityState.Modified;
+
+                    order.DateCreated = DateTime.Now;
+                    db.Entry(order).State = EntityState.Modified;
                 }
                 try
                 {
@@ -104,7 +110,7 @@ namespace StoreManagement.Controllers
 
         public void DeleteOrderedItem(int OrderedItemPK)
         {
-            OrderedItem  orderedItem = db.OrderedItems.Find(OrderedItemPK);
+            OrderedItem orderedItem = db.OrderedItems.Find(OrderedItemPK);
             if (orderedItem == null)
             {
                 throw new Exception("ITEM ĐƠN HÀNG KHÔNG TỒN TẠI");

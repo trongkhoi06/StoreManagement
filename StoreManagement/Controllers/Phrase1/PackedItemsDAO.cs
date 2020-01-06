@@ -82,7 +82,41 @@ namespace StoreManagement.Controllers
             {
                 dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
                 dbPackedItem.Comment = packedItem.Comment;
+                dbPackedItem.IsClassified = packedItem.IsClassified;
                 db.Entry(dbPackedItem).State = EntityState.Modified;
+            }
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                throw e;
+            }
+
+            return true;
+        }
+
+        public bool IsUpdatedPackedItem(PackedItem packedItem, int packPK)
+        {
+            Pack pack = db.Packs.Find(packPK);
+            PackedItem dbPackedItem = GetPackedItem(packedItem.PackedItemPK);
+            if (packedItem.PackedQuantity == 0)
+            {
+                db.PackedItems.Remove(dbPackedItem);
+
+                pack.DateCreated = DateTime.Now;
+                db.Entry(pack).State = EntityState.Modified;
+            }
+            else
+            {
+                dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
+                dbPackedItem.Comment = packedItem.Comment;
+                db.Entry(dbPackedItem).State = EntityState.Modified;
+
+                pack.DateCreated = DateTime.Now;
+                db.Entry(pack).State = EntityState.Modified;
             }
 
             try

@@ -682,8 +682,8 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
-                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    //return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
                 return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
             }

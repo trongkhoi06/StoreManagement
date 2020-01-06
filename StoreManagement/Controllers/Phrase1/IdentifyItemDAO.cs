@@ -1,4 +1,5 @@
-﻿using StoreManagement.Models;
+﻿using StoreManagement.Class;
+using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -30,11 +31,26 @@ namespace StoreManagement.Controllers
             return identifyingSession;
         }
 
-        public void createIndentifyItem(IdentifiedItem item)
+        public void createIndentifyItem(IdentifyingSession Iss, List<Client_PackedItemPK_IdentifiedQuantity> list, UnstoredBox uBox)
         {
             try
             {
-                db.IdentifiedItems.Add(item);
+
+                foreach (var el in list)
+                {
+                    // querry lấy pack
+                    PackedItem packedItem = db.PackedItems.Find(el.PackedItemPK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+                    // pack đang mở
+                    if (pack.IsOpened)
+                    {
+                        db.IdentifiedItems.Add(new IdentifiedItem(el.IdentifiedQuantity, el.PackedItemPK, Iss.IdentifyingSessionPK, uBox.UnstoredBoxPK));
+                    }
+                    else
+                    {
+                        throw new Exception("PHIẾU NHẬP ĐANG ĐÓNG, KO GHI NHẬN NHẬP HÀNG ĐƯỢC");
+                    }
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

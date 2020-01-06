@@ -14,14 +14,18 @@ namespace StoreManagement.Class
             this.e = e;
         }
 
+        //public string InnerMessage()
+        //{
+        //    Exception temp = e;
+        //    while(temp.InnerException != null)
+        //    {
+        //        temp = temp.InnerException;
+        //    };
+        //    return temp.Message;
+        //}
         public string InnerMessage()
         {
-            Exception temp = e;
-            while(temp.InnerException != null)
-            {
-                temp = temp.InnerException;
-            };
-            return temp.Message;
+            return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
         }
     }
 }
