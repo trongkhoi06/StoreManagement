@@ -92,7 +92,7 @@ namespace StoreManagement.Controllers
                         Box box1 = db.Boxes.Find(uBox1.BoxPK);
                         UnstoredBox uBox2 = db.UnstoredBoxes.Find(ss.DestinationBoxPK);
                         Box box2 = db.Boxes.Find(uBox2.BoxPK);
-                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + " sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
                         result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
@@ -135,7 +135,7 @@ namespace StoreManagement.Controllers
                         Shelf shelf1 = db.Shelves.Find(ss.StartShelfPK);
                         Shelf shelf2 = db.Shelves.Find(ss.DestinationShelfPK);
                         string content = "Di chuyển thùng " + "mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3)
-                            + "từ kệ " + shelf1.ShelfID + "sang kệ " + shelf2.ShelfID;
+                            + " từ kệ " + shelf1.ShelfID + " sang kệ " + shelf2.ShelfID;
                         result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
@@ -153,7 +153,7 @@ namespace StoreManagement.Controllers
                         Box box2 = db.Boxes.Find(sBox2.BoxPK);
 
                         string content = "Chuyển phụ liệu " + "tồn kho từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3)
-                            + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                            + " sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
                         result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
@@ -260,7 +260,7 @@ namespace StoreManagement.Controllers
                         Box box1 = db.Boxes.Find(uBox1.BoxPK);
                         UnstoredBox uBox2 = db.UnstoredBoxes.Find(ss.DestinationBoxPK);
                         Box box2 = db.Boxes.Find(uBox2.BoxPK);
-                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + "sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
+                        string content = "Sắp xếp " + "cụm phụ liệu từ thùng mã số " + box1.BoxID.Substring(0, box1.BoxID.Length - 3) + " sang thùng mã số " + box2.BoxID.Substring(0, box2.BoxID.Length - 3);
                         result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;
@@ -300,7 +300,7 @@ namespace StoreManagement.Controllers
                         Shelf shelf1 = db.Shelves.Find(ss.StartShelfPK);
                         Shelf shelf2 = db.Shelves.Find(ss.DestinationShelfPK);
                         string content = "Di chuyển thùng " + "mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3)
-                            + "từ kệ " + shelf1.ShelfID + "sang kệ " + shelf2.ShelfID;
+                            + " từ kệ " + shelf1.ShelfID + " sang kệ " + shelf2.ShelfID;
                         result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
                     }
                     break;

@@ -518,6 +518,7 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
+                // tính ra số lượng xuất các item theo itempk,isrestored đc input gửi xuống
                 Dictionary<int, Dictionary<Algo_itempk_isRestored, double>> Map = new Dictionary<int, Dictionary<Algo_itempk_isRestored, double>>();
                 foreach (var items in list)
                 {
@@ -546,9 +547,12 @@ namespace StoreManagement.Controllers
                         }
                     }
                 }
+                // kiểm lại hàng trong kho
                 foreach (var items in Map)
                 {
                     bool IsEmpty = true;
+                    StoredBox storedBox = db.StoredBoxes.Find(items.Key);
+                    Box box = db.Boxes.Find(storedBox.BoxPK);
 
                     HashSet<Algo_itempk_isRestored> tempHSAll = new HashSet<Algo_itempk_isRestored>();
                     HashSet<Algo_itempk_isRestored> tempHSTaking = new HashSet<Algo_itempk_isRestored>();
@@ -568,8 +572,8 @@ namespace StoreManagement.Controllers
                         List<Entry> entries = (from e in db.Entries
                                                where e.StoredBoxPK == items.Key && e.ItemPK == item.Key.ItemPK && e.IsRestored == item.Key.IsRestored
                                                select e).ToList();
-                        double tempQuantity = storingDAO.EntriesQuantity(entries);
-                        if (item.Value > tempQuantity) throw new Exception("SỐ LƯỢNG PREPARE VƯỢT QUÁ HÀNG TRONG KHO");
+                        double tempQuantity = storingDAO.AvailableQuantity(storedBox, item.Key.ItemPK, item.Key.IsRestored);
+                        if (item.Value > tempQuantity) throw new Exception("SỐ LƯỢNG XUẤT VƯỢT QUÁ HÀNG TRONG KHO");
                         // nếu số lượng xuất nhỏ hơn số lượng trong box thì box còn hàng
                         if (item.Value < tempQuantity) IsEmpty = false;
 
@@ -578,8 +582,6 @@ namespace StoreManagement.Controllers
                     if (tempHSAll.Count > tempHSTaking.Count) IsEmpty = false;
                     if (IsEmpty)
                     {
-                        StoredBox storedBox = db.StoredBoxes.Find(items.Key);
-                        Box box = db.Boxes.Find(storedBox.BoxPK);
                         boxIDs.Add(box.BoxID);
                     }
                 }

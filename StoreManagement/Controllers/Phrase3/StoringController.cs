@@ -249,38 +249,36 @@ namespace StoreManagement.Controllers
                         StoredBox sBoxFrom = boxDAO.GetStoredBoxbyBoxPK(boxFrom.BoxPK);
                         Box boxTo = boxDAO.GetBoxByBoxID(boxToID);
                         StoredBox sBoxTo = boxDAO.GetStoredBoxbyBoxPK(boxTo.BoxPK);
+                        // kiểm box
                         if (sBoxFrom == null)
                         {
-                            return Content(HttpStatusCode.Conflict, "BOX KHÔNG HỢP LỆ!");
+                            return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
                         }
-                        List<Entry> entries = (from e in db.Entries
-                                               where e.StoredBoxPK == sBoxFrom.StoredBoxPK
-                                               select e).ToList();
+                        // kiểm số lượng trong box
                         foreach (var item in list)
                         {
-                            List<Entry> tempEntries = new List<Entry>();
-                            foreach (var entry in entries)
-                            {
-                                if (entry.ItemPK == item.ItemPK) tempEntries.Add(entry);
-                            }
-                            if (item.TransferQuantity > storingDAO.EntriesQuantity(tempEntries))
+                            if (item.TransferQuantity > storingDAO.AvailableQuantity(sBoxFrom, item.ItemPK, item.IsRestored))
                             {
                                 return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
                             }
                         }
+                        // tạo phiên chuyển
                         transferringSession = storingDAO.CreateTransferingSession(boxFromID, boxToID, userID);
+                        // tạo entry
                         storingDAO.CreateInAndOutEntry(list, sBoxFrom, sBoxTo, transferringSession);
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "BOX KHÔNG HỢP LỆ!");
+                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
                     }
-                    return Content(HttpStatusCode.OK, "TRANSFER THÀNH CÔNG!");
+                    return Content(HttpStatusCode.OK, "CHUYỂN HÀNG TRONG THÙNG THÀNH CÔNG!");
                 }
                 catch (Exception e)
                 {
                     if (transferringSession != null)
+                    {
                         storingDAO.DeleteTransferingSession(transferringSession.TransferingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
             }

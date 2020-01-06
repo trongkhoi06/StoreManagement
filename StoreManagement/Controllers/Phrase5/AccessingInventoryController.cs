@@ -82,26 +82,20 @@ namespace StoreManagement.Controllers
                             }
                             foreach (var itemPK in listItemPK)
                             {
-                                List<Entry> tempEntries = new List<Entry>();
-                                foreach (var entry in entries)
+                                if (storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2) > 0)
                                 {
-                                    if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
-                                }
-                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
-                                {
-                                    Entry entry = tempEntries[0];
                                     PassedItem passedItem;
                                     RestoredItem restoredItem;
-                                    if (entry.IsRestored)
+                                    if (itemPK.Item2)
                                     {
-                                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                                        restoredItem = db.RestoredItems.Find(itemPK.Item1);
                                         Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, true));
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true));
                                     }
                                     else
                                     {
-                                        passedItem = db.PassedItems.Find(entry.ItemPK);
+                                        passedItem = db.PassedItems.Find(itemPK.Item1);
                                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                                         // lấy pack ID
@@ -117,7 +111,7 @@ namespace StoreManagement.Controllers
                                         Accessory accessory = (from a in db.Accessories
                                                                where a.AccessoryPK == orderedItem.AccessoryPK
                                                                select a).FirstOrDefault();
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, false));
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false));
                                     }
                                 }
                             }
@@ -141,7 +135,6 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
         }
-
 
         [Route("api/AccessingInventoryController/GetItemByShelfID")]
         [HttpGet]
@@ -186,14 +179,8 @@ namespace StoreManagement.Controllers
                         }
                         foreach (var item in listItem)
                         {
-                            List<Entry> tempEntries = new List<Entry>();
-                            foreach (var entry in entries)
+                            if (storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2) > 0)
                             {
-                                if (entry.ItemPK == item.Item1 && entry.IsRestored == item.Item2) tempEntries.Add(entry);
-                            }
-                            if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
-                            {
-                                Entry entry = tempEntries[0];
                                 PassedItem passedItem;
                                 RestoredItem restoredItem;
                                 if (item.Item2)
@@ -204,11 +191,11 @@ namespace StoreManagement.Controllers
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                        storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Item2));
+                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2));
                                     }
                                     else
                                     {
-                                        client_InBoxItems[item].InBoxQuantity += storingDAO.EntriesQuantity(tempEntries);
+                                        client_InBoxItems[item].InBoxQuantity += storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2);
                                     }
 
                                 }
@@ -227,11 +214,11 @@ namespace StoreManagement.Controllers
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                        storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Item2));
+                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2));
                                     }
                                     else
                                     {
-                                        client_InBoxItems[item].InBoxQuantity += storingDAO.EntriesQuantity(tempEntries);
+                                        client_InBoxItems[item].InBoxQuantity += storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2);
                                     }
                                 }
                             }
@@ -304,14 +291,8 @@ namespace StoreManagement.Controllers
                             }
                             foreach (var item in listItem)
                             {
-                                List<Entry> tempEntries = new List<Entry>();
-                                foreach (var entry in entries)
+                                if (storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2) > 0)
                                 {
-                                    if (entry.ItemPK == item.Item1 && entry.IsRestored == item.Item2) tempEntries.Add(entry);
-                                }
-                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
-                                {
-                                    Entry entry = tempEntries[0];
                                     PassedItem passedItem;
                                     RestoredItem restoredItem;
                                     if (item.Item2)
@@ -322,11 +303,11 @@ namespace StoreManagement.Controllers
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                            storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, item.Item2));
+                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2));
                                         }
                                         else
                                         {
-                                            client_InBoxItems[item].InBoxQuantity += storingDAO.EntriesQuantity(tempEntries);
+                                            client_InBoxItems[item].InBoxQuantity += storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2);
                                         }
 
                                     }
@@ -345,11 +326,11 @@ namespace StoreManagement.Controllers
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                            storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, item.Item2));
+                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2));
                                         }
                                         else
                                         {
-                                            client_InBoxItems[item].InBoxQuantity += storingDAO.EntriesQuantity(tempEntries);
+                                            client_InBoxItems[item].InBoxQuantity += storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2);
                                         }
                                     }
                                 }

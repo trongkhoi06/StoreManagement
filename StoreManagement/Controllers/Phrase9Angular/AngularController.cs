@@ -1100,18 +1100,15 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetAccessoriesStoring()
         {
             List<Client_Accessories_Stored_Angular> result = new List<Client_Accessories_Stored_Angular>();
-            StoringDAO storingDAO = new StoringDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
                 foreach (var accessory in accessories)
                 {
-                    List<Entry> entries = (from e in db.Entries
-                                           where e.AccessoryPK == accessory.AccessoryPK
-                                           select e).ToList();
-                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    if (issuingDAO.InStoredQuantity(accessory.AccessoryPK) > 0)
                     {
-                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries)));
+                        result.Add(new Client_Accessories_Stored_Angular(accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK)));
                     }
                 }
             }
@@ -1128,14 +1125,11 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetAccessoryByPKStoring(int accessoryPK)
         {
             Client_Accessories_Stored_Angular result = new Client_Accessories_Stored_Angular();
-            StoringDAO storingDAO = new StoringDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 Accessory accessory = db.Accessories.Find(accessoryPK);
-                List<Entry> entries = (from e in db.Entries
-                                       where e.AccessoryPK == accessory.AccessoryPK
-                                       select e).ToList();
-                result = new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries));
+                result = new Client_Accessories_Stored_Angular(accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK));
             }
             catch (Exception e)
             {
@@ -1151,7 +1145,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetAccessoriesStoringByCustomerPK(int customerPK)
         {
             List<Client_Accessories_Stored_Angular> result = new List<Client_Accessories_Stored_Angular>();
-            StoringDAO storingDAO = new StoringDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 Customer customer = db.Customers.Find(customerPK);
@@ -1164,13 +1158,11 @@ namespace StoreManagement.Controllers
                                                select acc).ToList();
                 foreach (var accessory in accessories)
                 {
-                    List<Entry> entries = (from e in db.Entries
-                                           where e.AccessoryPK == accessory.AccessoryPK
-                                           select e).ToList();
                     Supplier supplier = db.Suppliers.Find(accessory.SupplierPK);
-                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    if (issuingDAO.InStoredQuantity(accessory.AccessoryPK) > 0)
                     {
-                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries), "", supplier.SupplierName));
+                        result.Add(new Client_Accessories_Stored_Angular(accessory,
+                            issuingDAO.InStoredQuantity(accessory.AccessoryPK), "", supplier.SupplierName));
                     }
                 }
             }
@@ -1188,7 +1180,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetAccessoriesStoringBySupplierPK(int supplierPK)
         {
             List<Client_Accessories_Stored_Angular> result = new List<Client_Accessories_Stored_Angular>();
-            StoringDAO storingDAO = new StoringDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 Supplier supplier = db.Suppliers.Find(supplierPK);
@@ -1201,13 +1193,11 @@ namespace StoreManagement.Controllers
                                                select acc).ToList();
                 foreach (var accessory in accessories)
                 {
-                    List<Entry> entries = (from e in db.Entries
-                                           where e.AccessoryPK == accessory.AccessoryPK
-                                           select e).ToList();
                     Customer customer = db.Customers.Find(accessory.CustomerPK);
-                    if (storingDAO.EntriesQuantity(entries) > 0)
+                    if (issuingDAO.InStoredQuantity(accessory.AccessoryPK) > 0)
                     {
-                        result.Add(new Client_Accessories_Stored_Angular(accessory, storingDAO.EntriesQuantity(entries), customer.CustomerName, ""));
+                        result.Add(new Client_Accessories_Stored_Angular(accessory,
+                            issuingDAO.InStoredQuantity(accessory.AccessoryPK), customer.CustomerName, ""));
                     }
                 }
             }
@@ -1692,8 +1682,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetPackedItemStoringByAccessoryPK(int AccessoryPK)
         {
             List<Client_PackedItem_Angular2> result = new List<Client_PackedItem_Angular2>();
-            StoringDAO storingDAO = new StoringDAO();
             IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 List<OrderedItem> orderedItems = (from oI in db.OrderedItems.OrderByDescending(unit => unit.OrderedItemPK)
@@ -1718,11 +1708,8 @@ namespace StoreManagement.Controllers
                                 PassedItem passedItem = (from pI in db.PassedItems
                                                          where pI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
                                                          select pI).FirstOrDefault();
-                                List<Entry> entries = (from e in db.Entries
-                                                       where e.ItemPK == passedItem.PassedItemPK && e.IsRestored == false
-                                                       select e).ToList();
                                 result.Add(new Client_PackedItem_Angular2(pack, packedItem.PackedQuantity,
-                                    identifyItemDAO.FinalQuantity(packedItem.PackedItemPK), storingDAO.EntriesQuantity(entries)));
+                                    identifyItemDAO.FinalQuantity(packedItem.PackedItemPK), issuingDAO.InStoredQuantity(AccessoryPK)));
                             }
                         }
                     }
@@ -1759,7 +1746,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetRestoredItemStoringByAccessoryPK(int AccessoryPK)
         {
             List<Client_RestoredItem_Angular> result = new List<Client_RestoredItem_Angular>();
-            StoringDAO storingDAO = new StoringDAO();
+            IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
                 List<RestoredItem> restoredItems = (from rI in db.RestoredItems.OrderByDescending(unit => unit.RestoredItemPK)
@@ -1768,10 +1755,7 @@ namespace StoreManagement.Controllers
                 foreach (var restoredItem in restoredItems)
                 {
                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                    List<Entry> entries = (from e in db.Entries
-                                           where e.ItemPK == restoredItem.RestoredItemPK && e.IsRestored == true
-                                           select e).ToList();
-                    result.Add(new Client_RestoredItem_Angular(restoration, restoredItem.RestoredQuantity, storingDAO.EntriesQuantity(entries)));
+                    result.Add(new Client_RestoredItem_Angular(restoration, restoredItem.RestoredQuantity, issuingDAO.InStoredQuantity(AccessoryPK)));
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -2848,13 +2832,11 @@ namespace StoreManagement.Controllers
                         foreach (var ss in discardingSessions)
                         {
                             SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                            List<Entry> entries = (from e in db.Entries
-                                                   where e.SessionPK == ss.DiscardingSessionPK
-                                                   && e.KindRoleName == "Discarding"
-                                                   select e).ToList();
+                            Entry entry = db.Entries.Where(e => e.SessionPK == ss.DiscardingSessionPK
+                                                            && e.KindRoleName == "Discarding").FirstOrDefault();
                             bool isDiscard = true;
                             result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
-                            ss.ExecutedDate, storingDAO.EntriesQuantity(entries), ss.IsVerified, isDiscard));
+                            ss.ExecutedDate, storingDAO.EntryQuantity(entry), ss.IsVerified, isDiscard));
                         }
                     }
                 }
@@ -2888,13 +2870,11 @@ namespace StoreManagement.Controllers
                         foreach (var ss in discardingSessions)
                         {
                             SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                            List<Entry> entries = (from e in db.Entries
-                                                   where e.SessionPK == ss.DiscardingSessionPK
-                                                   && e.KindRoleName == "Discarding"
-                                                   select e).ToList();
+                            Entry entry = db.Entries.Where(e => e.SessionPK == ss.DiscardingSessionPK
+                                                            && e.KindRoleName == "Discarding").FirstOrDefault();
                             bool isDiscard = true;
                             result.Add(new Client_Session_Verification_Angular(ss.DiscardingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
-                            ss.ExecutedDate, (storingDAO.EntriesQuantity(entries)), ss.IsVerified, isDiscard));
+                            ss.ExecutedDate, storingDAO.EntryQuantity(entry), ss.IsVerified, isDiscard));
                         }
                     }
                 }
@@ -3222,26 +3202,21 @@ namespace StoreManagement.Controllers
                             }
                             foreach (var itemPK in listItemPK)
                             {
-                                List<Entry> tempEntries = new List<Entry>();
-                                foreach (var entry in entries)
+                                if (storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2) > 0)
                                 {
-                                    if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
-                                }
-                                if (tempEntries.Count > 0 && storingDAO.EntriesQuantity(tempEntries) > 0)
-                                {
-                                    Entry entry = tempEntries[0];
                                     PassedItem passedItem;
                                     RestoredItem restoredItem;
-                                    if (entry.IsRestored)
+                                    if (itemPK.Item2)
                                     {
-                                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
+                                        restoredItem = db.RestoredItems.Find(itemPK.Item1);
                                         Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, true));
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID,
+                                            storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true));
                                     }
                                     else
                                     {
-                                        passedItem = db.PassedItems.Find(entry.ItemPK);
+                                        passedItem = db.PassedItems.Find(itemPK.Item1);
                                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                                         // lấy pack ID
@@ -3257,7 +3232,8 @@ namespace StoreManagement.Controllers
                                         Accessory accessory = (from a in db.Accessories
                                                                where a.AccessoryPK == orderedItem.AccessoryPK
                                                                select a).FirstOrDefault();
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, false));
+                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID,
+                                            storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false));
                                     }
                                 }
                             }
@@ -3502,16 +3478,13 @@ namespace StoreManagement.Controllers
 
         public class Client_Session_Detail_Verification_Angular
         {
-            public Client_Session_Detail_Verification_Angular(double initialQuantity, double quantity, string userID, DateTime executedDate, bool isVerified)
+            public Client_Session_Detail_Verification_Angular(double quantity, string userID, DateTime executedDate, bool isVerified)
             {
-                InitialQuantity = initialQuantity;
                 Quantity = quantity;
                 UserID = userID;
                 ExecutedDate = executedDate;
                 IsVerified = isVerified;
             }
-
-            public double InitialQuantity { get; set; }
 
             public double Quantity { get; set; }
 
@@ -3537,13 +3510,9 @@ namespace StoreManagement.Controllers
                                    && (e.KindRoleName == "AdjustingMinus"
                                    || e.KindRoleName == "AdjustingPlus")
                                    select e).FirstOrDefault();
-                    double initialQuantity = 0;
-
-                    List<Entry> entries = db.Entries.Where(unit => unit.ItemPK == entry.ItemPK).ToList();
-                    initialQuantity = new StoringDAO().EntriesQuantity(entries);
 
                     SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                    result = new Client_Session_Detail_Verification_Angular(initialQuantity, new StoringDAO().EntryQuantity(entry)
+                    result = new Client_Session_Detail_Verification_Angular(new StoringDAO().EntryQuantity(entry)
                         , systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, ss.IsVerified);
                 }
                 else
@@ -3553,13 +3522,9 @@ namespace StoreManagement.Controllers
                                    where e.SessionPK == ss.DiscardingSessionPK
                                    && (e.KindRoleName == "Discarding")
                                    select e).FirstOrDefault();
-                    double initialQuantity = 0;
-
-                    List<Entry> entries = db.Entries.Where(unit => unit.ItemPK == entry.ItemPK).ToList();
-                    initialQuantity = new StoringDAO().EntriesQuantity(entries);
 
                     SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                    result = new Client_Session_Detail_Verification_Angular(initialQuantity, new StoringDAO().EntryQuantity(entry)
+                    result = new Client_Session_Detail_Verification_Angular(new StoringDAO().EntryQuantity(entry)
                         , systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, ss.IsVerified);
 
                 }
