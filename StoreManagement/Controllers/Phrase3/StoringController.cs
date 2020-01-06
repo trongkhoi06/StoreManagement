@@ -178,56 +178,48 @@ namespace StoreManagement.Controllers
                 Row row = db.Rows.Find(shelf.RowPK);
                 client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
 
-                // Get list inBoxItem
+                // lấy tất cả entry theo box
                 List<Entry> entries = (from e in db.Entries
                                        where e.StoredBoxPK == sBox.StoredBoxPK
                                        select e).ToList();
 
-                // Hiện thực cặp value ko được trùng 2 key là itemPK và isRestored
-                HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
+                // Hiện các item với key là 2 field itemPK và isRestored
+                HashSet<Tuple<int, bool>> keys = new HashSet<Tuple<int, bool>>();
                 foreach (var entry in entries)
                 {
-                    listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
+                    keys.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
                 }
-                foreach (var itemPK in listItemPK)
+                foreach (var key in keys)
                 {
-                    List<Entry> tempEntries = new List<Entry>();
-                    foreach (var entry in entries)
+                    // chạy các key để kiếm thông tin
+                    PassedItem passedItem;
+                    RestoredItem restoredItem;
+                    if (key.Item2)
                     {
-                        if (entry.ItemPK == itemPK.Item1 && entry.IsRestored == itemPK.Item2) tempEntries.Add(entry);
+                        restoredItem = db.RestoredItems.Find(key.Item1);
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), restoredItem.RestoredItemPK, true));
                     }
-                    if (tempEntries.Count > 0)
+                    else
                     {
-                        Entry entry = tempEntries[0];
-                        PassedItem passedItem;
-                        RestoredItem restoredItem;
-                        if (entry.IsRestored)
-                        {
-                            restoredItem = db.RestoredItems.Find(entry.ItemPK);
-                            Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                            Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                            client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.EntriesQuantity(tempEntries), restoredItem.RestoredItemPK, true));
-                        }
-                        else
-                        {
-                            passedItem = db.PassedItems.Find(entry.ItemPK);
-                            ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
-                            PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
-                            // lấy pack ID
-                            Pack pack = (from p in db.Packs
-                                         where p.PackPK == packedItem.PackPK
-                                         select p).FirstOrDefault();
+                        passedItem = db.PassedItems.Find(key.Item1);
+                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        // lấy pack ID
+                        Pack pack = (from p in db.Packs
+                                     where p.PackPK == packedItem.PackPK
+                                     select p).FirstOrDefault();
 
-                            // lấy phụ liệu tương ứng
-                            OrderedItem orderedItem = (from oI in db.OrderedItems
-                                                       where oI.OrderedItemPK == packedItem.OrderedItemPK
-                                                       select oI).FirstOrDefault();
+                        // lấy phụ liệu tương ứng
+                        OrderedItem orderedItem = (from oI in db.OrderedItems
+                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                                   select oI).FirstOrDefault();
 
-                            Accessory accessory = (from a in db.Accessories
-                                                   where a.AccessoryPK == orderedItem.AccessoryPK
-                                                   select a).FirstOrDefault();
-                            client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.EntriesQuantity(tempEntries), passedItem.PassedItemPK, false));
-                        }
+                        Accessory accessory = (from a in db.Accessories
+                                               where a.AccessoryPK == orderedItem.AccessoryPK
+                                               select a).FirstOrDefault();
+                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), passedItem.PassedItemPK, false));
                     }
                 }
                 result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);
@@ -360,26 +352,26 @@ namespace StoreManagement.Controllers
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
-                        List<Entry> entries = (from e in db.Entries
-                                               where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
-                                               select e).ToList();
+                        //List<Entry> entries = (from e in db.Entries
+                        //                       where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
+                        //                       select e).ToList();
                         adjustingSession = storingDAO.CreateAdjustingSession(comment, false, userID);
-                        if (adjustedQuantity > storingDAO.EntriesQuantity(entries))
+                        if (adjustedQuantity > storingDAO.AvailableQuantity(sBox, itemPK, isRestored))
                         {
-                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity - storingDAO.EntriesQuantity(entries), isRestored, false, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity - storingDAO.AvailableQuantity(sBox, itemPK, isRestored), isRestored, false, adjustingSession);
                         }
-                        else if (adjustedQuantity < storingDAO.EntriesQuantity(entries))
+                        else if (adjustedQuantity < storingDAO.AvailableQuantity(sBox, itemPK, isRestored))
                         {
-                            storingDAO.CreateAdjustEntry(sBox, itemPK, storingDAO.EntriesQuantity(entries) - adjustedQuantity, isRestored, true, adjustingSession);
+                            storingDAO.CreateAdjustEntry(sBox, itemPK, storingDAO.AvailableQuantity(sBox, itemPK, isRestored) - adjustedQuantity, isRestored, true, adjustingSession);
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
+                            throw new Exception("SỐ LƯỢNG KHÔNG HỢP LỆ");
                         }
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
+                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ");
                     }
                 }
                 catch (Exception e)
@@ -390,11 +382,11 @@ namespace StoreManagement.Controllers
                     }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG");
             }
             else
             {
-                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
         }
 
@@ -449,26 +441,22 @@ namespace StoreManagement.Controllers
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
-                        List<Entry> entries = (from e in db.Entries
-                                               where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
-                                               select e).ToList();
+                        //List<Entry> entries = (from e in db.Entries
+                        //                       where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
+                        //                       select e).ToList();
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
-                        if (discardedQuantity >= storingDAO.EntriesQuantity(entries))
+                        if (discardedQuantity <= storingDAO.AvailableQuantity(sBox, itemPK, isRestored) && discardedQuantity > 0)
                         {
                             storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
                         }
-                        //if (discardedQuantity < storingDAO.EntriesQuantity(entries))
-                        //{
-                        //    storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
-                        //}
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
+                            throw new Exception("SỐ LƯỢNG KHÔNG HỢP LỆ");
                         }
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
+                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ");
                     }
                 }
                 catch (Exception e)
@@ -479,11 +467,11 @@ namespace StoreManagement.Controllers
                     }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "THAY ĐỔI KHO THÀNH CÔNG");
             }
             else
             {
-                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
         }
 

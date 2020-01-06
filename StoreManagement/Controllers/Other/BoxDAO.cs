@@ -126,7 +126,7 @@ namespace StoreManagement.Controllers
                 StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                 if (sBox != null)
                 {
-                    if (!isStoredBoxContainItem(sBox))
+                    if (!IsStoredBoxContainItem(sBox))
                     {
                         box.IsActive = false;
                         db.Entry(box).State = EntityState.Modified;
@@ -214,40 +214,31 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public bool isStoredBoxContainItem(StoredBox sBox)
+        public bool IsStoredBoxContainItem(StoredBox sBox)
         {
+            List<Entry> entries = db.Entries.Where(unit => unit.StoredBoxPK == sBox.StoredBoxPK).ToList();
+            Dictionary<Tuple<int, bool>, double> allInBoxItems = new Dictionary<Tuple<int, bool>, double>();
             StoringDAO storingDAO = new StoringDAO();
-            double inBoxQuantity = 0;
-            List<Entry> entries = db.Entries.Where(e => e.StoredBoxPK == sBox.StoredBoxPK).ToList();
             foreach (var entry in entries)
             {
-                if (entry.KindRoleName == "AdjustingMinus" || entry.KindRoleName == "AdjustingPlus")
+                Tuple<int, bool> key = new Tuple<int, bool>(entry.ItemPK, entry.IsRestored);
+                if (!allInBoxItems.ContainsKey(key))
                 {
-                    AdjustingSession adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                    Verification verification = db.Verifications.Where(unit => unit.SessionPK == adjustingSession.AdjustingSessionPK
-                                                                        && unit.IsDiscard == false).FirstOrDefault();
-                    if (verification != null && verification.IsApproved)
-                    {
-                        inBoxQuantity += storingDAO.EntryQuantity(entry);
-                    }
-                }
-                else if (entry.KindRoleName == "Discarding")
-                {
-                    DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
-                    Verification verification = db.Verifications.Where(unit => unit.SessionPK == discardingSession.DiscardingSessionPK
-                                                                        && unit.IsDiscard == true).FirstOrDefault();
-                    if (verification != null && verification.IsApproved)
-                    {
-                        inBoxQuantity += storingDAO.EntryQuantity(entry);
-                    }
+                    allInBoxItems.Add(key, storingDAO.InBoxQuantity(sBox, key.Item1, key.Item2));
                 }
                 else
                 {
-                    inBoxQuantity += storingDAO.EntryQuantity(entry);
+                    allInBoxItems[key] += storingDAO.InBoxQuantity(sBox, key.Item1, key.Item2);
                 }
             }
-            if (inBoxQuantity == 0) return false;
-            else return true;
+            foreach (var inBoxItem in allInBoxItems)
+            {
+                if (inBoxItem.Value > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -143,40 +143,16 @@ namespace StoreManagement.Controllers
         public double EntryQuantity(Entry entry)
         {
             double result = 0;
-            AdjustingSession adjustingSession;
-            Verification verification;
             KindRole kindRole = db.KindRoles.Find(entry.KindRoleName);
-            switch (entry.KindRoleName)
+            switch (kindRole.KindRoleName)
             {
                 case "Discarding":
-                    DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
-                    verification = (from ver in db.Verifications
-                                    where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
-                                    select ver).FirstOrDefault();
-                    //if (!(discardingSession.IsVerified && !verification.IsApproved))
-                    //{
-                    //}
                     result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "AdjustingMinus":
-                    adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                    verification = (from ver in db.Verifications
-                                    where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
-                                    select ver).FirstOrDefault();
-                    //if (!(adjustingSession.IsVerified && !verification.IsApproved))
-                    //{
-
-                    //}
                     result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "AdjustingPlus":
-                    adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                    verification = (from ver in db.Verifications
-                                    where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
-                                    select ver).FirstOrDefault();
-                    //if (adjustingSession.IsVerified && verification.IsApproved)
-                    //{
-                    //}
                     result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                     break;
                 case "In":
@@ -205,39 +181,16 @@ namespace StoreManagement.Controllers
             double result = 0;
             foreach (var entry in entries)
             {
-                AdjustingSession adjustingSession;
-                Verification verification;
                 KindRole kindRole = db.KindRoles.Find(entry.KindRoleName);
                 switch (entry.KindRoleName)
                 {
                     case "Discarding":
-                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
-                        verification = (from ver in db.Verifications
-                                        where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
-                                        select ver).FirstOrDefault();
-                        //if (!(discardingSession.IsVerified && !verification.IsApproved))
-                        //{
-                        //}
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "AdjustingMinus":
-                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                        verification = (from ver in db.Verifications
-                                        where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
-                                        select ver).FirstOrDefault();
-                        //if (!(adjustingSession.IsVerified && !verification.IsApproved))
-                        //{
-                        //}
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "AdjustingPlus":
-                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                        verification = (from ver in db.Verifications
-                                        where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
-                                        select ver).FirstOrDefault();
-                        //if (adjustingSession.IsVerified && verification.IsApproved)
-                        //{
-                        //}
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     case "In":
@@ -262,15 +215,130 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public double InBoxQuantity(string boxID, int itemPK, bool isRestored)
+        public double InBoxQuantity(StoredBox sBox, int itemPK, bool isRestored)
         {
-            BoxDAO boxDAO = new BoxDAO();
-            Box box = boxDAO.GetBoxByBoxID(boxID);
-            StoredBox storedBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+            double result = 0;
             List<Entry> entries = (from e in db.Entries
-                                   where e.StoredBoxPK == storedBox.StoredBoxPK && e.IsRestored == isRestored
+                                   where e.StoredBoxPK == sBox.StoredBoxPK && e.IsRestored == isRestored && e.ItemPK == itemPK
                                    select e).ToList();
-            return EntriesQuantity(entries);
+            foreach (var entry in entries)
+            {
+                AdjustingSession adjustingSession;
+                Verification verification;
+                KindRole kindRole = db.KindRoles.Find(entry.KindRoleName);
+                switch (entry.KindRoleName)
+                {
+                    // approve mới tính vào vì là số lượng thực được chấp thuận
+                    case "Discarding":
+                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                        verification = (from ver in db.Verifications
+                                        where ver.SessionPK == discardingSession.DiscardingSessionPK && ver.IsDiscard
+                                        select ver).FirstOrDefault();
+                        if (discardingSession.IsVerified && verification.IsApproved)
+                        {
+                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        }
+                        break;
+                    // approve mới tính vào vì là số lượng thực được chấp thuận
+                    case "AdjustingMinus":
+                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        verification = (from ver in db.Verifications
+                                        where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
+                                        select ver).FirstOrDefault();
+                        if (adjustingSession.IsVerified && verification.IsApproved)
+                        {
+                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        }
+                        break;
+                    // approve mới tính vào vì là số lượng thực được chấp thuận
+                    case "AdjustingPlus":
+                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        verification = (from ver in db.Verifications
+                                        where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
+                                        select ver).FirstOrDefault();
+                        if (adjustingSession.IsVerified && verification.IsApproved)
+                        {
+                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        }
+                        break;
+                    case "In":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Issuing":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Out":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Receiving":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Storing":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return result;
+        }
+
+        public double AvailableQuantity(StoredBox sBox, int itemPK, bool isRestored)
+        {
+            double result = 0;
+            List<Entry> entries = (from e in db.Entries
+                                   where e.StoredBoxPK == sBox.StoredBoxPK && e.IsRestored == isRestored && e.ItemPK == itemPK
+                                   select e).ToList();
+            if (entries.Count < 0)
+            {
+                throw new Exception("PHỤ LIỆU KHÔNG ĐƯỢC TÌM THẤY");
+            }
+            foreach (var entry in entries)
+            {
+                AdjustingSession adjustingSession;
+                Verification verification;
+                KindRole kindRole = db.KindRoles.Find(entry.KindRoleName);
+                switch (entry.KindRoleName)
+                {
+                    // chưa approve cũng tính vào vì có thể là số lượng thực được chấp thuận gây số âm
+                    case "Discarding":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    // chưa approve cũng tính vào vì có thể là số lượng thực được chấp thuận gây số âm
+                    case "AdjustingMinus":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    // approve mới tính vào vì là gây ra vấn đề lấy số ảo
+                    case "AdjustingPlus":
+                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        verification = (from ver in db.Verifications
+                                        where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
+                                        select ver).FirstOrDefault();
+                        if (adjustingSession.IsVerified && verification.IsApproved)
+                        {
+                            result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        }
+                        break;
+                    case "In":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Issuing":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Out":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Receiving":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    case "Storing":
+                        result += entry.Quantity * (kindRole.Sign ? 1 : -1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return result;
         }
 
         public TransferringSession CreateTransferingSession(string boxFromID, string boxToID, string userID)

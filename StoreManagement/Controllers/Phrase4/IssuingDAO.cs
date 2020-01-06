@@ -13,8 +13,7 @@ namespace StoreManagement.Controllers
     public class IssuingDAO
     {
         private UserModel db = new UserModel();
-
-
+        
         private string KhoiNKTType(int num)
         {
             //if (num < 1 || num > 31) throw new Exception("THỜI GIAN CỦA MÁY TÍNH CÓ LỖI, CÓ THỂ HACKER TẤN CÔNG!");
@@ -603,41 +602,17 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();
+                // kết xuất 1 dictionary gồm key là itempk và isrestored tuy nhiên gộp số lượng giữa các box
                 Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity>();
                 foreach (var entry in entries)
                 {
-                    double inBoxQuantity = 0;
                     StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
-
-                    if (entry.KindRoleName == "AdjustingMinus" || entry.KindRoleName == "AdjustingPlus")
-                    {
-                        AdjustingSession adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
-                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == adjustingSession.AdjustingSessionPK
-                                                                            && unit.IsDiscard == false).FirstOrDefault();
-                        if (verification != null && verification.IsApproved)
-                        {
-                            inBoxQuantity = storingDAO.EntryQuantity(entry);
-                        }
-                    }
-                    else if (entry.KindRoleName == "Discarding")
-                    {
-                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
-                        Verification verification = db.Verifications.Where(unit => unit.SessionPK == discardingSession.DiscardingSessionPK
-                                                                            && unit.IsDiscard == true).FirstOrDefault();
-                        if (verification != null && verification.IsApproved)
-                        {
-                            inBoxQuantity = storingDAO.EntryQuantity(entry);
-                        }
-                    }
-                    else
-                    {
-                        inBoxQuantity = storingDAO.EntryQuantity(entry);
-                    }
-
                     Box box = db.Boxes.Find(storedBox.BoxPK);
+
                     PassedItem passedItem;
                     RestoredItem restoredItem;
                     StoredBox_ItemPK_IsRestored key;
+
                     if (entry.IsRestored)
                     {
                         restoredItem = db.RestoredItems.Find(entry.ItemPK);
@@ -650,7 +625,9 @@ namespace StoreManagement.Controllers
                     }
                     if (box.IsActive)
                     {
-                        InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(inBoxQuantity, storingDAO.EntryQuantity(entry));
+                        InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
+                            storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored)
+                            , storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored));
                         if (!tempDictionary.ContainsKey(key))
                         {
                             tempDictionary.Add(key, tmp);
@@ -663,6 +640,7 @@ namespace StoreManagement.Controllers
                     }
                 }
 
+                // kiếm từng box dựa trên item dò được
                 foreach (var item in tempDictionary)
                 {
                     if (item.Value.AvailableQuantity > 0)
@@ -688,69 +666,7 @@ namespace StoreManagement.Controllers
 
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            return result;
-        }
 
-        public List<Client_Box_Shelf_Row2> StoredBox_ItemPK_IsRestoredOfEntries2(Accessory accessory, int issuingSessionPK)
-        {
-            List<Client_Box_Shelf_Row2> result = new List<Client_Box_Shelf_Row2>();
-            StoringDAO storingDAO = new StoringDAO();
-            try
-            {
-                // cực phẩm IQ
-                double inStoredQuantity = InStoredQuantity(accessory.AccessoryPK);
-                if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
-                List<Entry> entries = (from e in db.Entries
-                                       where e.AccessoryPK == accessory.AccessoryPK && e.SessionPK == issuingSessionPK && e.KindRoleName == "Issuing"
-                                       select e).ToList();
-                Dictionary<StoredBox_ItemPK_IsRestored, double> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, double>();
-                foreach (var entry in entries)
-                {
-                    StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
-                    Box box = db.Boxes.Find(storedBox.BoxPK);
-                    PassedItem passedItem;
-                    RestoredItem restoredItem;
-                    StoredBox_ItemPK_IsRestored key;
-                    if (entry.IsRestored)
-                    {
-                        restoredItem = db.RestoredItems.Find(entry.ItemPK);
-                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, restoredItem.RestoredItemPK, entry.IsRestored);
-                    }
-                    else
-                    {
-                        passedItem = db.PassedItems.Find(entry.ItemPK);
-                        key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, passedItem.PassedItemPK, entry.IsRestored);
-                    }
-                    if (box.IsActive)
-                    {
-
-                        if (!tempDictionary.ContainsKey(key))
-                        {
-                            tempDictionary.Add(key, storingDAO.EntryQuantity(entry));
-                        }
-                        else
-                        {
-                            tempDictionary[key] += storingDAO.EntryQuantity(entry);
-                        }
-                    }
-                }
-
-                foreach (var item in tempDictionary)
-                {
-                    if (item.Value > 0)
-                    {
-                        StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
-                        Box box = db.Boxes.Find(storedBox.BoxPK);
-                        Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
-                        Row row = db.Rows.Find(shelf.RowPK);
-                        result.Add(new Client_Box_Shelf_Row2(box.BoxID, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value));
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -859,7 +775,6 @@ namespace StoreManagement.Controllers
                 throw e;
             }
         }
-
 
         public void CreateRestoredItems(Restoration restoration, List<IssuingController.Client_AccessoryPK_RestoredQuantity> list)
         {

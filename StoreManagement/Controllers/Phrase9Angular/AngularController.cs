@@ -2876,7 +2876,6 @@ namespace StoreManagement.Controllers
                                            select e).FirstOrDefault();
                             bool isDiscard = false;
                             double adjustedQuantity = storingDAO.EntryQuantity(entry);
-                            double test = 0;
                             result.Add(new Client_Session_Verification_Angular(ss.AdjustingSessionPK, systemUser.Name + " (" + ss.UserID + ")",
                             ss.ExecutedDate, adjustedQuantity, ss.IsVerified, isDiscard));
                         }
@@ -3165,7 +3164,7 @@ namespace StoreManagement.Controllers
             List<Client_Box_Information_Angular> result = new List<Client_Box_Information_Angular>();
             try
             {
-                List<Box> boxes = db.Boxes.Where(unit => unit.IsActive == true && unit.BoxID != "InvisibleBox")
+                List<Box> boxes = db.Boxes.Where(unit => unit.IsActive == true && unit.BoxID != "ĐÃ TRÃ")
                     .OrderByDescending(unit => unit.BoxPK).ToList();
                 foreach (var box in boxes)
                 {
