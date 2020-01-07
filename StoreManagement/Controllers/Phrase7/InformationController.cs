@@ -456,6 +456,29 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/InformationController/ImportAccessory")]
+        [HttpPost]
+        public IHttpActionResult ImportAccessory(List<Accessory> accessories, string userID)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+            {
+                InformationDAO informationDAO = new InformationDAO();
+                try
+                {
+                    informationDAO.CreateAccessories(accessories, userID);
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+                return Content(HttpStatusCode.OK, "TẠO PHỤ LIỆU THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
+        }
+
         [Route("api/InformationController/EditAccessory")]
         [HttpPut]
         public IHttpActionResult EditAccessory(int accessoryPK, string comment, string userID)

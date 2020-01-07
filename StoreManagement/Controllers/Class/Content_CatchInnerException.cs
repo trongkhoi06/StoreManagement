@@ -14,18 +14,24 @@ namespace StoreManagement.Class
             this.e = e;
         }
 
-        //public string InnerMessage()
-        //{
-        //    Exception temp = e;
-        //    while(temp.InnerException != null)
-        //    {
-        //        temp = temp.InnerException;
-        //    };
-        //    return temp.Message;
-        //}
         public string InnerMessage()
         {
+            Exception temp = e;
+            if (temp.Message.Contains("~AST-ERR~"))
+            {
+                return temp.Message.Substring(0, temp.Message.Length - 9);
+            }
+            // lấy message để biết lỗi
+            //while (temp.InnerException != null)
+            //{
+            //    temp = temp.InnerException;
+            //};
+            //return temp.Message;
             return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
         }
+        //public string InnerMessage()
+        //{
+        //    return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
+        //}
     }
 }

@@ -321,14 +321,21 @@ namespace StoreManagement.Controllers
                 AccessoryType accessoryType = db.AccessoryTypes.Find(accessoryTypePK);
                 Customer customer = db.Customers.Find(customerPK);
                 Supplier supplier = db.Suppliers.Find(supplierPK);
+
+                // check if accessoryType or customer or supplier is exist
+                if (accessoryType == null || customer == null || supplier == null)
+                {
+                    throw new Exception("THÔNG TIN PHỤ LIỆU KHÔNG HỢP LỆ");
+                }
+
+                // tạo ID cho phụ liệu
                 List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
-                                               where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK && acc.SupplierPK == supplier.SupplierPK
+                                               where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK && acc.SupplierPK == supplierPK
                                                select acc).ToList();
                 if (accessories.Count == 0)
                     accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + "00001";
                 else
                 {
-                    HashSet<int> hsSupllierPK = new HashSet<int>();
                     string tempStr;
                     Int32 tempInt;
 
@@ -357,6 +364,86 @@ namespace StoreManagement.Controllers
                 throw e;
             }
         }
+
+        public void CreateAccessories(List<Accessory> inputAccessories, string userID)
+        {
+            try
+            {
+                HashSet<string> hsCheckID = new HashSet<string>();
+                foreach (var a in inputAccessories)
+                {
+                    if (a.Art == "undefined") a.Art = "";
+                    if (a.Comment == "undefined") a.Comment = "";
+                    if (a.Color == "undefined") a.Color = "";
+                    string accessoryID = "";
+
+                    // check if accessoryType or customer or supplier is exist
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(a.AccessoryTypePK);
+                    Customer customer = db.Customers.Find(a.CustomerPK);
+                    Supplier supplier = db.Suppliers.Find(a.SupplierPK);
+                    if (accessoryType == null || customer == null || supplier == null)
+                    {
+                        throw new Exception("THÔNG TIN PHỤ LIỆU KHÔNG HỢP LỆ~AST-ERR~");
+                    }
+
+                    // tạo ID cho phụ liệu
+                    List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
+                                                   where acc.AccessoryTypePK == a.AccessoryTypePK && acc.CustomerPK == a.CustomerPK && acc.SupplierPK == supplier.SupplierPK
+                                                   select acc).ToList();
+                    if (accessories.Count == 0)
+                    {
+                        accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + "00001";
+                    }
+                    else
+                    {
+                        string tempStr;
+                        Int32 tempInt;
+
+                        tempStr = accessories[0].AccessoryID.Substring(accessories[0].AccessoryID.Length - 5);
+                        tempInt = Int32.Parse(tempStr) + 1;
+
+                        tempStr = tempInt + "";
+                        if (tempStr.Length == 1) tempStr = "0000" + tempStr;
+                        if (tempStr.Length == 2) tempStr = "000" + tempStr;
+                        if (tempStr.Length == 3) tempStr = "00" + tempStr;
+                        if (tempStr.Length == 4) tempStr = "0" + tempStr;
+                        accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + tempStr;
+                    }
+
+                    while (hsCheckID.Contains(accessoryID))
+                    {
+                        string tempStr;
+                        Int32 tempInt;
+
+                        tempStr = accessoryID.Substring(accessoryID.Length - 5);
+                        tempInt = Int32.Parse(tempStr) + 1;
+
+                        tempStr = tempInt + "";
+                        if (tempStr.Length == 1) tempStr = "0000" + tempStr;
+                        if (tempStr.Length == 2) tempStr = "000" + tempStr;
+                        if (tempStr.Length == 3) tempStr = "00" + tempStr;
+                        if (tempStr.Length == 4) tempStr = "0" + tempStr;
+                        accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + tempStr;
+                    }
+
+                    // create accessory
+                    a.AccessoryID = accessoryID;
+                    db.Accessories.Add(a);
+                    hsCheckID.Add(accessoryID);
+
+                    // lưu activity create
+                    Activity activity = new Activity("create", a.AccessoryID, "Accessory", userID);
+                    db.Activities.Add(activity);
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
 
         public void UpdateAccessory(int accessoryPK, string comment, string userID)
         {
@@ -388,7 +475,7 @@ namespace StoreManagement.Controllers
                 Accessory accessory = db.Accessories.Find(accessoryPK);
                 if (conception.CustomerPK != accessory.CustomerPK)
                 {
-                    throw new Exception("MÃ HÀNG VÀ ACCESSORY KHÔNG CÙNG CUSTOMER!");
+                    throw new Exception("MÃ HÀNG VÀ ACCESSORY KHÔNG CÙNG CUSTOMER~AST-ERR~");
                 }
                 ConceptionAccessory conceptionAccessory = new ConceptionAccessory(conceptionPK, accessoryPK);
                 db.ConceptionAccessories.Add(conceptionAccessory);
@@ -418,7 +505,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = db.Accessories.Find(accessoryPK);
                     if (conception.CustomerPK != accessory.CustomerPK)
                     {
-                        throw new Exception("MÃ HÀNG VÀ ACCESSORY KHÔNG CÙNG CUSTOMER!");
+                        throw new Exception("MÃ HÀNG VÀ ACCESSORY KHÔNG CÙNG CUSTOMER~AST-ERR~");
                     }
                     ConceptionAccessory conceptionAccessory = new ConceptionAccessory(conceptionPK, accessoryPK);
                     db.ConceptionAccessories.Add(conceptionAccessory);
@@ -447,7 +534,7 @@ namespace StoreManagement.Controllers
                 Accessory accessory = db.Accessories.Find(accessoryPK);
                 if (conception.CustomerPK != accessory.CustomerPK)
                 {
-                    throw new Exception("MÃ HÀNG VÀ PHỤ LIỆU KHÔNG CÙNG KHÁCH HÀNG!");
+                    throw new Exception("MÃ HÀNG VÀ PHỤ LIỆU KHÔNG CÙNG KHÁCH HÀNG~AST-ERR~");
                 }
                 List<DemandedItem> demandedItems = (from dI in db.DemandedItems
                                                     where dI.AccessoryPK == accessoryPK
@@ -457,7 +544,7 @@ namespace StoreManagement.Controllers
                     Demand demand = db.Demands.Find(item.DemandPK);
                     if (demand.ConceptionPK == conception.ConceptionPK)
                     {
-                        throw new Exception("MÃ HÀNG VÀ PHỤ LIỆU ĐÃ ĐƯỢC LIÊN KẾT VÀ SỬ DỤNG!");
+                        throw new Exception("MÃ HÀNG VÀ PHỤ LIỆU ĐÃ ĐƯỢC LIÊN KẾT VÀ SỬ DỤNG~AST-ERR~");
                     }
                 }
 
