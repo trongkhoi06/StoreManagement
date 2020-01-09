@@ -246,8 +246,7 @@ namespace StoreManagement.Controllers
                         if (!packedItem.IsClassified)
                         {
                             // chạy lệnh edit counting
-                            countingItemController.updateIsCountedOfIdentifiedItem(countingSession.IdentifiedItemPK, false);
-                            countingItemController.deleteCountingSession(countingSessionPK);
+                            countingItemController.deleteCountingSession(countingSession.CountingSessionPK);
                         }
                         else
                         {
@@ -258,7 +257,7 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                     }
-                    return Content(HttpStatusCode.OK, "DELETE COUNTING THÀNH CÔNG");
+                    return Content(HttpStatusCode.OK, "XÓA PHIÊN ĐẾM THÀNH CÔNG");
 
                 }
                 catch (Exception e)

@@ -63,6 +63,11 @@ namespace StoreManagement.Controllers
             {
                 CountingSession countingSession = db.CountingSessions.Find(countingSessionPK);
                 db.CountingSessions.Remove(countingSession);
+
+                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(countingSession.IdentifiedItemPK);
+                identifiedItem.IsCounted = false;
+                db.Entry(identifiedItem).State = EntityState.Modified;
+
                 db.SaveChanges();
             }
             catch (Exception e)

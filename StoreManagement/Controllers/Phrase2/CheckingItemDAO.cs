@@ -27,7 +27,7 @@ namespace StoreManagement.Controllers
 
                 // update identifiedItem IsChecked
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                identifiedItem.IsChecked = true;
+                identifiedItem.IsChecked = false;
                 db.Entry(identifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }
@@ -68,7 +68,7 @@ namespace StoreManagement.Controllers
 
                 // update identifiedItem IsChecked
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                identifiedItem.IsChecked = true;
+                identifiedItem.IsChecked = false;
                 db.Entry(identifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }

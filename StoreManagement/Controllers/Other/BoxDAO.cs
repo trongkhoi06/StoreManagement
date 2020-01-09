@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using static StoreManagement.Controllers.IssuingController;
 
 namespace StoreManagement.Controllers
 {
@@ -77,13 +78,25 @@ namespace StoreManagement.Controllers
         public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
         {
             if (boxIDs != null)
+            {
                 foreach (var boxID in boxIDs)
                 {
                     Box box = GetBoxByBoxID(boxID);
-                    box.IsActive = isActive;
+
+                    // kiểm box empty
+                    StoredBox storedBox = GetStoredBoxbyBoxPK(box.BoxPK);
+
+                    List<Entry> entries = db.Entries.Where(e => e.StoredBoxPK == storedBox.StoredBoxPK).ToList();
+                    double quantity = 0;
+                    foreach (var entry in entries)
+                    {
+                        quantity += new StoringDAO().EntryQuantity(entry);
+                    }
+                    if (quantity != 0) throw new Exception("THÙNG CHƯA TRỐNG~AST-ERR~");
                     box.IsActive = isActive;
                     db.Entry(box).State = EntityState.Modified;
                 }
+            }
             db.SaveChanges();
         }
 

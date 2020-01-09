@@ -18,7 +18,7 @@ namespace StoreManagement.Controllers
 
         [Route("api/IssuingController/CreateDemand")]
         [HttpPost]
-        public IHttpActionResult CreateDemand(int customerPK, int conceptionPK, double totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
+        public IHttpActionResult CreateDemand(int customerPK, int conceptionPK, int totalDemand, string receiveDevision, string userID, [FromBody] List<Client_Accessory_DemandedQuantity_Comment> list)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
             {
@@ -27,6 +27,14 @@ namespace StoreManagement.Controllers
                 try
                 {
                     // kiểm khi chạy lệnh
+                    if (!PrimitiveType.isValidIntegerQuantity(totalDemand))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
+                    if (receiveDevision.Length <= 30 && receiveDevision != null && receiveDevision != "")
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                     Conception conception = db.Conceptions.Find(conceptionPK);
                     if (conception.CustomerPK != customerPK)
                     {
@@ -213,17 +221,21 @@ namespace StoreManagement.Controllers
                         List<RequestedItem> requestedItems = (from rI in db.RequestedItems
                                                               where rI.DemandedItemPK == demandedItem.DemandedItemPK
                                                               select rI).ToList();
-                        if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
-                                                        - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
-                        {
-                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
-                        }
+                        //if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                        //                                - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        //{
+                        //    return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        //}
                         if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems))
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
                         }
+                        if (!PrimitiveType.isValidQuantity(item.RequestedQuantity))
+                        {
+                            return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                        }
                     }
-                    if (expectedDate.Date < DateTime.Now)
+                    if (expectedDate.Date < DateTime.Now.Date)
                     {
                         return Content(HttpStatusCode.Conflict, "NGÀY DỰ KIẾN KHÔNG HỢP LỆ!");
                     }
@@ -231,6 +243,11 @@ namespace StoreManagement.Controllers
                     // init requestid
                     int noRequestID;
                     Demand demand = db.Demands.Find(demandPK);
+                    if (!PrimitiveType.isValidComment(comment))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
+
                     if (!demand.IsOpened)
                     {
                         return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ ĐÓNG, KHÔNG THỂ TẠO YÊU CẦU XUẤT!");
@@ -339,14 +356,18 @@ namespace StoreManagement.Controllers
                                                               select rI).ToList();
                         double temp = issuingDAO.InStoredQuantity(accessory.AccessoryPK)
                                                         - issuingDAO.InOtherRequestedQuantity(accessory.AccessoryPK, item.RequestedItemPK);
-                        if (item.RequestedQuantity > temp)
+                        //if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                        //                                - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        //{
+                        //    return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        //}
+                        if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems))
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
                         }
-                        temp = item.RequestedQuantity + issuingDAO.TotalOtherRequestedQuantity(requestedItem.RequestedItemPK, requestedItems);
-                        if (demandedItem.DemandedQuantity < temp)
+                        if (!PrimitiveType.isValidQuantity(item.RequestedQuantity))
                         {
-                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                            return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                         }
                     }
                     if (expectedDate.Date < DateTime.Now)
@@ -354,10 +375,17 @@ namespace StoreManagement.Controllers
                         return Content(HttpStatusCode.Conflict, "NGÀY DỰ KIẾN KHÔNG HỢP LỆ!");
                     }
                     Request request = db.Requests.Find(requestPK);
+
+                    if (!PrimitiveType.isValidComment(comment))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
+
                     if (request.UserID != userID)
                     {
                         return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
                     }
+
                     if (request.IsIssued)
                     {
                         return Content(HttpStatusCode.Conflict, "YÊU CẦU XUẤT ĐÃ ĐƯỢC CHUẨN BỊ XONG!");
@@ -605,20 +633,24 @@ namespace StoreManagement.Controllers
                 IssuingSession issuingSession = null;
                 try
                 {
-
-                    issuingDAO.UpdateRequest(requestPK, true);
-                    boxDAO.ChangeIsActiveBoxes(input.boxIDs, false);
+                    Request request = db.Requests.Find(requestPK);
+                    if (request.IsIssued)
+                    {
+                        return Content(HttpStatusCode.Conflict, "YÊU CẦU NHẬN ĐÃ ĐƯỢC PHÁT RỒI, KHÔNG THỂ PHÁT NỮA");
+                    }
                     issuingSession = issuingDAO.CreateIssuingSession(userID, requestPK, input.boxIDs);
-                    storingDAO.CreateIssueEntry(input, issuingSession);
+                    storingDAO.CreateIssueEntry(input, issuingSession, request);
+                    boxDAO.ChangeIsActiveBoxes(input.boxIDs, false);
+                    issuingDAO.UpdateRequestIsIssued(requestPK, true);
                 }
                 catch (Exception e)
                 {
                     if (issuingSession != null)
                     {
-                        issuingDAO.UpdateRequest(requestPK, false);
-                        boxDAO.ChangeIsActiveBoxes(input.boxIDs, true);
                         issuingDAO.DeleteIssuingSession(issuingSession.IssuingSessionPK);
                     }
+                    issuingDAO.UpdateRequestIsIssued(requestPK, false);
+                    boxDAO.ChangeIsActiveBoxes(input.boxIDs, true);
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
@@ -773,30 +805,30 @@ namespace StoreManagement.Controllers
                     Request request = db.Requests.Find(requestPK);
                     if (request.UserID == userID)
                     {
-                        if (request.IsIssued)
+                        if (request.IsIssued && request.IsConfirmed == false)
                         {
                             confirmingSession = issuingDAO.CreateConfirmingSession(requestPK, userID);
                             issuingDAO.ConfirmRequest(requestPK, true);
                         }
                         else
                         {
-                            return Content(HttpStatusCode.Conflict, "YÊU CẦU XUẤT CHƯA ĐƯỢC CHUẨN BỊ!");
+                            return Content(HttpStatusCode.Conflict, "YÊU CẦU XUẤT CHƯA ĐƯỢC CHUẨN BỊ");
                         }
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                     }
                 }
                 catch (Exception e)
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "NHẬN YÊU CẦU XUẤT THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "NHẬN YÊU CẦU XUẤT THÀNH CÔNG");
             }
             else
             {
-                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
             }
         }
 

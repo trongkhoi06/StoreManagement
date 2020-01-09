@@ -7,9 +7,21 @@ namespace StoreManagement.Class
 {
     public class PrimitiveType
     {
+        public static bool isValidIntegerQuantity(int quantity)
+        {
+            if (quantity > 0 && quantity < 100000)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static bool isValidQuantity(double quantity)
         {
-            if (quantity > 0 && quantity < 1000000)
+            if (quantity > 0 && quantity < 100000)
             {
                 return true;
             }
@@ -33,7 +45,7 @@ namespace StoreManagement.Class
 
         public static bool isValidComment(string comment)
         {
-            if (comment.Length <= 50)
+            if (comment == null || comment.Length <= 50)
             {
                 return true;
             }
@@ -45,7 +57,7 @@ namespace StoreManagement.Class
 
         public static bool isValidAddress(string address)
         {
-            if (address.Length <= 200)
+            if (address == null || address.Length <= 200)
             {
                 return true;
             }
@@ -57,7 +69,7 @@ namespace StoreManagement.Class
 
         public static bool isValidPhoneNumber(string phoneNumber)
         {
-            if (phoneNumber.Length <= 20)
+            if (phoneNumber == null || phoneNumber.Length <= 20)
             {
                 return true;
             }

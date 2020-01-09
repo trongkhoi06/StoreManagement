@@ -3144,7 +3144,7 @@ namespace StoreManagement.Controllers
             List<Client_Box_Information_Angular> result = new List<Client_Box_Information_Angular>();
             try
             {
-                List<Box> boxes = db.Boxes.Where(unit => unit.IsActive == true && unit.BoxID != "ĐÃ TRÃ")
+                List<Box> boxes = db.Boxes.Where(unit => unit.IsActive == true && unit.BoxID != "ĐÃ TRẢ")
                     .OrderByDescending(unit => unit.BoxPK).ToList();
                 foreach (var box in boxes)
                 {

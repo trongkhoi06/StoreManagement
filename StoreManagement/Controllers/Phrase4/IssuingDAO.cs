@@ -100,6 +100,11 @@ namespace StoreManagement.Controllers
             try
             {
                 DemandedItem demandedItem = db.DemandedItems.Find(demandedItemPK);
+                if (!PrimitiveType.isValidQuantity(demandedQuantity) && !PrimitiveType.isValidComment(comment))
+                {
+                    throw new Exception(SystemMessage.NotPassPrimitiveType);
+                }
+
                 if (demandedQuantity > 0)
                 {
                     demandedItem.DemandedQuantity = demandedQuantity;
@@ -125,21 +130,28 @@ namespace StoreManagement.Controllers
             {
                 foreach (var item in list)
                 {
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryID == item.AccessoryID
-                                           select a).FirstOrDefault();
+                    if (PrimitiveType.isValidQuantity(item.DemandedQuantity))
+                    {
+                        Accessory accessory = (from a in db.Accessories
+                                               where a.AccessoryID == item.AccessoryID
+                                               select a).FirstOrDefault();
 
-                    Conception conception = db.Conceptions.Find(conceptionPK);
+                        Conception conception = db.Conceptions.Find(conceptionPK);
 
-                    ConceptionAccessory conceptionAccessory = (from ca in db.ConceptionAccessories
-                                                               where ca.AccessoryPK == accessory.AccessoryPK
-                                                               && ca.ConceptionPK == conception.ConceptionPK
-                                                               select ca).FirstOrDefault();
-                    if (accessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " KHÔNG TỒN TẠI!");
-                    if (conception == null) throw new Exception("MÃ HÀNG " + conception.ConceptionCode + " KHÔNG TỒN TẠI!");
-                    if (conceptionAccessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " CHƯA ĐƯỢC GẮN CC!");
-                    DemandedItem demandedItem = new DemandedItem(item.DemandedQuantity, item.Comment, demand.DemandPK, accessory.AccessoryPK);
-                    db.DemandedItems.Add(demandedItem);
+                        ConceptionAccessory conceptionAccessory = (from ca in db.ConceptionAccessories
+                                                                   where ca.AccessoryPK == accessory.AccessoryPK
+                                                                   && ca.ConceptionPK == conception.ConceptionPK
+                                                                   select ca).FirstOrDefault();
+                        if (accessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " KHÔNG TỒN TẠI!");
+                        if (conception == null) throw new Exception("MÃ HÀNG " + conception.ConceptionCode + " KHÔNG TỒN TẠI!");
+                        if (conceptionAccessory == null) throw new Exception("PHỤ LIỆU " + accessory.AccessoryID + " CHƯA ĐƯỢC GẮN CC!");
+                        DemandedItem demandedItem = new DemandedItem(item.DemandedQuantity, item.Comment, demand.DemandPK, accessory.AccessoryPK);
+                        db.DemandedItems.Add(demandedItem);
+                    }
+                    else
+                    {
+                        throw new Exception(SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 db.SaveChanges();
             }
@@ -399,7 +411,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void UpdateRequest(int requestPK, bool isIssued)
+        public void UpdateRequestIsIssued(int requestPK, bool isIssued)
         {
             try
             {

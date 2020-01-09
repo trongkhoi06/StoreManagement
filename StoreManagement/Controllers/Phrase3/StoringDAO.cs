@@ -606,12 +606,20 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void CreateIssueEntry(Client_InputPrepareRequestAPI input, IssuingSession issuingSession)
+        public void CreateIssueEntry(Client_InputPrepareRequestAPI input, IssuingSession issuingSession, Request request)
         {
             try
             {
                 Entry entry;
                 Accessory accessory;
+                // init demandedItems to check accessory
+                List<RequestedItem> requestedItems = db.RequestedItems.Where(unit => unit.RequestPK == request.RequestPK).ToList();
+                List<DemandedItem> demandedItems = new List<DemandedItem>();
+                foreach (var item in requestedItems)
+                {
+                    demandedItems.Add(db.DemandedItems.Find(item.DemandedItemPK));
+                }
+
                 foreach (var item_position_quantity in input.Item_position_quantities)
                 {
                     // lấy hàng cần xuất
@@ -632,11 +640,25 @@ namespace StoreManagement.Controllers
                     foreach (var item in item_position_quantity.BoxAndQuantity)
                     {
                         StoredBox sBox = db.StoredBoxes.Find(item.StoredBoxPK);
-                        if (sBox == null) throw new Exception("Data StoreBoxes Lỗi!");
-
-                        entry = new Entry(sBox, "Issuing", issuingSession.IssuingSessionPK, item_position_quantity.IsRestored,
-                            item.Quantity, item_position_quantity.ItemPK, accessory);
-                        db.Entries.Add(entry);
+                        if (sBox == null) throw new Exception("THÙNG KHÔNG HỢP LỆ~AST-ERR~");
+                        if (!IsDemandedItemsContainAccessory(demandedItems, accessory))
+                        {
+                            throw new Exception("PHỤ LIỆU YÊU CẦU XUẤT KHÔNG KHỚP VỚI PHỤ LIỆU PHIẾU CẤP PHÁT~AST-ERR~");
+                        }
+                        if (!PrimitiveType.isValidQuantity(item.Quantity))
+                        {
+                            throw new Exception("SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ~AST-ERR~");
+                        }
+                            if (item.Quantity <= AvailableQuantity(sBox, item_position_quantity.ItemPK, item_position_quantity.IsRestored))
+                        {
+                            entry = new Entry(sBox, "Issuing", issuingSession.IssuingSessionPK, item_position_quantity.IsRestored,
+                                item.Quantity, item_position_quantity.ItemPK, accessory);
+                            db.Entries.Add(entry);
+                        }
+                        else
+                        {
+                            throw new Exception("SỐ LƯỢNG XUẤT LỚN HƠN SỐ LƯỢNG TỒN KHO~AST-ERR~");
+                        }
                     }
                 }
                 db.SaveChanges();
@@ -676,6 +698,14 @@ namespace StoreManagement.Controllers
             }
         }
 
+        private bool IsDemandedItemsContainAccessory(List<DemandedItem> demandedItems, Accessory accessory)
+        {
+            foreach (var item in demandedItems)
+            {
+                if (item.AccessoryPK == accessory.AccessoryPK) return true;
+            }
+            return false;
+        }
     }
 }
 
