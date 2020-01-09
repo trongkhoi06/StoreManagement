@@ -123,6 +123,11 @@ namespace StoreManagement.Controllers
                 {
                     if (ordersController.CheckAccessoryAndSupplier(supplierPK, list))
                     {
+                        // INPUT GUARANTEE
+                        if (orderID.Length > 25)
+                        {
+                            return Content(HttpStatusCode.Conflict, "MÃ ĐƠN ĐẶT KHÔNG ĐƯỢC DÀI QUÁ 25 KÝ TỰ");
+                        }
                         // create order
                         order = ordersController.CreateOrder(orderID, supplierPK, userID);
                         // create order items
@@ -698,7 +703,14 @@ namespace StoreManagement.Controllers
                     PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     try
                     {
-                        packedItemsController.ChangeContract(packedItemPK, contractNumber);
+                        if (contractNumber.Length <= 25)
+                        {
+                            packedItemsController.ChangeContract(packedItemPK, contractNumber);
+                        }
+                        else
+                        {
+                            return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -898,57 +910,10 @@ namespace StoreManagement.Controllers
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 // edit identification
-                IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(IdentifyingSessionPK);
-                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
                 try
                 {
-                    if (identifyingSession.UserID == userID)
-                    {
-                        bool temp = false;
-                        foreach (var el in list)
-                        {
-                            if (el.IdentifiedQuantity != 0)
-                            {
-                                temp = true;
-                                break;
-                            }
-                        }
-                        if (temp == false)
-                        {
-                            return Content(HttpStatusCode.Conflict, "KO ĐƯỢC XÓA HẾT CỤM PHỤ LIỆU!");
-                        }
-                        foreach (var el in list)
-                        {
-                            // querry lấy pack
-                            IdentifiedItem identifiedItem = db.IdentifiedItems.Find(el.IdentifiedItemPK);
-                            PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                            Pack pack = db.Packs.Find(packedItem.PackPK);
-                            // pack đang mở
-                            if (pack.IsOpened)
-                            {
-                                // switch case xoa sua
-                                switch (el.IdentifiedQuantity)
-                                {
-                                    case 0:
-                                        identifyItemController.deleteIdentifiedItem(el.IdentifiedItemPK);
-                                        break;
-                                    default:
-                                        identifyItemController.updateIdentifiedItem(el.IdentifiedItemPK, el.IdentifiedQuantity);
-                                        break;
-                                }
-
-                                identifyItemController.changeExecutedDate(identifyingSession);
-                            }
-                            else
-                            {
-                                return Content(HttpStatusCode.Conflict, "PHIẾU NHẬP ĐANG ĐÓNG, KO GHI NHẬN ĐƯỢC");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
-                    }
+                    identifyItemDAO.EditIdentification(IdentifyingSessionPK, userID, list);
                 }
                 catch (Exception e)
                 {

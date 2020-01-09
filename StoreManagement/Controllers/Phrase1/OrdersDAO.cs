@@ -40,8 +40,7 @@ namespace StoreManagement.Controllers
 
         public Order CreateOrder(string orderID, int supplierPK, string userID)
         {
-            PrimitiveType primitiveType = new PrimitiveType();
-            if (primitiveType.isOrderID(orderID))
+            if (PrimitiveType.isValidOrderID(orderID))
             {
                 // Khởi tạo order
                 Order order = new Order(orderID, supplierPK, userID);
@@ -65,7 +64,7 @@ namespace StoreManagement.Controllers
             }
             else
             {
-                throw new Exception("MÃ ĐƠN ĐẶT HÀNG KHÔNG PHÙ HỢP");
+                throw new Exception(SystemMessage.NotPassPrimitiveType);
             }
         }
 
@@ -130,11 +129,18 @@ namespace StoreManagement.Controllers
                     {
                         throw new Exception("PHỤ LIỆU KHÔNG ĐƯỢC TRÙNG");
                     }
+
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
                     if (accessory == null) throw new Exception("PHỤ LIỆU KHÔNG TỒN TẠI");
                     if (accessory.SupplierPK != SupplierPK)
                     {
                         throw new Exception("PHỤ LIỆU KHÔNG ĐÚNG NHÀ CUNG CẤP");
+                    }
+
+                    Supplier supplier = db.Suppliers.Find(SupplierPK);
+                    if (!supplier.IsActive)
+                    {
+                        throw new Exception("NHÀ CUNG CẤP ĐANG BỊ ẨN");
                     }
                 }
                 

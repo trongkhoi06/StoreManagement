@@ -119,6 +119,7 @@ namespace StoreManagement.Controllers
                 // khởi tạo
                 CountingItemDAO countingItemController = new CountingItemDAO();
                 PackedItemsDAO packedItemsController = new PackedItemsDAO();
+                CountingSession countingSession = null;
                 // chạy lệnh counting
                 try
                 {
@@ -139,7 +140,7 @@ namespace StoreManagement.Controllers
                             if (!identifiedItem.IsCounted)
                             {
                                 // tạo session update và iscounted
-                                countingItemController.createCountingSession(new CountingSession(identifiedItemPK, countedQuantity, userID));
+                                countingSession = countingItemController.createCountingSession(new CountingSession(identifiedItemPK, countedQuantity, userID));
                                 countingItemController.updateIsCountedOfIdentifiedItem(identifiedItemPK, true);
                             }
                             else
@@ -160,6 +161,10 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
+                    if (countingSession != null)
+                    {
+                        countingItemController.deleteCountingSession(countingSession.CountingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
 
@@ -189,8 +194,15 @@ namespace StoreManagement.Controllers
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                         if (!packedItem.IsClassified)
                         {
-                            // chạy lệnh edit counting
-                            countingItemController.updateCountingSession(countingSessionPK, countedQuantity);
+                            if (PrimitiveType.isValidQuantity(countedQuantity))
+                            {
+                                // chạy lệnh edit counting
+                                countingItemController.updateCountingSession(countingSessionPK, countedQuantity);
+                            }
+                            else
+                            {
+                                return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                            }
                         }
                         else
                         {
@@ -426,7 +438,7 @@ namespace StoreManagement.Controllers
                             if (!identifiedItem.IsChecked)
                             {
                                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
-                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
+                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity && PrimitiveType.isValidQuantity(checkedQuantity))
                                 {
                                     // tạo session update và ischecked
                                     checkingItemController.createCheckingSession(new CheckingSession(checkedQuantity, unqualifiedQuantity, identifiedItemPK, userID, comment)
@@ -434,7 +446,7 @@ namespace StoreManagement.Controllers
                                 }
                                 else
                                 {
-                                    return Content(HttpStatusCode.Conflict, "SAI SỐ LƯỢNG");
+                                    return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                                 }
                             }
                             else
@@ -486,14 +498,14 @@ namespace StoreManagement.Controllers
                         {
                             if (!identifiedItem.IsChecked)
                             {
-                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity)
+                                if (checkedQuantity <= packedItemsController.Sample && unqualifiedQuantity <= checkedQuantity && PrimitiveType.isValidQuantity(checkedQuantity))
                                 {
                                     // update session check
                                     checkingItemController.updateCheckingSession(checkingSessionPK, checkedQuantity, unqualifiedQuantity, comment);
                                 }
                                 else
                                 {
-                                    return Content(HttpStatusCode.Conflict, "SAI SỐ LƯỢNG");
+                                    return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                                 }
 
                             }
@@ -694,6 +706,10 @@ namespace StoreManagement.Controllers
                 // chạy lệnh classify
                 try
                 {
+                    if (comment.Length > 50)
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                     PackedItem packedItem = db.PackedItems.Find(packedItemPK);
                     Pack pack = db.Packs.Find(packedItem.PackPK);
                     // pack đang được đóng

@@ -16,19 +16,18 @@ namespace StoreManagement.Controllers
 
         public IdentifyingSession createdIdentifyingSession(string userID)
         {
-            IdentifyingSession identifyingSession = new IdentifyingSession(userID);
-            db.IdentifyingSessions.Add(identifyingSession);
             try
             {
-                db.SaveChanges();
+                IdentifyingSession identifyingSession = new IdentifyingSession(userID);
+                db.IdentifyingSessions.Add(identifyingSession);
+                identifyingSession = (from iss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
+                                      select iss).FirstOrDefault();
+                return identifyingSession;
             }
             catch (Exception e)
             {
                 throw e;
             }
-            identifyingSession = (from iss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
-                                  select iss).FirstOrDefault();
-            return identifyingSession;
         }
 
         public void createIndentifyItem(IdentifyingSession Iss, List<Client_PackedItemPK_IdentifiedQuantity> list, UnstoredBox uBox)
@@ -44,7 +43,14 @@ namespace StoreManagement.Controllers
                     // pack đang mở
                     if (pack.IsOpened)
                     {
-                        db.IdentifiedItems.Add(new IdentifiedItem(el.IdentifiedQuantity, el.PackedItemPK, Iss.IdentifyingSessionPK, uBox.UnstoredBoxPK));
+                        if (PrimitiveType.isValidQuantity(el.IdentifiedQuantity))
+                        {
+                            db.IdentifiedItems.Add(new IdentifiedItem(el.IdentifiedQuantity, el.PackedItemPK, Iss.IdentifyingSessionPK, uBox.UnstoredBoxPK));
+                        }
+                        else
+                        {
+                            throw new Exception(SystemMessage.NotPassPrimitiveType);
+                        }
                     }
                     else
                     {
@@ -59,50 +65,6 @@ namespace StoreManagement.Controllers
                 throw e;
             }
 
-        }
-
-        public void changeExecutedDate(IdentifyingSession session)
-        {
-            try
-            {
-                session.ExecutedDate = DateTime.Now;
-                db.Entry(session).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-
-                throw e;
-            }
-        }
-
-        public void updateIdentifiedItem(int IdentifiedItemPK, double IdentifiedQuantity)
-        {
-            try
-            {
-                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(IdentifiedItemPK);
-                identifiedItem.IdentifiedQuantity = IdentifiedQuantity;
-                db.Entry(identifiedItem).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void deleteIdentifiedItem(int IdentifiedItemPK)
-        {
-            try
-            {
-                IdentifiedItem identifiedItem = db.IdentifiedItems.Find(IdentifiedItemPK);
-                db.IdentifiedItems.Remove(identifiedItem);
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
         }
 
         public void deleteIdentifiedItemsOfSession(int IdentifyingSessionPK)
@@ -275,6 +237,66 @@ namespace StoreManagement.Controllers
             return result;
         }
 
+        public void EditIdentification(int identifyingSessionPK, string userID, List<Client_IdentifiedItemPK_IdentifiedQuantity> list)
+        {
+            try
+            {
+                IdentifyingSession identifyingSession = db.IdentifyingSessions.Find(identifyingSessionPK);
+                if (identifyingSession.UserID == userID)
+                {
+                    bool temp = false;
+                    foreach (var el in list)
+                    {
+                        if (el.IdentifiedQuantity != 0)
+                        {
+                            temp = true;
+                            break;
+                        }
+                    }
+                    if (temp == false)
+                    {
+                        throw new Exception("KO ĐƯỢC XÓA HẾT CỤM PHỤ LIỆU!");
+                    }
+                    foreach (var el in list)
+                    {
+                        // querry lấy pack
+                        IdentifiedItem identifiedItem = db.IdentifiedItems.Find(el.IdentifiedItemPK);
+                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                        Pack pack = db.Packs.Find(packedItem.PackPK);
+                        // pack đang mở
+                        if (pack.IsOpened)
+                        {
+                            // switch case xoa sua
+                            switch (el.IdentifiedQuantity)
+                            {
+                                case 0:
+                                    db.IdentifiedItems.Remove(identifiedItem);
+                                    break;
+                                default:
+                                    identifiedItem.IdentifiedQuantity = el.IdentifiedQuantity;
+                                    db.Entry(identifiedItem).State = EntityState.Modified;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("PHIẾU NHẬP ĐANG ĐÓNG, KO GHI NHẬN ĐƯỢC");
+                        }
+                    }
+                    identifyingSession.ExecutedDate = DateTime.Now;
+                    db.Entry(identifyingSession).State = EntityState.Modified;
 
+                    db.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
     }
 }

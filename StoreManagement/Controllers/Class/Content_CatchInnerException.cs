@@ -29,9 +29,5 @@ namespace StoreManagement.Class
             //return temp.Message;
             return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
         }
-        //public string InnerMessage()
-        //{
-        //    return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
-        //}
     }
 }

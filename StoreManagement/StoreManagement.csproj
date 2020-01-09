@@ -199,6 +199,7 @@
     <Compile Include="Controllers\Class\Client_StoredBox_Shelf_Row.cs" />
     <Compile Include="Controllers\Class\Content_CatchInnerException.cs" />
     <Compile Include="Controllers\Class\Client_Shelf.cs" />
+    <Compile Include="Controllers\Class\SystemMessage.cs" />
     <Compile Include="Controllers\Class\ValidationBeforeCommandDAO.cs" />
     <Compile Include="Controllers\Other\DevicesController.cs" />
     <Compile Include="Controllers\Other\BoxDAO.cs" />

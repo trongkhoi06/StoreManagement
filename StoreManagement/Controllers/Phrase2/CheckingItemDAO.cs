@@ -1,4 +1,5 @@
-﻿using StoreManagement.Models;
+﻿using StoreManagement.Class;
+using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -17,6 +18,10 @@ namespace StoreManagement.Controllers
         {
             try
             {
+                if (checkingSession.Comment.Length > 50)
+                {
+                    throw new Exception(SystemMessage.NotPassPrimitiveType);
+                }
                 // create checking session
                 db.CheckingSessions.Add(checkingSession);
 
@@ -36,6 +41,10 @@ namespace StoreManagement.Controllers
         {
             try
             {
+                if (comment.Length > 50)
+                {
+                    throw new Exception(SystemMessage.NotPassPrimitiveType);
+                }
                 CheckingSession checkingSession = db.CheckingSessions.Find(checkingSessionPK);
                 checkingSession.CheckedQuantity = checkedQuantity;
                 checkingSession.UnqualifiedQuantity = unqualifiedQuantity;

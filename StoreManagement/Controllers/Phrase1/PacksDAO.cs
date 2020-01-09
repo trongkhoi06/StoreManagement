@@ -15,33 +15,25 @@ namespace StoreManagement.Controllers
 
         public Pack CreatePack(string packID, int orderPK, string userID)
         {
-            PrimitiveType primitiveType = new PrimitiveType();
-            if (primitiveType.isPackID(packID))
+            // Khởi tạo Pack
+            Pack Pack = new Pack(packID, orderPK, userID);
+            db.Packs.Add(Pack);
+            try
             {
-                // Khởi tạo Pack
-                Pack Pack = new Pack(packID, orderPK, userID);
-                db.Packs.Add(Pack);
-                try
-                {
-                    db.SaveChanges();
-                }
-                catch (DbUpdateException e)
-                {
-                    if (PackExists(Pack.PackID))
-                    {
-                        throw new Exception("PackID ĐÃ TỒN TẠI");
-                    }
-                    else
-                    {
-                        throw e;
-                    }
-                }
-                return Pack;
+                db.SaveChanges();
             }
-            else
+            catch (DbUpdateException e)
             {
-                throw new Exception("MÃ ĐƠN ĐẶT HÀNG KHÔNG PHÙ HỢP");
+                if (PackExists(Pack.PackID))
+                {
+                    throw new Exception("PackID ĐÃ TỒN TẠI");
+                }
+                else
+                {
+                    throw e;
+                }
             }
+            return Pack;
         }
 
         public bool isCheckedOrCountedOrClassified(int packPK)

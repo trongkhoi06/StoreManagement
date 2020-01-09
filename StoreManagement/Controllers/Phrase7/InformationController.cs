@@ -115,7 +115,15 @@ namespace StoreManagement.Controllers
                 {
                     if (address == "undefined") address = "";
                     if (phoneNumber == "undefined") phoneNumber = "";
-                    informationDAO.CreateCustomer(name, code, address, phoneNumber, userID);
+                    if (PrimitiveType.isValidName(name) && PrimitiveType.isValidCode(code)
+                        && PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        informationDAO.CreateCustomer(name, code, address, phoneNumber, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -138,7 +146,16 @@ namespace StoreManagement.Controllers
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.UpdateCustomer(customerPK, address, phoneNumber, userID);
+                    if (address == "undefined") address = "";
+                    if (phoneNumber == "undefined") phoneNumber = "";
+                    if (PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        informationDAO.UpdateCustomer(customerPK, address, phoneNumber, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -230,7 +247,16 @@ namespace StoreManagement.Controllers
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.CreateConception(customerPK, conceptionCode, year, season, description, userID);
+                    if (conceptionCode.Length <= 12 && conceptionCode != null && conceptionCode != ""
+                        && description.Length <= 30 && description != null && description != ""
+                        && (year + "").Length <= 4)
+                    {
+                        informationDAO.CreateConception(customerPK, conceptionCode, year, season, description, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -324,7 +350,15 @@ namespace StoreManagement.Controllers
                 {
                     if (address == "undefined") address = "";
                     if (phoneNumber == "undefined") phoneNumber = "";
-                    informationDAO.CreateSupplier(name, address, phoneNumber, code, userID);
+                    if (PrimitiveType.isValidName(name) && PrimitiveType.isValidCode(code)
+                        && PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        informationDAO.CreateSupplier(name, address, phoneNumber, code, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -347,7 +381,14 @@ namespace StoreManagement.Controllers
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.UpdateSupplier(supplierPK, address, phoneNumber, userID);
+                    if (PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        informationDAO.UpdateSupplier(supplierPK, address, phoneNumber, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -442,7 +483,15 @@ namespace StoreManagement.Controllers
                     if (art == "undefined") art = "";
                     if (comment == "undefined") comment = "";
                     if (color == "undefined") color = "";
-                    informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
+                    if (art.Length <= 25 && color.Length <= 25 && description.Length <= 25
+                        && PrimitiveType.isValidComment(comment) && item.Length <= 25 && item != null && item != "")
+                    {
+                        informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -488,7 +537,14 @@ namespace StoreManagement.Controllers
                 InformationDAO informationDAO = new InformationDAO();
                 try
                 {
-                    informationDAO.UpdateAccessory(accessoryPK, comment, userID);
+                    if (PrimitiveType.isValidComment(comment))
+                    {
+                        informationDAO.UpdateAccessory(accessoryPK, comment, userID);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 catch (Exception e)
                 {

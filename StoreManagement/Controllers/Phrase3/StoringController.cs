@@ -252,14 +252,15 @@ namespace StoreManagement.Controllers
                         // kiểm box
                         if (sBoxFrom == null)
                         {
-                            return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
+                            return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ");
                         }
                         // kiểm số lượng trong box
                         foreach (var item in list)
                         {
-                            if (item.TransferQuantity > storingDAO.AvailableQuantity(sBoxFrom, item.ItemPK, item.IsRestored))
+                            if (item.TransferQuantity > storingDAO.AvailableQuantity(sBoxFrom, item.ItemPK, item.IsRestored)
+                                && !PrimitiveType.isValidQuantity(item.TransferQuantity))
                             {
-                                return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG KHÔNG HỢP LỆ!");
+                                return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                             }
                         }
                         // tạo phiên chuyển
@@ -269,9 +270,9 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ!");
+                        return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ");
                     }
-                    return Content(HttpStatusCode.OK, "CHUYỂN HÀNG TRONG THÙNG THÀNH CÔNG!");
+                    return Content(HttpStatusCode.OK, "CHUYỂN HÀNG TRONG THÙNG THÀNH CÔNG");
                 }
                 catch (Exception e)
                 {
@@ -346,15 +347,16 @@ namespace StoreManagement.Controllers
                 AdjustingSession adjustingSession = null;
                 try
                 {
+                    if (!PrimitiveType.isValidComment(comment))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                     Box box = boxDAO.GetBoxByBoxID(boxID);
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
-                        //List<Entry> entries = (from e in db.Entries
-                        //                       where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
-                        //                       select e).ToList();
                         adjustingSession = storingDAO.CreateAdjustingSession(comment, false, userID);
-                        if (adjustedQuantity > storingDAO.AvailableQuantity(sBox, itemPK, isRestored))
+                        if (adjustedQuantity > storingDAO.AvailableQuantity(sBox, itemPK, isRestored) && PrimitiveType.isValidQuantity(adjustedQuantity))
                         {
                             storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity - storingDAO.AvailableQuantity(sBox, itemPK, isRestored), isRestored, false, adjustingSession);
                         }
@@ -364,7 +366,7 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            throw new Exception("SỐ LƯỢNG KHÔNG HỢP LỆ");
+                            throw new Exception(SystemMessage.NotPassPrimitiveType);
                         }
                     }
                     else
@@ -407,7 +409,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "AdjustingSession SAI!");
+                        return Content(HttpStatusCode.Conflict, "PHIÊN THAY SỐ LƯỢNG PHỤ LIỆU TỒN KHO KHÔNG HỢP LỆ!");
                     }
                 }
                 catch (Exception e)
@@ -416,7 +418,7 @@ namespace StoreManagement.Controllers
                         storingDAO.UpdateAdjustingSession(adjustingSession.AdjustingSessionPK, false);
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "VERIFY ADJUSTING THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "THAY ĐỔI SỐ LƯỢNG PHỤ LIỆU THÀNH CÔNG!");
             }
             else
             {
@@ -435,13 +437,14 @@ namespace StoreManagement.Controllers
                 DiscardingSession discardingSession = null;
                 try
                 {
+                    if (!PrimitiveType.isValidComment(comment))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                    }
                     Box box = boxDAO.GetBoxByBoxID(boxID);
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
-                        //List<Entry> entries = (from e in db.Entries
-                        //                       where e.StoredBoxPK == sBox.StoredBoxPK && e.ItemPK == itemPK && e.IsRestored == isRestored
-                        //                       select e).ToList();
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
                         if (discardedQuantity <= storingDAO.AvailableQuantity(sBox, itemPK, isRestored) && discardedQuantity > 0)
                         {

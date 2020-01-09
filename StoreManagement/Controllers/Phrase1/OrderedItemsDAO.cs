@@ -52,52 +52,68 @@ namespace StoreManagement.Controllers
 
         public bool isUpdatedOrderedItem(OrderedItem orderedItem, string userID)
         {
-            OrderedItem dbOrderedItem = GetOrderedItem(orderedItem.OrderedItemPK);
-            Order order = db.Orders.Find(orderedItem.OrderPK);
-            if (order.UserID != userID) throw new Exception("PHẢI LÀ NGƯỜI TẠO ORDER MỚI THAY ĐỔI ĐƯỢC");
-            if (dbOrderedItem.OrderPK == orderedItem.OrderPK)
+            try
             {
-                if (orderedItem.OrderedQuantity == 0)
+                OrderedItem dbOrderedItem = GetOrderedItem(orderedItem.OrderedItemPK);
+                Order order = db.Orders.Find(orderedItem.OrderPK);
+                if (order.UserID != userID) throw new Exception("BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+                if (dbOrderedItem.OrderPK == orderedItem.OrderPK)
                 {
-                    db.OrderedItems.Remove(dbOrderedItem);
+                    if (orderedItem.OrderedQuantity == 0)
+                    {
+                        db.OrderedItems.Remove(dbOrderedItem);
 
-                    order.DateCreated = DateTime.Now;
-                    db.Entry(order).State = EntityState.Modified;
+                        order.DateCreated = DateTime.Now;
+                        db.Entry(order).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        if (PrimitiveType.isValidQuantity(orderedItem.OrderedQuantity) && PrimitiveType.isValidComment(orderedItem.Comment))
+                        {
+
+                            dbOrderedItem.Comment = orderedItem.Comment;
+                            dbOrderedItem.OrderedQuantity = orderedItem.OrderedQuantity;
+                            db.Entry(dbOrderedItem).State = EntityState.Modified;
+
+                            order.DateCreated = DateTime.Now;
+                            db.Entry(order).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            throw new Exception(SystemMessage.NotPassPrimitiveType);
+                        }
+                    }
+                    db.SaveChanges();
+                    return true;
                 }
                 else
                 {
-                    dbOrderedItem.Comment = orderedItem.Comment;
-                    dbOrderedItem.OrderedQuantity = orderedItem.OrderedQuantity;
-                    db.Entry(dbOrderedItem).State = EntityState.Modified;
-
-                    order.DateCreated = DateTime.Now;
-                    db.Entry(order).State = EntityState.Modified;
+                    throw new Exception("KHÔNG ĐƯỢC THAY ĐỔI KHÓA CỦA ĐƠN ĐẶT NHA");
                 }
-                try
-                {
-                    db.SaveChanges();
-                }
-                catch (DbUpdateConcurrencyException e)
-                {
-                    throw e;
-                }
-
-                return true;
             }
-            else
+            catch (DbUpdateConcurrencyException e)
             {
-                throw new Exception("KHÔNG ĐƯỢC THAY ĐỔI ORDERPK");
+                throw e;
             }
         }
 
         public bool isOrderedItemCreated(int OrderPK, List<Client_Accessory_OrderedQuantity_Comment> list)
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                db.OrderedItems.Add(new OrderedItem(OrderPK, list[i]));
-            }
             try
             {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (PrimitiveType.isValidQuantity(list[i].OrderedQuantity)
+                        && PrimitiveType.isValidComment(list[i].Comment))
+                    {
+
+                        db.OrderedItems.Add(new OrderedItem(OrderPK, list[i]));
+                    }
+                    else
+                    {
+                        throw new Exception(SystemMessage.NotPassPrimitiveType);
+                    }
+                }
                 db.SaveChanges();
             }
             catch (Exception e)

@@ -35,10 +35,17 @@ namespace StoreManagement.Controllers
             {
                 foreach (var item in list)
                 {
-                    OrderedItem orderedItem = db.OrderedItems.Find(item.OrderedItemPK);
-                    if (orderedItem == null) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG TỒN TẠI!");
-                    if (orderedItem.OrderPK != orderPK) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG CÙNG ĐƠN ĐẶT!");
-                    db.PackedItems.Add(new PackedItem(PackPK, item));
+                    if (PrimitiveType.isValidQuantity(item.PackedQuantity) && PrimitiveType.isValidComment(item.Comment))
+                    {
+                        OrderedItem orderedItem = db.OrderedItems.Find(item.OrderedItemPK);
+                        if (orderedItem == null) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG TỒN TẠI!");
+                        if (orderedItem.OrderPK != orderPK) throw new Exception("PHỤ LIỆU ĐƠN ĐẶT KHÔNG CÙNG ĐƠN ĐẶT!");
+                        db.PackedItems.Add(new PackedItem(PackPK, item));
+                    }
+                    else
+                    {
+                        throw new Exception(SystemMessage.NotPassPrimitiveType);
+                    }
                 }
                 db.SaveChanges();
             }
@@ -111,12 +118,20 @@ namespace StoreManagement.Controllers
             }
             else
             {
-                dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
-                dbPackedItem.Comment = packedItem.Comment;
-                db.Entry(dbPackedItem).State = EntityState.Modified;
+                if (PrimitiveType.isValidQuantity(packedItem.PackedQuantity) && PrimitiveType.isValidComment(packedItem.Comment))
+                {
 
-                pack.DateCreated = DateTime.Now;
-                db.Entry(pack).State = EntityState.Modified;
+                    dbPackedItem.PackedQuantity = packedItem.PackedQuantity;
+                    dbPackedItem.Comment = packedItem.Comment;
+                    db.Entry(dbPackedItem).State = EntityState.Modified;
+
+                    pack.DateCreated = DateTime.Now;
+                    db.Entry(pack).State = EntityState.Modified;
+                }
+                else
+                {
+                    throw new Exception(SystemMessage.NotPassPrimitiveType);
+                }
             }
 
             try

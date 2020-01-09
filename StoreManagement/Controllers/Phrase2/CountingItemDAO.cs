@@ -13,19 +13,21 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        internal void createCountingSession(CountingSession countingSession)
+        public CountingSession createCountingSession(CountingSession countingSession)
         {
             try
             {
                 db.CountingSessions.Add(countingSession);
                 db.SaveChanges();
+                countingSession = db.CountingSessions.OrderByDescending(unit => unit.CountingSessionPK).FirstOrDefault();
+                return countingSession;
             }
             catch (Exception e)
             {
                 throw e;
             }
         }
-        public void updateIsCountedOfIdentifiedItem(int identifiedItemPK,bool IsCounted)
+        public void updateIsCountedOfIdentifiedItem(int identifiedItemPK, bool IsCounted)
         {
             try
             {

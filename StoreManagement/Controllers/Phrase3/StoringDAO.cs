@@ -81,12 +81,12 @@ namespace StoreManagement.Controllers
                         }
                         else
                         {
-                            throw new Exception("ITEM KHÔNG HỢP LỆ");
+                            throw new Exception("PHỤ LIỆU KHÔNG HỢP LỆ");
                         }
                     }
                     else
                     {
-                        throw new Exception("ITEM KHÔNG HỢP LỆ");
+                        throw new Exception("PHỤ LIỆU KHÔNG HỢP LỆ");
                     }
                 }
                 db.SaveChanges();
