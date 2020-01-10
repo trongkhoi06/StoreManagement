@@ -649,7 +649,7 @@ namespace StoreManagement.Controllers
                         {
                             throw new Exception("SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ~AST-ERR~");
                         }
-                            if (item.Quantity <= AvailableQuantity(sBox, item_position_quantity.ItemPK, item_position_quantity.IsRestored))
+                        if (item.Quantity <= AvailableQuantity(sBox, item_position_quantity.ItemPK, item_position_quantity.IsRestored))
                         {
                             entry = new Entry(sBox, "Issuing", issuingSession.IssuingSessionPK, item_position_quantity.IsRestored,
                                 item.Quantity, item_position_quantity.ItemPK, accessory);

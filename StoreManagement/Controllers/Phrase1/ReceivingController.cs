@@ -886,6 +886,7 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
+                    var temp = e;
                     if (Iss != null)
                     {
                         db.IdentifyingSessions.Remove(Iss);

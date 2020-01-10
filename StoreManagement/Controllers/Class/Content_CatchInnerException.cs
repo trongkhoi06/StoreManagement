@@ -17,17 +17,21 @@ namespace StoreManagement.Class
         public string InnerMessage()
         {
             Exception temp = e;
-            if (temp.Message.Contains("~AST-ERR~"))
-            {
-                return temp.Message.Substring(0, temp.Message.Length - 9);
-            }
-            // lấy message để biết lỗi
+            //if (temp.Message.Contains("~AST-ERR~"))
+            //{
+            //    return temp.Message.Substring(0, temp.Message.Length - 9);
+            //}
+            //else
+            //{
+            //    return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
+            //}
+            return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
+            //lấy message để biết lỗi
             //while (temp.InnerException != null)
             //{
             //    temp = temp.InnerException;
             //};
             //return temp.Message;
-            return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
         }
     }
 }

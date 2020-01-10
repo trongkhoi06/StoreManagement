@@ -31,7 +31,7 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                     }
-                    if (receiveDevision.Length <= 30 && receiveDevision != null && receiveDevision != "")
+                    if (receiveDevision == null && receiveDevision.Length > 30 && receiveDevision == "")
                     {
                         return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                     }
@@ -158,7 +158,7 @@ namespace StoreManagement.Controllers
             IssuingDAO issuingDAO = new IssuingDAO();
             try
             {
-                List<Demand> demands = (from d in db.Demands
+                List<Demand> demands = (from d in db.Demands.OrderByDescending(unit => unit.DemandPK)
                                         where d.IsOpened == true
                                         select d).ToList();
                 foreach (var demand in demands)
@@ -221,11 +221,11 @@ namespace StoreManagement.Controllers
                         List<RequestedItem> requestedItems = (from rI in db.RequestedItems
                                                               where rI.DemandedItemPK == demandedItem.DemandedItemPK
                                                               select rI).ToList();
-                        //if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
-                        //                                - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
-                        //{
-                        //    return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
-                        //}
+                        if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                                                        - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        {
+                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        }
                         if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems))
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
@@ -356,11 +356,11 @@ namespace StoreManagement.Controllers
                                                               select rI).ToList();
                         double temp = issuingDAO.InStoredQuantity(accessory.AccessoryPK)
                                                         - issuingDAO.InOtherRequestedQuantity(accessory.AccessoryPK, item.RequestedItemPK);
-                        //if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
-                        //                                - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
-                        //{
-                        //    return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
-                        //}
+                        if (item.RequestedQuantity > (issuingDAO.InStoredQuantity(accessory.AccessoryPK)
+                                                        - issuingDAO.InRequestedQuantity(accessory.AccessoryPK)))
+                        {
+                            return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");
+                        }
                         if (demandedItem.DemandedQuantity < item.RequestedQuantity + issuingDAO.TotalRequestedQuantity(requestedItems))
                         {
                             return Content(HttpStatusCode.Conflict, "SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ!");

@@ -54,7 +54,7 @@ namespace StoreManagement.Controllers
                                                         select iI).ToList();
                 UnstoredBox virtualBox = (from uB in db.UnstoredBoxes
                                            where uB.BoxPK == (from b in db.Boxes
-                                                              where b.BoxID == "ĐÃ TRẢ"
+                                                              where b.BoxID == "ĐÃ TRẢbox"
                                                               select b).FirstOrDefault().BoxPK
                                            select uB).FirstOrDefault();
 

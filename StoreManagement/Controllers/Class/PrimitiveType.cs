@@ -33,7 +33,7 @@ namespace StoreManagement.Class
 
         public static bool isValidOrderID(string orderID)
         {
-            if (orderID.Length <= 25 && orderID != "" && orderID != null)
+            if (orderID != null && orderID.Length <= 25 && orderID != "")
             {
                 return true;
             }
@@ -81,7 +81,7 @@ namespace StoreManagement.Class
 
         public static bool isValidCode(string code)
         {
-            if (code.Length <= 3 && code != null && code != "")
+            if (code != null && code.Length <= 3 && code != "")
             {
                 return true;
             }
@@ -93,7 +93,7 @@ namespace StoreManagement.Class
 
         public static bool isValidName(string name)
         {
-            if (name.Length <= 30 && name != null && name != "")
+            if (name != null && name.Length <= 30 && name != "")
             {
                 return true;
             }

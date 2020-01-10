@@ -372,9 +372,9 @@ namespace StoreManagement.Controllers
                 HashSet<string> hsCheckID = new HashSet<string>();
                 foreach (var a in inputAccessories)
                 {
-
+                    if (a.Color == null) a.Color = "";
                     if (a.Art.Length <= 25 && a.Color.Length <= 25 && a.AccessoryDescription.Length <= 25
-                        && PrimitiveType.isValidComment(a.Comment) && a.Item.Length <= 25 && a.Item != null && a.Item != "")
+                        && !PrimitiveType.isValidComment(a.Comment) && a.Item.Length <= 25 && a.Item != null && a.Item != "")
                     {
                         throw new Exception(SystemMessage.NotPassPrimitiveType);
                     }

@@ -38,11 +38,12 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessoryPK
                                        select e).ToList();
-                foreach (var entry in entries)
-                {
-                    StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
-                    result += storingDAO.AvailableQuantity(sBox, entry.ItemPK, entry.IsRestored);
-                }
+                Entry entry = entries[0];
+                StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                result += storingDAO.AvailableQuantity(sBox, entry.ItemPK, entry.IsRestored);
+                //foreach (var entry in entries)
+                //{
+                //}
             }
             catch (Exception e)
             {
@@ -584,6 +585,7 @@ namespace StoreManagement.Controllers
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();
+                //Entry entry = entries[0];
                 // kết xuất 1 dictionary gồm key là itempk và isrestored tuy nhiên gộp số lượng giữa các box
                 Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity>();
                 foreach (var entry in entries)
@@ -607,19 +609,30 @@ namespace StoreManagement.Controllers
                     }
                     if (box.IsActive)
                     {
-                        InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
-                            storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored)
-                            , storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored));
+                        //InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
+                        //    storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored)
+                        //    , storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored));
                         if (!tempDictionary.ContainsKey(key))
                         {
-                            tempDictionary.Add(key, tmp);
+                            //tempDictionary.Add(key, tmp);
+                            tempDictionary.Add(key, new InBoxQuantity_AvailableQuantity(0, 0));
                         }
-                        else
-                        {
-                            tempDictionary[key].InBoxQuantity += tmp.InBoxQuantity;
-                            tempDictionary[key].AvailableQuantity += tmp.AvailableQuantity;
-                        }
+                        //else
+                        //{
+                        //    tempDictionary[key].InBoxQuantity += tmp.InBoxQuantity;
+                        //    tempDictionary[key].AvailableQuantity += tmp.AvailableQuantity;
+                        //}
                     }
+                }
+                foreach (var dictionary in tempDictionary)
+                {
+                    StoredBox sBox = db.StoredBoxes.Find(dictionary.Key.StoredBoxPK);
+                    InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
+                        storingDAO.AvailableQuantity(sBox, dictionary.Key.ItemPK, dictionary.Key.IsRestored)
+                        , storingDAO.AvailableQuantity(sBox, dictionary.Key.ItemPK, dictionary.Key.IsRestored));
+
+                    dictionary.Value.InBoxQuantity += tmp.InBoxQuantity;
+                    dictionary.Value.AvailableQuantity += tmp.AvailableQuantity;
                 }
 
                 // kiếm từng box dựa trên item dò được

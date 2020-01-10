@@ -20,6 +20,7 @@ namespace StoreManagement.Controllers
             {
                 IdentifyingSession identifyingSession = new IdentifyingSession(userID);
                 db.IdentifyingSessions.Add(identifyingSession);
+                db.SaveChanges();
                 identifyingSession = (from iss in db.IdentifyingSessions.OrderByDescending(unit => unit.IdentifyingSessionPK)
                                       select iss).FirstOrDefault();
                 return identifyingSession;

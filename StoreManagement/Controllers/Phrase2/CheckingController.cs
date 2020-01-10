@@ -705,7 +705,7 @@ namespace StoreManagement.Controllers
                 // chạy lệnh classify
                 try
                 {
-                    if (comment.Length > 50)
+                    if (!PrimitiveType.isValidComment(comment))
                     {
                         return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
                     }
