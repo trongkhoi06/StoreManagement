@@ -178,10 +178,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>01/04/2020 22:24:07</publishTime>
     </File>
     <File Include="bin/StoreManagement.dll">
-      <publishTime>01/10/2020 08:22:45</publishTime>
+      <publishTime>01/10/2020 10:03:40</publishTime>
     </File>
     <File Include="bin/StoreManagement.pdb">
-      <publishTime>01/10/2020 08:22:45</publishTime>
+      <publishTime>01/10/2020 10:03:40</publishTime>
     </File>
     <File Include="bin/Swashbuckle.Core.dll">
       <publishTime>11/28/2019 10:51:12</publishTime>

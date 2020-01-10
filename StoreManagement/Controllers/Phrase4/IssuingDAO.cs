@@ -35,15 +35,19 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                List<Entry> entries = (from e in db.Entries
-                                       where e.AccessoryPK == accessoryPK
-                                       select e).ToList();
-                Entry entry = entries[0];
-                StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
-                result += storingDAO.AvailableQuantity(sBox, entry.ItemPK, entry.IsRestored);
-                //foreach (var entry in entries)
-                //{
-                //}
+                //List<Entry> entries = (from e in db.Entries
+                //                       where e.AccessoryPK == accessoryPK
+                //                       select e).ToList();
+
+                //Entry entry = entries[0];
+
+                Entry entry = db.Entries.Where(e => e.AccessoryPK == accessoryPK).FirstOrDefault();
+                if (entry != null)
+                {
+                    StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+                    result += storingDAO.AvailableQuantity(sBox, entry.ItemPK, entry.IsRestored);
+                }
+
             }
             catch (Exception e)
             {
