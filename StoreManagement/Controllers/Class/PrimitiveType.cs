@@ -9,7 +9,7 @@ namespace StoreManagement.Class
     {
         public static bool isValidIntegerQuantity(int quantity)
         {
-            if (quantity > 0 && quantity < 100000)
+            if (quantity > 0 && quantity < 100000000)
             {
                 return true;
             }
@@ -21,7 +21,7 @@ namespace StoreManagement.Class
 
         public static bool isValidQuantity(double quantity)
         {
-            if (quantity > 0 && quantity < 100000)
+            if (quantity > 0 && quantity < 100000000)
             {
                 return true;
             }
