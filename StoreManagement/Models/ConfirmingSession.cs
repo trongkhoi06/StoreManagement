@@ -9,15 +9,11 @@ namespace StoreManagement.Models
     [Table("ConfirmingSession")]
     public partial class ConfirmingSession
     {
-        public ConfirmingSession()
+        public ConfirmingSession(string userID, int issuePK)
         {
-        }
-
-        public ConfirmingSession(int requestPK, string userID)
-        {
-            ExecutedDate = DateTime.Now;
             UserID = userID;
-            RequestPK = requestPK;
+            IssuePK = issuePK;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]
@@ -28,6 +24,6 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string UserID { get; set; }
 
-        public int RequestPK { get; set; }
+        public int IssuePK { get; set; }
     }
 }

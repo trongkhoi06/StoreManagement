@@ -26,14 +26,14 @@ namespace StoreManagement.Class
             //    return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
             //}
             //lấy message để biết lỗi
-            //while (temp.InnerException != null)
-            //{
-            //    temp = temp.InnerException;
-            //};
-            //return temp.Message;
+            while (temp.InnerException != null)
+            {
+                temp = temp.InnerException;
+            };
+            return temp.Message;
 
 
-            return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
+            //return "ĐÃ CÓ LỖI XẢY RA, VUI LÒNG THỬ LẠI!";
         }
     }
 }

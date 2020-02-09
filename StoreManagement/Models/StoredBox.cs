@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public StoredBox()
         {
+
         }
 
         public StoredBox(int boxPK, int shelfPK)

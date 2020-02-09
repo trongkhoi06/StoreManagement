@@ -9,16 +9,12 @@ namespace StoreManagement.Models
     [Table("AdjustingSession")]
     public partial class AdjustingSession
     {
-        public AdjustingSession()
-        {
-        }
-
         public AdjustingSession(string comment, bool isVerified, string userID)
         {
-            ExecutedDate = DateTime.Now;
             Comment = comment;
             IsVerified = isVerified;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public IdentifyingSession()
         {
+
         }
 
         public IdentifyingSession(string userID)

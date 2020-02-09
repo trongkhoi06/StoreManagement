@@ -6,28 +6,28 @@ using System.Web;
 
 namespace StoreManagement.Class
 {
-    public class Client_RequestedItem
+    public class Client_DemandedItem
     {
-        public Client_RequestedItem()
+        public Client_DemandedItem()
         {
         }
 
-        public Client_RequestedItem(RequestedItem requestedItem, Accessory accessory,double inStoredQuantity, List<Client_Box_Shelf_Row> requestedItemPosition)
+        public Client_DemandedItem(DemandedItem demandedItem, Accessory accessory, double? issuedQuantity, List<Client_Box_Shelf_Row> itemPosition)
         {
-            RequestedItemPK = requestedItem.RequestedItemPK;
-            RequestedQuantity = requestedItem.RequestedQuantity;
+            DemandedItemPK = demandedItem.DemandedItemPK;
+            DemandedQuantity = demandedItem.DemandedQuantity;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
-            InStoredQuantity = inStoredQuantity;
-            RequestedItemPosition = requestedItemPosition;
+            IssuedQuantity = issuedQuantity;
+            ItemPosition = itemPosition;
         }
 
-        public int RequestedItemPK { get; set; }
+        public int DemandedItemPK { get; set; }
 
-        public double RequestedQuantity { get; set; }
+        public double DemandedQuantity { get; set; }
 
         public string AccessoryID { get; set; }
 
@@ -39,46 +39,46 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public double InStoredQuantity { get; set; }
+        public double? IssuedQuantity { get; set; }
 
-        public List<Client_Box_Shelf_Row> RequestedItemPosition { get; set; }
+        public List<Client_Box_Shelf_Row> ItemPosition { get; set; }
     }
 
-    public class Client_RequestedItem2
-    {
-        public Client_RequestedItem2()
-        {
-        }
+    //public class Client_RequestedItem2
+    //{
+    //    public Client_RequestedItem2()
+    //    {
+    //    }
 
-        public Client_RequestedItem2(Request request, Accessory accessory, double inStoredQuantity, List<Client_Box_Shelf_Row2> requestedItemPosition)
-        {
-            RequestPK = request.RequestPK;
-            RequestedQuantity = request.RequestID;
-            AccessoryID = accessory.AccessoryID;
-            AccessoryDescription = accessory.AccessoryDescription;
-            Art = accessory.Art;
-            Color = accessory.Color;
-            Item = accessory.Item;
-            InStoredQuantity = inStoredQuantity;
-            RequestedItemPosition = requestedItemPosition;
-        }
+    //    public Client_RequestedItem2(Request request, Accessory accessory, double inStoredQuantity, List<Client_Box_Shelf_Row2> requestedItemPosition)
+    //    {
+    //        RequestPK = request.RequestPK;
+    //        RequestedQuantity = request.RequestID;
+    //        AccessoryID = accessory.AccessoryID;
+    //        AccessoryDescription = accessory.AccessoryDescription;
+    //        Art = accessory.Art;
+    //        Color = accessory.Color;
+    //        Item = accessory.Item;
+    //        InStoredQuantity = inStoredQuantity;
+    //        RequestedItemPosition = requestedItemPosition;
+    //    }
 
-        public int RequestPK { get; set; }
+    //    public int RequestPK { get; set; }
 
-        public string RequestedQuantity { get; set; }
+    //    public string RequestedQuantity { get; set; }
 
-        public string AccessoryID { get; set; }
+    //    public string AccessoryID { get; set; }
 
-        public string AccessoryDescription { get; set; }
+    //    public string AccessoryDescription { get; set; }
 
-        public string Art { get; set; }
+    //    public string Art { get; set; }
 
-        public string Color { get; set; }
+    //    public string Color { get; set; }
 
-        public string Item { get; set; }
+    //    public string Item { get; set; }
 
-        public double InStoredQuantity { get; set; }
+    //    public double InStoredQuantity { get; set; }
 
-        public List<Client_Box_Shelf_Row2> RequestedItemPosition { get; set; }
-    }
+    //    public List<Client_Box_Shelf_Row2> RequestedItemPosition { get; set; }
+    //}
 }

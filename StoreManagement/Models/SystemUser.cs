@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public SystemUser()
         {
+
         }
 
         [Key]
@@ -21,11 +22,9 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string Password { get; set; }
 
-        [Required]
         [StringLength(50)]
         public string RoleName { get; set; }
 
-        [Required]
         [StringLength(100)]
         public string Name { get; set; }
 
@@ -33,5 +32,7 @@ namespace StoreManagement.Models
         public DateTime DateCreated { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public int WorkplacePK { get; set; }
     }
 }

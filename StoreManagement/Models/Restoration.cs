@@ -11,15 +11,16 @@ namespace StoreManagement.Models
     {
         public Restoration()
         {
+
         }
 
         public Restoration(string restorationID, string userID, string comment)
         {
             RestorationID = restorationID;
-            DateCreated = DateTime.Now;
-            IsReceived = false;
             UserID = userID;
             Comment = comment;
+            DateCreated = DateTime.Now;
+            IsReceived = false;
         }
 
         [Key]

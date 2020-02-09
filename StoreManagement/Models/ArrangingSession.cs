@@ -11,14 +11,15 @@ namespace StoreManagement.Models
     {
         public ArrangingSession()
         {
+
         }
 
         public ArrangingSession(int startBoxPK, int destinationBoxPK, string userID)
         {
-            ExecutedDate = DateTime.Now;
             StartBoxPK = startBoxPK;
             DestinationBoxPK = destinationBoxPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

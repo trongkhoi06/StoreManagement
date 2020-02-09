@@ -11,15 +11,15 @@ namespace StoreManagement.Models
     {
         public Customer()
         {
+
         }
 
-        public Customer(string customerName, string customerCode, string address, string phoneNumber)
+        public Customer(string customerCode, string customerName, string address, string phoneNumber)
         {
-            CustomerName = customerName;
             CustomerCode = customerCode;
+            CustomerName = customerName;
             Address = address;
             PhoneNumber = phoneNumber;
-            TaxID = "";
             IsActive = true;
         }
 
@@ -28,19 +28,16 @@ namespace StoreManagement.Models
 
         [Required]
         [StringLength(100)]
-        public string CustomerName { get; set; }
+        public string CustomerCode { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string CustomerCode { get; set; }
+        public string CustomerName { get; set; }
 
         public string Address { get; set; }
 
         [StringLength(100)]
         public string PhoneNumber { get; set; }
-
-        [StringLength(100)]
-        public string TaxID { get; set; }
 
         public bool IsActive { get; set; }
     }

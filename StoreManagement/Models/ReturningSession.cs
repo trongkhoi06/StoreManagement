@@ -15,9 +15,9 @@ namespace StoreManagement.Models
 
         public ReturningSession(int failedItemPK, string userID)
         {
-            ExecutedDate = DateTime.Now;
             FailedItemPK = failedItemPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

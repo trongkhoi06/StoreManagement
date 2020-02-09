@@ -11,7 +11,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_Box_Shelf_Row(string boxID, int storedBoxPK, string shelfID, string rowID, int itemPK, bool isRestored, double inBoxQuantity,string containerID, double availableQuantity)
+        public Client_Box_Shelf_Row(string boxID, int storedBoxPK, string shelfID, string rowID, int itemPK, bool isRestored, string containerID, double? availableQuantity)
         {
             BoxID = boxID;
             StoredBoxPK = storedBoxPK;
@@ -20,7 +20,6 @@ namespace StoreManagement.Class
             ItemPK = itemPK;
             ContainerID = containerID;
             IsRestored = isRestored;
-            InBoxQuantity = inBoxQuantity;
             AvailableQuantity = availableQuantity;
         }
 
@@ -38,9 +37,7 @@ namespace StoreManagement.Class
 
         public bool IsRestored { get; set; }
 
-        public double AvailableQuantity { get; set; }
-
-        public double InBoxQuantity { get; set; }
+        public double? AvailableQuantity { get; set; }
 
     }
 

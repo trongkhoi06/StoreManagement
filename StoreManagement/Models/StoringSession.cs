@@ -11,21 +11,19 @@ namespace StoreManagement.Models
     {
         public StoringSession()
         {
+
         }
 
-        public StoringSession(int boxPK, string userID)
+        public StoringSession(string userID)
         {
-            ExecutedDate = DateTime.Now;
-            BoxPK = boxPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]
         public int StoringSessionPK { get; set; }
 
         public DateTime ExecutedDate { get; set; }
-
-        public int BoxPK { get; set; }
 
         [Required]
         [StringLength(50)]

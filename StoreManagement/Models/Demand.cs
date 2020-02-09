@@ -11,17 +11,17 @@ namespace StoreManagement.Models
     {
         public Demand()
         {
+
         }
 
-        public Demand(string demandID, double totalDemand, int conceptionPK, string receiveDivision, string userID)
+        public Demand(string demandID, double totalDemand, int conceptionPK, int workplacePK, string userID)
         {
             DemandID = demandID;
             TotalDemand = totalDemand;
-            DateCreated = DateTime.Now;
             ConceptionPK = conceptionPK;
-            ReceiveDivision = receiveDivision;
             IsOpened = true;
             UserID = userID;
+            WorkplacePK = workplacePK;
         }
 
         [Key]
@@ -31,23 +31,18 @@ namespace StoreManagement.Models
         [StringLength(100)]
         public string DemandID { get; set; }
 
-        public int? StartWeek { get; set; }
-
-        public int? EndWeek { get; set; }
-
         public double TotalDemand { get; set; }
 
         public DateTime DateCreated { get; set; }
 
         public int ConceptionPK { get; set; }
 
-        [Required]
-        public string ReceiveDivision { get; set; }
-
         public bool IsOpened { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(50)]
         public string UserID { get; set; }
+
+        public int WorkplacePK { get; set; }
     }
 }

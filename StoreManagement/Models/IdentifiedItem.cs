@@ -11,13 +11,12 @@ namespace StoreManagement.Models
     {
         public IdentifiedItem()
         {
+
         }
 
-        public IdentifiedItem(double identifiedQuantity,int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
+        public IdentifiedItem(double identifiedQuantity, int packedItemPK, int identifyingSessionPK, int unstoredBoxPK)
         {
             IdentifiedQuantity = identifiedQuantity;
-            IsChecked = false;
-            IsCounted = false;
             PackedItemPK = packedItemPK;
             IdentifyingSessionPK = identifyingSessionPK;
             UnstoredBoxPK = unstoredBoxPK;
@@ -37,5 +36,7 @@ namespace StoreManagement.Models
         public int IdentifyingSessionPK { get; set; }
 
         public int UnstoredBoxPK { get; set; }
+
+        public int? StoringSessionPK { get; set; }
     }
 }

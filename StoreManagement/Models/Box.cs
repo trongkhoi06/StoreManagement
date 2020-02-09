@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public Box()
         {
+
         }
 
         public Box(string boxID)

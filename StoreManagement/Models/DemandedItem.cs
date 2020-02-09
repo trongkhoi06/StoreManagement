@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public DemandedItem()
         {
+
         }
 
         public DemandedItem(double demandedQuantity, string comment, int demandPK, int accessoryPK)

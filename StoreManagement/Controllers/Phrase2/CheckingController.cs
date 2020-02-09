@@ -140,7 +140,7 @@ namespace StoreManagement.Controllers
                             if (!identifiedItem.IsCounted)
                             {
                                 // tạo session update và iscounted
-                                countingSession = countingItemController.createCountingSession(new CountingSession(identifiedItemPK, countedQuantity, userID));
+                                countingSession = countingItemController.createCountingSession(new CountingSession(countedQuantity, identifiedItemPK, userID));
                                 countingItemController.updateIsCountedOfIdentifiedItem(identifiedItemPK, true);
                             }
                             else
@@ -752,7 +752,7 @@ namespace StoreManagement.Controllers
                         else
                         {
                             double finalQuantity = identifyItemController.FinalQuantity(packedItemPK);
-                            ClassifiedItem classifiedItem = new ClassifiedItem(qualityState, finalQuantity, packedItemPK);
+                            ClassifiedItem classifiedItem = new ClassifiedItem(finalQuantity, qualityState, packedItemPK);
 
                             // tạo classified item
                             classifiedItem = classifyingItemController.createClassifiedItem(classifiedItem);

@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public Conception()
         {
+
         }
 
         public Conception(string conceptionCode, string description, int year, string season, int customerPK)
@@ -19,8 +20,8 @@ namespace StoreManagement.Models
             Description = description;
             Year = year;
             Season = season;
-            IsActive = true;
             CustomerPK = customerPK;
+            IsActive = true;
         }
 
         [Key]

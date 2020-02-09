@@ -9,18 +9,14 @@ namespace StoreManagement.Models
     [Table("CheckingSession")]
     public partial class CheckingSession
     {
-        public CheckingSession()
-        {
-        }
-
         public CheckingSession(double checkedQuantity, double unqualifiedQuantity, int identifiedItemPK, string userID, string comment)
         {
             CheckedQuantity = checkedQuantity;
             UnqualifiedQuantity = unqualifiedQuantity;
-            ExecutedDate = DateTime.Now;
             IdentifiedItemPK = identifiedItemPK;
             UserID = userID;
             Comment = comment;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

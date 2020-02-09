@@ -14,7 +14,7 @@ namespace StoreManagement.Models
 
         }
 
-        public ClassifiedItem(int qualityState, double finalQuantity, int packedItemPK)
+        public ClassifiedItem(double finalQuantity, int qualityState, int packedItemPK)
         {
             FinalQuantity = finalQuantity;
             QualityState = qualityState;

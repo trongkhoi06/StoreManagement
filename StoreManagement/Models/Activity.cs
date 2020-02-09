@@ -9,17 +9,13 @@ namespace StoreManagement.Models
     [Table("Activity")]
     public partial class Activity
     {
-        public Activity()
-        {
-        }
-
         public Activity(string action, string objectID, string @object, string userID)
         {
             Action = action;
             ObjectID = objectID;
             Object = @object;
-            ExecutedDate = DateTime.Now;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

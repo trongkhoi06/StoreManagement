@@ -228,8 +228,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\AccessoryType.cs" />
+    <Compile Include="Controllers\Class\PrimitiveType.cs" />
     <Compile Include="Models\Accessory.cs" />
+    <Compile Include="Models\AccessoryType.cs" />
     <Compile Include="Models\ActionTypeEnum.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\AdjustingSession.cs" />
@@ -239,7 +240,7 @@
     <Compile Include="Models\ClassifiedItem.cs" />
     <Compile Include="Models\ClassifyingSession.cs" />
     <Compile Include="Models\Conception.cs" />
-    <Compile Include="Models\ConceptionAccessoryCustomer.cs" />
+    <Compile Include="Models\ConceptionAccessory.cs" />
     <Compile Include="Models\ConfirmingSession.cs" />
     <Compile Include="Models\CountingSession.cs" />
     <Compile Include="Models\Customer.cs" />
@@ -249,10 +250,11 @@
     <Compile Include="Models\DiscardingSession.cs" />
     <Compile Include="Models\Entry.cs" />
     <Compile Include="Models\FailedItem.cs" />
+    <Compile Include="Models\GroupItem_ArrangingSession.cs" />
     <Compile Include="Models\IdentifiedItem.cs" />
-    <Compile Include="Models\IdentifiedItem_ArrangingSession.cs" />
     <Compile Include="Models\IdentifyingSession.cs" />
-    <Compile Include="Models\IssuingSession.cs" />
+    <Compile Include="Models\Issue.cs" />
+    <Compile Include="Models\IssuedGroup.cs" />
     <Compile Include="Models\KindRole.cs" />
     <Compile Include="Models\MovingSession.cs" />
     <Compile Include="Models\ObjectKindEnum.cs" />
@@ -260,25 +262,25 @@
     <Compile Include="Models\OrderedItem.cs" />
     <Compile Include="Models\Pack.cs" />
     <Compile Include="Models\PackedItem.cs" />
-    <Compile Include="Controllers\Class\PrimitiveType.cs" />
     <Compile Include="Models\PassedItem.cs" />
     <Compile Include="Models\ReceivingSession.cs" />
-    <Compile Include="Models\Request.cs" />
-    <Compile Include="Models\RequestedItem.cs" />
     <Compile Include="Models\Restoration.cs" />
+    <Compile Include="Models\RestoredGroup.cs" />
     <Compile Include="Models\RestoredItem.cs" />
+    <Compile Include="Models\StorebackSession.cs" />
     <Compile Include="Models\ReturningSession.cs" />
     <Compile Include="Models\Role.cs" />
     <Compile Include="Models\Row.cs" />
     <Compile Include="Models\Shelf.cs" />
+    <Compile Include="Models\StoredBox.cs" />
     <Compile Include="Models\StoringSession.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SystemUser.cs" />
-    <Compile Include="Models\StoredBox.cs" />
     <Compile Include="Models\TransferringSession.cs" />
     <Compile Include="Models\UnstoredBox.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Models\Verification.cs" />
+    <Compile Include="Models\Workplace.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

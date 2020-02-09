@@ -71,7 +71,6 @@ C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManageme
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManagement.csproj.CopyComplete
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManagement.dll
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManagement.pdb
-C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManagement.csprojAssemblyReference.cache
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\QRCoder.dll
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\System.Drawing.Common.dll
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\ExcelApi.dll
@@ -83,3 +82,4 @@ C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\ExcelApi.xml
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\NetOffice.xml
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\OfficeApi.xml
 C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\bin\VBIDEApi.xml
+C:\Users\ADMIN\Desktop\StoreManagement\StoreManagement\obj\Release\StoreManagement.csprojAssemblyReference.cache

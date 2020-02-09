@@ -9,10 +9,6 @@ namespace StoreManagement.Models
     [Table("Role")]
     public partial class Role
     {
-        public Role()
-        {
-        }
-
         [Key]
         [StringLength(50)]
         public string RoleName { get; set; }

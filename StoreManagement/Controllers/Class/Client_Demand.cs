@@ -16,19 +16,13 @@ namespace StoreManagement.Class
         {
             DemandPK = demand.DemandPK;
             DemandID = demand.DemandID;
-            StartWeek = demand.StartWeek;
-            EndWeek = demand.EndWeek;
-            ReceiveDivision = demand.ReceiveDivision;
+            //ReceiveDivision = demand.ReceiveDivision;
             ConceptionCode = conception.ConceptionCode;
         }
 
         public int DemandPK { get; set; }
         
         public string DemandID { get; set; }
-
-        public int? StartWeek { get; set; }
-
-        public int? EndWeek { get; set; }
 
         public string ReceiveDivision { get; set; }
 

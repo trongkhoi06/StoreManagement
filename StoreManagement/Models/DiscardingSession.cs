@@ -15,10 +15,10 @@ namespace StoreManagement.Models
 
         public DiscardingSession(string comment, bool isVerified, string userID)
         {
-            ExecutedDate = DateTime.Now;
             Comment = comment;
             IsVerified = isVerified;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

@@ -11,15 +11,14 @@ namespace StoreManagement.Models
     {
         public CountingSession()
         {
-
         }
 
-        public CountingSession(int identifiedItemPK, double countedQuantity, string userID)
+        public CountingSession(double countedQuantity, int identifiedItemPK, string userID)
         {
             CountedQuantity = countedQuantity;
-            ExecutedDate = DateTime.Now;
             IdentifiedItemPK = identifiedItemPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]
@@ -35,5 +34,4 @@ namespace StoreManagement.Models
         [StringLength(50)]
         public string UserID { get; set; }
     }
-
 }

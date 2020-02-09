@@ -458,11 +458,11 @@ namespace StoreManagement.Controllers
                     }
                 }
                 {
-                    List<IssuingSession> ss = db.IssuingSessions.Where(unit => unit.UserID == userID).ToList();
-                    foreach (var item in ss)
-                    {
-                        result.Add(new Client_History_Flutter(item.IssuingSessionPK, "issuing", item.ExecutedDate));
-                    }
+                    //List<IssuingSession> ss = db.IssuingSessions.Where(unit => unit.UserID == userID).ToList();
+                    //foreach (var item in ss)
+                    //{
+                    //    result.Add(new Client_History_Flutter(item.IssuingSessionPK, "issuing", item.ExecutedDate));
+                    //}
                 }
                 {
                     List<ReceivingSession> ss = db.ReceivingSessions.Where(unit => unit.UserID == userID).ToList();
@@ -514,11 +514,11 @@ namespace StoreManagement.Controllers
                     }
                 }
                 {
-                    List<Request> containers = db.Requests.Where(unit => unit.UserID == userID).ToList();
-                    foreach (var item in containers)
-                    {
-                        result.Add(new Client_History_Flutter(item.RequestPK, "request", item.DateCreated));
-                    }
+                    //List<Request> containers = db.Requests.Where(unit => unit.UserID == userID).ToList();
+                    //foreach (var item in containers)
+                    //{
+                    //    result.Add(new Client_History_Flutter(item.RequestPK, "request", item.DateCreated));
+                    //}
                 }
                 {
                     List<Restoration> containers = db.Restorations.Where(unit => unit.UserID == userID).ToList();

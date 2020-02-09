@@ -128,7 +128,7 @@ namespace StoreManagement.Controllers
                     {
                         // chạy lệnh store box
                         storedBox = storingItemDAO.CreateStoredBox(box.BoxPK, shelf.ShelfPK);
-                        storingSession = storingItemDAO.CreateStoringSession(box.BoxPK, userID);
+                        storingSession = storingItemDAO.CreateStoringSession(userID);
                         storingItemDAO.CreateEntriesUpdatePassedItem(box, storedBox, storingSession);
                     }
                     else

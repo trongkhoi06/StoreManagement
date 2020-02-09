@@ -30,12 +30,12 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public StoringSession CreateStoringSession(int boxPK, string userID)
+        public StoringSession CreateStoringSession(string userID)
         {
             try
             {
-                // tạo storedBox
-                StoringSession storingSession = new StoringSession(boxPK, userID);
+                // tạo ss
+                StoringSession storingSession = new StoringSession(userID);
                 db.StoringSessions.Add(storingSession);
                 db.SaveChanges();
                 return db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK).FirstOrDefault();
@@ -302,10 +302,20 @@ namespace StoreManagement.Controllers
                 {
                     // chưa approve cũng tính vào vì có thể là số lượng thực được chấp thuận gây số âm
                     case "Discarding":
+                        DiscardingSession discardingSession = db.DiscardingSessions.Find(entry.SessionPK);
+                        if (discardingSession.IsVerified)
+                        {
+                            return -1;
+                        }
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     // chưa approve cũng tính vào vì có thể là số lượng thực được chấp thuận gây số âm
                     case "AdjustingMinus":
+                        adjustingSession = db.AdjustingSessions.Find(entry.SessionPK);
+                        if (adjustingSession.IsVerified)
+                        {
+                            return -1;
+                        }
                         result += entry.Quantity * (kindRole.Sign ? 1 : -1);
                         break;
                     // approve mới tính vào vì là gây ra vấn đề lấy số ảo
@@ -314,6 +324,10 @@ namespace StoreManagement.Controllers
                         verification = (from ver in db.Verifications
                                         where ver.SessionPK == adjustingSession.AdjustingSessionPK && !ver.IsDiscard
                                         select ver).FirstOrDefault();
+                        if (adjustingSession.IsVerified)
+                        {
+                            return -1;
+                        }
                         if (adjustingSession.IsVerified && verification.IsApproved)
                         {
                             result += entry.Quantity * (kindRole.Sign ? 1 : -1);
@@ -598,69 +612,6 @@ namespace StoreManagement.Controllers
                 }
                 entry = new Entry(sBox, "Discarding", discardingSession.DiscardingSessionPK, isRestored, discardedQuantity, itemPK, accessory);
                 db.Entries.Add(entry);
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void CreateIssueEntry(Client_InputPrepareRequestAPI input, IssuingSession issuingSession, Request request)
-        {
-            try
-            {
-                Entry entry;
-                Accessory accessory;
-                // init demandedItems to check accessory
-                List<RequestedItem> requestedItems = db.RequestedItems.Where(unit => unit.RequestPK == request.RequestPK).ToList();
-                List<DemandedItem> demandedItems = new List<DemandedItem>();
-                foreach (var item in requestedItems)
-                {
-                    demandedItems.Add(db.DemandedItems.Find(item.DemandedItemPK));
-                }
-
-                foreach (var item_position_quantity in input.Item_position_quantities)
-                {
-                    // lấy hàng cần xuất
-                    if (item_position_quantity.IsRestored)
-                    {
-                        RestoredItem restoredItem = db.RestoredItems.Find(item_position_quantity.ItemPK);
-                        accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                    }
-                    else
-                    {
-                        PassedItem passedItem = db.PassedItems.Find(item_position_quantity.ItemPK);
-                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
-                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
-                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-                        accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    }
-                    // tạo entry xuất trong n - thùng chưa hàng
-                    foreach (var item in item_position_quantity.BoxAndQuantity)
-                    {
-                        StoredBox sBox = db.StoredBoxes.Find(item.StoredBoxPK);
-                        if (sBox == null) throw new Exception("THÙNG KHÔNG HỢP LỆ~AST-ERR~");
-                        if (!IsDemandedItemsContainAccessory(demandedItems, accessory))
-                        {
-                            throw new Exception("PHỤ LIỆU YÊU CẦU XUẤT KHÔNG KHỚP VỚI PHỤ LIỆU PHIẾU CẤP PHÁT~AST-ERR~");
-                        }
-                        if (!PrimitiveType.isValidQuantity(item.Quantity))
-                        {
-                            throw new Exception("SỐ LƯỢNG YÊU CẦU XUẤT KHÔNG HỢP LỆ~AST-ERR~");
-                        }
-                        if (item.Quantity <= AvailableQuantity(sBox, item_position_quantity.ItemPK, item_position_quantity.IsRestored))
-                        {
-                            entry = new Entry(sBox, "Issuing", issuingSession.IssuingSessionPK, item_position_quantity.IsRestored,
-                                item.Quantity, item_position_quantity.ItemPK, accessory);
-                            db.Entries.Add(entry);
-                        }
-                        else
-                        {
-                            throw new Exception("SỐ LƯỢNG XUẤT LỚN HƠN SỐ LƯỢNG TỒN KHO~AST-ERR~");
-                        }
-                    }
-                }
                 db.SaveChanges();
             }
             catch (Exception e)

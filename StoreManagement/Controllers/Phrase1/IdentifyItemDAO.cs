@@ -120,19 +120,6 @@ namespace StoreManagement.Controllers
             return arrangingSession;
         }
 
-        public void MapItemWithSession(IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession)
-        {
-            db.IdentifiedItem_ArrangingSession.Add(identifiedItem_ArrangingSession);
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
         public double ActualQuantity(int identifiedItemPK)
         {
             double result = 0;

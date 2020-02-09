@@ -12,13 +12,14 @@ namespace StoreManagement.Models
     {
         public OrderedItem()
         {
+
         }
 
         public OrderedItem(int orderPK, Client_Accessory_OrderedQuantity_Comment temp)
         {
+            OrderPK = orderPK;
             OrderedQuantity = temp.OrderedQuantity;
             Comment = temp.Comment;
-            OrderPK = orderPK;
             AccessoryPK = temp.AccessoryPK;
         }
 

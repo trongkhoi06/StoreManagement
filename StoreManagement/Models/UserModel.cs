@@ -14,6 +14,8 @@ namespace StoreManagement.Models
 
         public virtual DbSet<Accessory> Accessories { get; set; }
         public virtual DbSet<AccessoryType> AccessoryTypes { get; set; }
+        public virtual DbSet<ActionTypeEnum> ActionTypeEnums { get; set; }
+        public virtual DbSet<Activity> Activities { get; set; }
         public virtual DbSet<AdjustingSession> AdjustingSessions { get; set; }
         public virtual DbSet<ArrangingSession> ArrangingSessions { get; set; }
         public virtual DbSet<Box> Boxes { get; set; }
@@ -31,22 +33,27 @@ namespace StoreManagement.Models
         public virtual DbSet<DiscardingSession> DiscardingSessions { get; set; }
         public virtual DbSet<Entry> Entries { get; set; }
         public virtual DbSet<FailedItem> FailedItems { get; set; }
+        public virtual DbSet<GroupItem_ArrangingSession> GroupItem_ArrangingSession { get; set; }
         public virtual DbSet<IdentifiedItem> IdentifiedItems { get; set; }
-        public virtual DbSet<IdentifiedItem_ArrangingSession> IdentifiedItem_ArrangingSession { get; set; }
         public virtual DbSet<IdentifyingSession> IdentifyingSessions { get; set; }
-        public virtual DbSet<IssuingSession> IssuingSessions { get; set; }
+        public virtual DbSet<Issue> Issues { get; set; }
+        public virtual DbSet<IssuedGroup> IssuedGroups { get; set; }
         public virtual DbSet<KindRole> KindRoles { get; set; }
         public virtual DbSet<MovingSession> MovingSessions { get; set; }
+        public virtual DbSet<ObjectKindEnum> ObjectKindEnums { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderedItem> OrderedItems { get; set; }
         public virtual DbSet<Pack> Packs { get; set; }
         public virtual DbSet<PackedItem> PackedItems { get; set; }
         public virtual DbSet<PassedItem> PassedItems { get; set; }
         public virtual DbSet<ReceivingSession> ReceivingSessions { get; set; }
-        public virtual DbSet<Request> Requests { get; set; }
-        public virtual DbSet<RequestedItem> RequestedItems { get; set; }
+        public virtual DbSet<Restoration> Restorations { get; set; }
+        public virtual DbSet<RestoredGroup> RestoredGroups { get; set; }
+        public virtual DbSet<RestoredItem> RestoredItems { get; set; }
+        public virtual DbSet<StorebackSession> RestoringSessions { get; set; }
         public virtual DbSet<ReturningSession> ReturningSessions { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<Row> Rows { get; set; }
         public virtual DbSet<Shelf> Shelves { get; set; }
         public virtual DbSet<StoredBox> StoredBoxes { get; set; }
         public virtual DbSet<StoringSession> StoringSessions { get; set; }
@@ -55,12 +62,7 @@ namespace StoreManagement.Models
         public virtual DbSet<TransferringSession> TransferringSessions { get; set; }
         public virtual DbSet<UnstoredBox> UnstoredBoxes { get; set; }
         public virtual DbSet<Verification> Verifications { get; set; }
-        public virtual DbSet<Restoration> Restorations { get; set; }
-        public virtual DbSet<RestoredItem> RestoredItems { get; set; }
-        public virtual DbSet<Row> Rows { get; set; }
-        public virtual DbSet<ActionTypeEnum> ActionTypeEnums { get; set; }
-        public virtual DbSet<Activity> Activities { get; set; }
-        public virtual DbSet<ObjectKindEnum> ObjectKindEnums { get; set; }
+        public virtual DbSet<Workplace> Workplaces { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

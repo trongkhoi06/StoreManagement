@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public UnstoredBox()
         {
+
         }
 
         public UnstoredBox(int boxPK, bool isIdentified)

@@ -15,8 +15,8 @@ namespace StoreManagement.Models
 
         public PassedItem(int classifiedItemPK)
         {
-            IsStored = false;
             ClassifiedItemPK = classifiedItemPK;
+            IsStored = false;
         }
 
         [Key]

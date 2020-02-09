@@ -112,16 +112,16 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 7:
-                    List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
-                                                            where ss.ExecutedDate >= start && ss.ExecutedDate <= end
-                                                            select ss).ToList();
-                    foreach (var ss in storingSessions)
-                    {
-                        SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                        Box box = db.Boxes.Find(ss.BoxPK);
-                        string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
-                    }
+                    //List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
+                    //                                        where ss.ExecutedDate >= start && ss.ExecutedDate <= end
+                    //                                        select ss).ToList();
+                    //foreach (var ss in storingSessions)
+                    //{
+                    //    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    //    Box box = db.Boxes.Find(ss.BoxPK);
+                    //    string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
+                    //    result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
+                    //}
                     break;
                 case 8:
                     List<MovingSession> movingSessions = (from ss in db.MovingSessions.OrderByDescending(unit => unit.MovingSessionPK)
@@ -158,16 +158,16 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 10:
-                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
-                                                            where ss.ExecutedDate >= start && ss.ExecutedDate <= end
-                                                            select ss).ToList();
-                    foreach (var ss in issuingSessions)
-                    {
-                        SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                        Request request = db.Requests.Find(ss.RequestPK);
-                        string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
-                    }
+                    //List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
+                    //                                        where ss.ExecutedDate >= start && ss.ExecutedDate <= end
+                    //                                        select ss).ToList();
+                    //foreach (var ss in issuingSessions)
+                    //{
+                    //    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    //    Request request = db.Requests.Find(ss.RequestPK);
+                    //    string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
+                    //    result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
+                    //}
                     break;
                 case 11:
                     List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions.OrderByDescending(unit => unit.ReceivingSessionPK)
@@ -279,15 +279,15 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 7:
-                    List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
-                                                            select ss).ToList();
-                    foreach (var ss in storingSessions)
-                    {
-                        SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                        Box box = db.Boxes.Find(ss.BoxPK);
-                        string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
-                    }
+                    //List<StoringSession> storingSessions = (from ss in db.StoringSessions.OrderByDescending(unit => unit.StoringSessionPK)
+                    //                                        select ss).ToList();
+                    //foreach (var ss in storingSessions)
+                    //{
+                    //    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    //    Box box = db.Boxes.Find(ss.BoxPK);
+                    //    string content = "Lưu kho " + "thùng mã số " + box.BoxID.Substring(0, box.BoxID.Length - 3);
+                    //    result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
+                    //}
                     break;
                 case 8:
                     List<MovingSession> movingSessions = (from ss in db.MovingSessions.OrderByDescending(unit => unit.MovingSessionPK)
@@ -322,15 +322,15 @@ namespace StoreManagement.Controllers
                     }
                     break;
                 case 10:
-                    List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
-                                                            select ss).ToList();
-                    foreach (var ss in issuingSessions)
-                    {
-                        SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
-                        Request request = db.Requests.Find(ss.RequestPK);
-                        string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
-                        result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
-                    }
+                    //List<IssuingSession> issuingSessions = (from ss in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
+                    //                                        select ss).ToList();
+                    //foreach (var ss in issuingSessions)
+                    //{
+                    //    SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
+                    //    Request request = db.Requests.Find(ss.RequestPK);
+                    //    string content = "Xuất kho " + "phụ liệu cho Yêu cầu nhận mã số " + request.RequestID;
+                    //    result.Add(new Client_Session_Activity_Angular(ss.ExecutedDate, systemUser.Name + " (" + ss.UserID + ")", content));
+                    //}
                     break;
                 case 11:
                     List<ReceivingSession> restoringSessions = (from ss in db.ReceivingSessions.OrderByDescending(unit => unit.ReceivingSessionPK)

@@ -9,16 +9,12 @@ namespace StoreManagement.Models
     [Table("ClassifyingSession")]
     public partial class ClassifyingSession
     {
-        public ClassifyingSession()
-        {
-        }
-
         public ClassifyingSession(string comment, int classifiedItemPK, string userID)
         {
-            ExecutedDate = DateTime.Now;
             Comment = comment;
             ClassifiedItemPK = classifiedItemPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

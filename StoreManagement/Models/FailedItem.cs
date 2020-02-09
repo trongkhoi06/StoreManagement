@@ -11,11 +11,13 @@ namespace StoreManagement.Models
     {
         public FailedItem()
         {
+
         }
+
         public FailedItem(int classifiedItemPK)
         {
-            IsReturned = false;
             ClassifiedItemPK = classifiedItemPK;
+            IsReturned = false;
         }
 
         [Key]

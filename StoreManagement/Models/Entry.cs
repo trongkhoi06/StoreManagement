@@ -13,7 +13,7 @@ namespace StoreManagement.Models
         {
         }
 
-        public Entry(StoredBox storedBox, string kindRoleName, int sessionPK, bool isRestored, double quantity, int itemPK,Accessory accessory)
+        public Entry(StoredBox storedBox, string kindRoleName, int sessionPK, bool isRestored, double quantity, int itemPK, Accessory accessory)
         {
             StoredBoxPK = storedBox.StoredBoxPK;
             KindRoleName = kindRoleName;
@@ -25,7 +25,7 @@ namespace StoreManagement.Models
         }
 
         [Key]
-        public int EntryPK { get; set; }
+        public long EntryPK { get; set; }
 
         public int StoredBoxPK { get; set; }
 

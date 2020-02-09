@@ -15,9 +15,9 @@ namespace StoreManagement.Models
 
         public ReceivingSession(string userID, int restorationPK)
         {
-            ExecutedDate = DateTime.Now;
             UserID = userID;
             RestorationPK = restorationPK;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]
@@ -30,6 +30,5 @@ namespace StoreManagement.Models
         public string UserID { get; set; }
 
         public int RestorationPK { get; set; }
-        
     }
 }

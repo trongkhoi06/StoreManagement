@@ -12,18 +12,15 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_IssuingSession(IssuingSession issuingSession, Demand demand, Request request, Conception conception)
-        {
-            IssuingSessionPK = issuingSession.IssuingSessionPK;
-            ExecutedDate = issuingSession.ExecutedDate;
-            DemandID = demand.DemandID;
-            StartWeek = demand.StartWeek;
-            EndWeek = demand.EndWeek;
-            ReceiveDivision = demand.ReceiveDivision;
-            ConceptionCode = conception.ConceptionCode;
-            RequestID = request.RequestID;
-            IsConfirmed = request.IsConfirmed;
-        }
+        //public Client_IssuingSession(IssuingSession issuingSession, Demand demand, Request request, Conception conception)
+        //{
+        //    IssuingSessionPK = issuingSession.IssuingSessionPK;
+        //    ExecutedDate = issuingSession.ExecutedDate;
+        //    DemandID = demand.DemandID;
+        //    ConceptionCode = conception.ConceptionCode;
+        //    RequestID = request.RequestID;
+        //    IsConfirmed = request.IsConfirmed;
+        //}
 
         public int IssuingSessionPK { get; set; }
 

@@ -11,15 +11,16 @@ namespace StoreManagement.Models
     {
         public Pack()
         {
+
         }
 
         public Pack(string packID, int orderPK, string userID)
         {
             PackID = packID;
-            DateCreated = DateTime.Now;
-            IsOpened = true;
             OrderPK = orderPK;
             UserID = userID;
+            DateCreated = DateTime.Now;
+            IsOpened = true;
         }
 
         [Key]

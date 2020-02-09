@@ -70,21 +70,6 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public List<Request> GetRequestFromDemandPK(int demandPK)
-        {
-            try
-            {
-                List<Request> result = (from re in db.Requests
-                                        where re.DemandPK == demandPK
-                                        select re).ToList();
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
         public void UpdateDemand(int demandPK)
         {
             try
@@ -200,7 +185,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Demand CreateDemand(int customerPK, int conceptionPK, double totalDemand, string receiveDevision, string userID)
+        public Demand CreateDemand(int customerPK, int conceptionPK, double totalDemand, int workplacePK, string userID)
         {
             try
             {
@@ -224,7 +209,7 @@ namespace StoreManagement.Controllers
                 }
                 // create demand
 
-                demand = new Demand(demandID, totalDemand, conceptionPK, receiveDevision, userID);
+                demand = new Demand(demandID, totalDemand, conceptionPK, workplacePK, userID);
                 db.Demands.Add(demand);
                 db.SaveChanges();
                 demand = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
@@ -265,257 +250,6 @@ namespace StoreManagement.Controllers
             {
                 throw e;
             }
-        }
-
-        public double InRequestedQuantity(int accessoryPK)
-        {
-            double result = 0;
-            StoringDAO storingDAO = new StoringDAO();
-            try
-            {
-                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
-                                                    where dI.AccessoryPK == accessoryPK
-                                                    select dI).ToList();
-                foreach (var demandedItem in demandedItems)
-                {
-                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-                                                          where rI.DemandedItemPK == demandedItem.DemandedItemPK
-                                                          select rI).ToList();
-                    foreach (var requestedItem in requestedItems)
-                    {
-                        Request request = db.Requests.Find(requestedItem.RequestPK);
-                        if (request.IsIssued == false)
-                        {
-                            result += requestedItem.RequestedQuantity;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            return result;
-        }
-
-        public double InOtherRequestedQuantity(int accessoryPK, int requestedItemPK)
-        {
-            double result = 0;
-            StoringDAO storingDAO = new StoringDAO();
-            try
-            {
-                List<DemandedItem> demandedItems = (from dI in db.DemandedItems
-                                                    where dI.AccessoryPK == accessoryPK
-                                                    select dI).ToList();
-                foreach (var demandedItem in demandedItems)
-                {
-                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-                                                          where rI.DemandedItemPK == demandedItem.DemandedItemPK && rI.RequestedItemPK != requestedItemPK
-                                                          select rI).ToList();
-                    foreach (var requestedItem in requestedItems)
-                    {
-                        Request request = db.Requests.Find(requestedItem.RequestPK);
-                        if (request.IsIssued == false)
-                        {
-                            result += requestedItem.RequestedQuantity;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            return result;
-        }
-
-        public double TotalRequestedQuantity(List<RequestedItem> requestedItems)
-        {
-            double result = 0;
-            foreach (var requestedItem in requestedItems)
-            {
-                result += requestedItem.RequestedQuantity;
-            }
-            return result;
-        }
-
-        public double TotalOtherRequestedQuantity(int requestedItemPK, List<RequestedItem> requestedItems)
-        {
-            double result = 0;
-            foreach (var requestedItem in requestedItems)
-            {
-                if (requestedItem.RequestedItemPK != requestedItemPK)
-                    result += requestedItem.RequestedQuantity;
-            }
-            return result;
-        }
-
-        public double TotalRequestedQuantityConfirmed(List<RequestedItem> requestedItems)
-        {
-            double result = 0;
-            foreach (var requestedItem in requestedItems)
-            {
-                Request request = db.Requests.Find(requestedItem.RequestPK);
-                if (request.IsConfirmed)
-                {
-                    result += requestedItem.RequestedQuantity;
-                }
-            }
-            return result;
-        }
-
-        public void CreateRequestedItems(List<Client_DemandedItemPK_RequestedQuantity> list, int requestPK)
-        {
-            try
-            {
-                foreach (var item in list)
-                {
-                    RequestedItem requestedItem = new RequestedItem(item.RequestedQuantity, requestPK, item.DemandedItemPK);
-                    db.RequestedItems.Add(requestedItem);
-                }
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public Request CreateRequest(string requestID, DateTime expectedDate, bool isIssued, bool isConfirmed, string comment, int demandPK, string userID)
-        {
-            try
-            {
-                Request request = new Request(requestID, expectedDate, isIssued, isConfirmed, comment, demandPK, userID);
-                db.Requests.Add(request);
-                db.SaveChanges();
-                request = (from rq in db.Requests.OrderByDescending(unit => unit.RequestPK)
-                           select rq).FirstOrDefault();
-                return request;
-            }
-            catch (Exception e)
-            {
-
-                throw e;
-            }
-        }
-
-        public void UpdateRequest(int requestPK, string comment, DateTime expectedDate)
-        {
-            try
-            {
-                Request request = db.Requests.Find(requestPK);
-                request.DateCreated = DateTime.Now;
-                request.Comment = comment;
-                request.ExpectedDate = expectedDate;
-                db.Entry(request).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void UpdateRequestIsIssued(int requestPK, bool isIssued)
-        {
-            try
-            {
-                Request request = db.Requests.Find(requestPK);
-                request.IsIssued = isIssued;
-                db.Entry(request).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void ConfirmRequest(int requestPK, bool isConfirmed)
-        {
-            try
-            {
-                Request request = db.Requests.Find(requestPK);
-                request.IsConfirmed = isConfirmed;
-                db.Entry(request).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void UpdateRequestedItems(List<Client_RequestedItemPK_RequestedQuantity> list, int requestPK)
-        {
-            try
-            {
-                foreach (var item in list)
-                {
-                    RequestedItem requestedItem = db.RequestedItems.Find(item.RequestedItemPK);
-                    if (requestedItem.RequestPK != requestPK) throw new Exception("CÓ ITEM KHÔNG NẰM TRONG YÊU CẦU XUẤT");
-                    requestedItem.RequestedQuantity = item.RequestedQuantity;
-                    db.Entry(requestedItem).State = EntityState.Modified;
-                }
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void DeleteRequestedItems(int requestPK)
-        {
-            try
-            {
-                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-                                                      where rI.RequestPK == requestPK
-                                                      select rI).ToList();
-                foreach (var requestedItem in requestedItems)
-                {
-                    db.RequestedItems.Remove(requestedItem);
-                }
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void DeleteRequest(int requestPK)
-        {
-            try
-            {
-                Request request = db.Requests.Find(requestPK);
-                db.Requests.Remove(request);
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public double OtherRequestedItem(int demandedItemPK, int requestedItemPK)
-        {
-            double result = 0;
-            try
-            {
-                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-                                                      where rI.DemandedItemPK == demandedItemPK && rI.RequestedItemPK != requestedItemPK
-                                                      select rI).ToList();
-                foreach (var requestedItem in requestedItems)
-                {
-                    result += requestedItem.RequestedQuantity;
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            return result;
         }
 
         public class StoredBox_ItemPK_IsRestored : IEquatable<StoredBox_ItemPK_IsRestored>
@@ -577,6 +311,103 @@ namespace StoreManagement.Controllers
 
             public double AvailableQuantity { get; set; }
         }
+        //public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
+        //{
+        //    List<Client_Box_Shelf_Row> result = new List<Client_Box_Shelf_Row>();
+        //    StoringDAO storingDAO = new StoringDAO();
+        //    try
+        //    {
+        //        // cực phẩm IQ
+        //        double inStoredQuantity = InStoredQuantity(accessory.AccessoryPK);
+        //        if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
+        //        List<Entry> entries = (from e in db.Entries
+        //                               where e.AccessoryPK == accessory.AccessoryPK
+        //                               select e).ToList();
+        //        //Entry entry = entries[0];
+        //        // kết xuất 1 dictionary gồm key là itempk và isrestored tuy nhiên gộp số lượng giữa các box
+        //        Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity> tempDictionary = new Dictionary<StoredBox_ItemPK_IsRestored, InBoxQuantity_AvailableQuantity>();
+        //        foreach (var entry in entries)
+        //        {
+        //            StoredBox storedBox = db.StoredBoxes.Find(entry.StoredBoxPK);
+        //            Box box = db.Boxes.Find(storedBox.BoxPK);
+
+        //            PassedItem passedItem;
+        //            RestoredItem restoredItem;
+        //            StoredBox_ItemPK_IsRestored key;
+
+        //            if (entry.IsRestored)
+        //            {
+        //                restoredItem = db.RestoredItems.Find(entry.ItemPK);
+        //                key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, restoredItem.RestoredItemPK, entry.IsRestored);
+        //            }
+        //            else
+        //            {
+        //                passedItem = db.PassedItems.Find(entry.ItemPK);
+        //                key = new StoredBox_ItemPK_IsRestored(storedBox.StoredBoxPK, passedItem.PassedItemPK, entry.IsRestored);
+        //            }
+        //            if (box.IsActive)
+        //            {
+        //                //InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
+        //                //    storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored)
+        //                //    , storingDAO.AvailableQuantity(storedBox, entry.ItemPK, entry.IsRestored));
+        //                if (!tempDictionary.ContainsKey(key))
+        //                {
+        //                    //tempDictionary.Add(key, tmp);
+        //                    tempDictionary.Add(key, new InBoxQuantity_AvailableQuantity(0, 0));
+        //                }
+        //                //else
+        //                //{
+        //                //    tempDictionary[key].InBoxQuantity += tmp.InBoxQuantity;
+        //                //    tempDictionary[key].AvailableQuantity += tmp.AvailableQuantity;
+        //                //}
+        //            }
+        //        }
+        //        foreach (var dictionary in tempDictionary)
+        //        {
+        //            StoredBox sBox = db.StoredBoxes.Find(dictionary.Key.StoredBoxPK);
+        //            InBoxQuantity_AvailableQuantity tmp = new InBoxQuantity_AvailableQuantity(
+        //                storingDAO.AvailableQuantity(sBox, dictionary.Key.ItemPK, dictionary.Key.IsRestored)
+        //                , storingDAO.AvailableQuantity(sBox, dictionary.Key.ItemPK, dictionary.Key.IsRestored));
+
+        //            dictionary.Value.InBoxQuantity += tmp.InBoxQuantity;
+        //            dictionary.Value.AvailableQuantity += tmp.AvailableQuantity;
+        //        }
+
+        //        // kiếm từng box dựa trên item dò được
+        //        foreach (var item in tempDictionary)
+        //        {
+        //            if (item.Value.AvailableQuantity > 0)
+        //            {
+        //                StoredBox storedBox = db.StoredBoxes.Find(item.Key.StoredBoxPK);
+        //                Box box = db.Boxes.Find(storedBox.BoxPK);
+        //                Shelf shelf = db.Shelves.Find(storedBox.ShelfPK);
+        //                Row row = db.Rows.Find(shelf.RowPK);
+        //                if (item.Key.IsRestored)
+        //                {
+        //                    RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
+        //                    Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+        //                    result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, restoration.RestorationID, item.Value.AvailableQuantity));
+        //                }
+        //                else
+        //                {
+        //                    PassedItem passedItem = db.PassedItems.Find(item.Key.ItemPK);
+        //                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+        //                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+        //                    Pack pack = db.Packs.Find(packedItem.PackPK);
+        //                    result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, pack.PackID, item.Value.AvailableQuantity));
+        //                }
+
+        //            }
+        //        }
+
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw e;
+        //    }
+        //    return result;
+        //}
+
         public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
         {
             List<Client_Box_Shelf_Row> result = new List<Client_Box_Shelf_Row>();
@@ -652,7 +483,7 @@ namespace StoreManagement.Controllers
                         {
                             RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
                             Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, restoration.RestorationID, item.Value.AvailableQuantity));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, restoration.RestorationID, item.Value.AvailableQuantity));
                         }
                         else
                         {
@@ -660,7 +491,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                             PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                             Pack pack = db.Packs.Find(packedItem.PackPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, item.Value.InBoxQuantity, pack.PackID, item.Value.AvailableQuantity));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored,pack.PackID, item.Value.AvailableQuantity));
                         }
 
                     }
@@ -674,61 +505,61 @@ namespace StoreManagement.Controllers
             return result;
         }
 
-        public IssuingSession CreateIssuingSession(string userID, int requestPK, List<string> boxIDs)
-        {
-            try
-            {
-                string deactivatedBoxes = "";
-                foreach (var boxID in boxIDs)
-                {
-                    deactivatedBoxes += boxID + "~!~";
-                }
-                IssuingSession issuingSession = new IssuingSession(userID, requestPK, deactivatedBoxes);
-                db.IssuingSessions.Add(issuingSession);
-                db.SaveChanges();
-                issuingSession = (from iS in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
-                                  select iS).FirstOrDefault();
-                return issuingSession;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+        //public IssuingSession CreateIssuingSession(string userID, int requestPK, List<string> boxIDs)
+        //{
+        //    try
+        //    {
+        //        string deactivatedBoxes = "";
+        //        foreach (var boxID in boxIDs)
+        //        {
+        //            deactivatedBoxes += boxID + "~!~";
+        //        }
+        //        IssuingSession issuingSession = new IssuingSession(userID, requestPK, deactivatedBoxes);
+        //        db.IssuingSessions.Add(issuingSession);
+        //        db.SaveChanges();
+        //        issuingSession = (from iS in db.IssuingSessions.OrderByDescending(unit => unit.IssuingSessionPK)
+        //                          select iS).FirstOrDefault();
+        //        return issuingSession;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw e;
+        //    }
+        //}
 
-        public void DeleteIssuingSession(int issuingSessionPK)
-        {
-            try
-            {
-                IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
-                db.IssuingSessions.Remove(issuingSession);
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+        //public void DeleteIssuingSession(int issuingSessionPK)
+        //{
+        //    try
+        //    {
+        //        IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+        //        db.IssuingSessions.Remove(issuingSession);
+        //        db.SaveChanges();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw e;
+        //    }
+        //}
 
-        public void DeleteIssueEntries(int issuingSessionPK)
-        {
-            try
-            {
-                IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
-                List<Entry> entries = (from e in db.Entries
-                                       where e.KindRoleName == "Issuing" && e.SessionPK == issuingSessionPK
-                                       select e).ToList();
-                foreach (var entry in entries)
-                {
-                    db.Entries.Remove(entry);
-                }
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
+        //public void DeleteIssueEntries(int issuingSessionPK)
+        //{
+        //    try
+        //    {
+        //        IssuingSession issuingSession = db.IssuingSessions.Find(issuingSessionPK);
+        //        List<Entry> entries = (from e in db.Entries
+        //                               where e.KindRoleName == "Issuing" && e.SessionPK == issuingSessionPK
+        //                               select e).ToList();
+        //        foreach (var entry in entries)
+        //        {
+        //            db.Entries.Remove(entry);
+        //        }
+        //        db.SaveChanges();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw e;
+        //    }
+        //}
 
         public Restoration CreateRestoration(string userID, string comment)
         {
@@ -937,21 +768,19 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public ConfirmingSession CreateConfirmingSession(int requestPK, string userID)
+        public double IssuedQuantity(int demandedItemPK)
         {
-            try
+            double result = 0;
+            List<IssuedGroup> issuedGroups = db.IssuedGroups.Where(unit => unit.DemandedItemPK == demandedItemPK).ToList();
+            foreach (var item in issuedGroups)
             {
-                ConfirmingSession confirmingSession = new ConfirmingSession(requestPK, userID);
-                db.ConfirmingSessions.Add(confirmingSession);
-                db.SaveChanges();
-                confirmingSession = (from Css in db.ConfirmingSessions.OrderByDescending(unit => unit.ConfirmingSessionPK)
-                                     select Css).FirstOrDefault();
-                return confirmingSession;
+                Issue issue = db.Issues.Find(item.IssuePK);
+                if (issue.IsStorebacked == false)
+                {
+                    result += item.IssuedGroupQuantity;
+                }
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            return result;
         }
     }
 }

@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public Shelf()
         {
+
         }
 
         public Shelf(string shelfID, int? rowPK)

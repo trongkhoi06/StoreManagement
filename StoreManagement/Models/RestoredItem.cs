@@ -11,6 +11,7 @@ namespace StoreManagement.Models
     {
         public RestoredItem()
         {
+
         }
 
         public RestoredItem(int accessoryPK, double restoredQuantity, int restorationPK)
