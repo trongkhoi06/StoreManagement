@@ -809,12 +809,12 @@ namespace StoreManagement.Controllers
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItemArranged> client_IdentifiedItems = new List<Client_IdentifiedItemArranged>();
-            BoxDAO boxController = new BoxDAO();
+            BoxDAO boxDAO = new BoxDAO();
             try
             {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxController.IsStored(box.BoxPK) || uBox.IsIdentified == false))
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+                UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                if (!(boxDAO.IsUnstoredCase(box.BoxPK)))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
@@ -869,20 +869,11 @@ namespace StoreManagement.Controllers
                     }
                     // kiếm unstoredBox by boxPK
                     UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                    // kiểm unstoredBox đã identified chưa
-                    if (uBox.IsIdentified == true)
-                    {
-                        return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC GHI NHẬN");
-                    }
-                    else
-                    {
-                        // tạo session
-                        Iss = identifyItemController.createdIdentifyingSession(userID);
-                        // chạy lệnh tạo n-indentifiedItem
-                        identifyItemController.createIndentifyItem(Iss, list, uBox);
-                        // đổi state của unstoredBox thành true
-                        boxController.UpdateIsIdentifyUnstoreBox(uBox, true);
-                    }
+
+                    // tạo session
+                    Iss = identifyItemController.createdIdentifyingSession(userID);
+                    // chạy lệnh tạo n-indentifiedItem
+                    identifyItemController.createIndentifyItem(Iss, list, uBox);
                 }
                 catch (Exception e)
                 {
@@ -955,7 +946,6 @@ namespace StoreManagement.Controllers
                         if (pack.IsOpened)
                         {
                             identifyItemController.deleteIdentifiedItemsOfSession(IdentifyingSessionPK);
-                            boxController.UpdateIsIdentifyUnstoreBox(db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK), false);
                         }
                         else
                         {
@@ -1071,27 +1061,6 @@ namespace StoreManagement.Controllers
         //    }
 
         //}
-
-        [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
-        [HttpGet]
-        public IHttpActionResult GetIsBoxStoredOrIdentified(string boxID)
-        {
-            BoxDAO boxController = new BoxDAO();
-            bool result = false;
-            try
-            {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (boxController.IsStored(box.BoxPK)) result = true;
-                if (uBox.IsIdentified == true) result = true;
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-
-            return Content(HttpStatusCode.OK, result);
-        }
 
         [Route("api/ReceivingController/GetIsBoxStored")]
         [HttpGet]

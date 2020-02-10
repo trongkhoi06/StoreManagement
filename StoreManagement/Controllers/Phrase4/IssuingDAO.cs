@@ -491,7 +491,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                             PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                             Pack pack = db.Packs.Find(packedItem.PackPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored,pack.PackID, item.Value.AvailableQuantity));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, pack.PackID, item.Value.AvailableQuantity));
                         }
 
                     }
@@ -781,6 +781,126 @@ namespace StoreManagement.Controllers
                 }
             }
             return result;
+        }
+
+        public Issue CreateIssue(string userID, int demandPK)
+        {
+            try
+            {
+                Issue issue = new Issue(demandPK, userID);
+                db.Issues.Add(issue);
+                db.SaveChanges();
+                return db.Issues.OrderByDescending(unit => unit.IssuePK).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteIssue(int issuePK)
+        {
+            try
+            {
+                Issue issue = db.Issues.Find(issuePK);
+                db.Issues.Remove(issue);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateEntryAndIssuedGroup(List<IssuingController.StoredItemForIssue> input, int demandPK, Issue issue)
+        {
+            try
+            {
+                List<IssuedGroup> igList = new List<IssuedGroup>();
+                foreach (var item in input)
+                {
+                    Box box = new BoxDAO().GetBoxByBoxID(item.OldBoxID);
+                    StoredBox sBox = new BoxDAO().GetStoredBoxbyBoxPK(box.BoxPK);
+                    UnstoredBox uBox = new BoxDAO().GetUnstoredBoxbyBoxPK(box.BoxPK);
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    Entry entry = new Entry(sBox, "Issuing", issue.IssuePK, item.IsRestored, item.IssuedQuantity, item.ItemPK, accessory);
+                    db.Entries.Add(entry);
+
+                    DemandedItem demandedItem = db.DemandedItems.Where(unit => unit.AccessoryPK == accessory.AccessoryPK &&
+                                                   unit.DemandPK == demandPK).FirstOrDefault();
+                    IssuedGroup issuedGroup = new IssuedGroup(item.IssuedQuantity, issue.IssuePK, demandedItem.DemandedItemPK
+                        , uBox.UnstoredBoxPK, item.ItemPK, item.IsRestored, accessory.AccessoryPK);
+                    if (!igList.Contains(issuedGroup))
+                    {
+                        igList.Add(issuedGroup);
+                    }
+                    else
+                    {
+                        igList.Find(x => x.Equals(issuedGroup)).IssuedGroupQuantity += issuedGroup.IssuedGroupQuantity;
+                    }
+                }
+                foreach (var item in igList)
+                {
+                    db.IssuedGroups.Add(item);
+                }
+                db.SaveChanges();
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateRestoredGroup(int restorationPK, string userID, ReceivingSession receivingSession, List<IssuingController.RestoredGroupItem> input)
+        {
+            try
+            {
+                List<RestoredGroup> temp = new List<RestoredGroup>();
+                foreach (var item in input)
+                {
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(item.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+                    StoredBox sBox = new BoxDAO().GetStoredBoxbyBoxPK(box.BoxPK);
+                    if (!new BoxDAO().IsUnstoredCase(box.BoxPK))
+                    {
+                        throw new Exception("ĐƠN VỊ KHÔNG HỌP LỆ!");
+                    }
+                    RestoredGroup restoredGroup = new RestoredGroup(item.GroupQuantity, item.RestoredItemPK, item.UnstoredBoxPK);
+                    db.RestoredGroups.Add(restoredGroup);
+
+                    sBox.ShelfPK = null;
+                    db.Entry(sBox).State = EntityState.Modified;
+
+                    if (!temp.Contains(restoredGroup))
+                    {
+                        temp.Add(restoredGroup);
+                    }
+                    else
+                    {
+                        temp.Find(x => x.Equals(restoredGroup)).GroupQuantity += restoredGroup.GroupQuantity;
+                    }
+                }
+
+                foreach (var item in temp)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
+                    if (item.GroupQuantity != restoredItem.RestoredQuantity)
+                    {
+                        throw new Exception("SỐ LƯỢNG GHI NHẬN KHÔNG GIỐNG VỚI ĐƠN TRẢ");
+                    }
+                }
+
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                restoration.IsReceived = true;
+                db.Entry(restoration).State = EntityState.Modified;
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

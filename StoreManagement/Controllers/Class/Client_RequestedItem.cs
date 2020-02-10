@@ -16,6 +16,7 @@ namespace StoreManagement.Class
         {
             DemandedItemPK = demandedItem.DemandedItemPK;
             DemandedQuantity = demandedItem.DemandedQuantity;
+            AccessoryPK = accessory.AccessoryPK;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
@@ -28,6 +29,8 @@ namespace StoreManagement.Class
         public int DemandedItemPK { get; set; }
 
         public double DemandedQuantity { get; set; }
+
+        public int AccessoryPK { get; set; }
 
         public string AccessoryID { get; set; }
 

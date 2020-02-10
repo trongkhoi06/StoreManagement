@@ -27,7 +27,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!boxController.IsStored(box.BoxPK) && uBox.IsIdentified == true)
+                if (!boxController.IsStored(box.BoxPK))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
@@ -124,7 +124,7 @@ namespace StoreManagement.Controllers
                     Shelf shelf = (from s in db.Shelves
                                    where s.ShelfID == shelfID && s.ShelfID != "InvisibleShelf"
                                    select s).FirstOrDefault();
-                    if (boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK).IsIdentified && !boxDAO.IsStored(box.BoxPK))
+                    if (!boxDAO.IsStored(box.BoxPK))
                     {
                         // chạy lệnh store box
                         storedBox = storingItemDAO.CreateStoredBox(box.BoxPK, shelf.ShelfPK);

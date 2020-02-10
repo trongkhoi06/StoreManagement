@@ -24,7 +24,7 @@ namespace StoreManagement.Models
         [Key]
         public int MovingSessionPK { get; set; }
 
-        public int StartShelfPK { get; set; }
+        public int? StartShelfPK { get; set; }
 
         public int DestinationShelfPK { get; set; }
 

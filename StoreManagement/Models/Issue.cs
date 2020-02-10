@@ -14,6 +14,15 @@ namespace StoreManagement.Models
 
         }
 
+        public Issue(int demandPK, string userID)
+        {
+            ExecutedDate = DateTime.Now;
+            DemandPK = demandPK;
+            UserID = userID;
+            IsStorebacked = false;
+            IsConfirmed = false;
+        }
+
         [Key]
         public int IssuePK { get; set; }
 

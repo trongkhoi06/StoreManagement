@@ -14,17 +14,14 @@ namespace StoreManagement.Models
 
         }
 
-        public UnstoredBox(int boxPK, bool isIdentified)
+        public UnstoredBox(int boxPK)
         {
             BoxPK = boxPK;
-            IsIdentified = isIdentified;
         }
 
         [Key]
         public int UnstoredBoxPK { get; set; }
 
         public int BoxPK { get; set; }
-
-        public bool IsIdentified { get; set; }
     }
 }

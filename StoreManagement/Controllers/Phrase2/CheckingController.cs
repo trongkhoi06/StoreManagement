@@ -285,7 +285,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxController.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxController.IsStored(box.BoxPK) || uBox.IsIdentified == false))
+                if (!(boxController.IsStored(box.BoxPK)))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK

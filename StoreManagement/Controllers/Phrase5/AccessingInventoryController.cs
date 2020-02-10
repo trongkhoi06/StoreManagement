@@ -29,100 +29,92 @@ namespace StoreManagement.Controllers
                 {
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                    // Nếu box chưa identify
-                    if (uBox.IsIdentified)
+                    // nếu box chưa được store
+                    if (!(boxDAO.IsStored(box.BoxPK)))
                     {
-                        // nếu box chưa được store
-                        if (!(boxDAO.IsStored(box.BoxPK)))
+                        List<Client_IdentifiedItemRead> client_IdentifiedItems = new List<Client_IdentifiedItemRead>();
+                        List<IdentifiedItem> identifiedItems;
+                        identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                           where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                           select iI).ToList();
+
+                        foreach (var identifiedItem in identifiedItems)
                         {
-                            List<Client_IdentifiedItemRead> client_IdentifiedItems = new List<Client_IdentifiedItemRead>();
-                            List<IdentifiedItem> identifiedItems;
-                            identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                               where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
-                                               select iI).ToList();
+                            PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                            // lấy pack ID
+                            Pack pack = db.Packs.Find(packedItem.PackPK);
 
-                            foreach (var identifiedItem in identifiedItems)
-                            {
-                                PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
-                                // lấy pack ID
-                                Pack pack = db.Packs.Find(packedItem.PackPK);
+                            // lấy phụ liệu tương ứng
+                            OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
 
-                                // lấy phụ liệu tương ứng
-                                OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-
-                                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                                // lấy qualityState
-                                ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
-                                                                 where cI.PackedItemPK == packedItem.PackedItemPK
-                                                                 select cI).FirstOrDefault();
-                                int? qualityState = null;
-                                if (classifiedItem != null) qualityState = classifiedItem.QualityState;
-                                client_IdentifiedItems.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState));
-                            }
-                            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+                            Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                            // lấy qualityState
+                            ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                             where cI.PackedItemPK == packedItem.PackedItemPK
+                                                             select cI).FirstOrDefault();
+                            int? qualityState = null;
+                            if (classifiedItem != null) qualityState = classifiedItem.QualityState;
+                            client_IdentifiedItems.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState));
                         }
-                        else
-                        {
-                            Client_InBoxItems_Shelf<Client_Shelf> result;
-                            Client_Shelf client_Shelf;
-                            List<Client_InBoxItem> client_InBoxItems = new List<Client_InBoxItem>();
-
-                            Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
-                            Row row = db.Rows.Find(shelf.RowPK);
-                            client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
-
-                            // Get list inBoxItem
-                            List<Entry> entries = (from e in db.Entries
-                                                   where e.StoredBoxPK == sBox.StoredBoxPK
-                                                   select e).ToList();
-                            HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
-                            foreach (var entry in entries)
-                            {
-                                listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
-                            }
-                            foreach (var itemPK in listItemPK)
-                            {
-                                if (storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2) > 0)
-                                {
-                                    PassedItem passedItem;
-                                    RestoredItem restoredItem;
-                                    if (itemPK.Item2)
-                                    {
-                                        restoredItem = db.RestoredItems.Find(itemPK.Item1);
-                                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true));
-                                    }
-                                    else
-                                    {
-                                        passedItem = db.PassedItems.Find(itemPK.Item1);
-                                        ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
-                                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
-                                        // lấy pack ID
-                                        Pack pack = (from p in db.Packs
-                                                     where p.PackPK == packedItem.PackPK
-                                                     select p).FirstOrDefault();
-
-                                        // lấy phụ liệu tương ứng
-                                        OrderedItem orderedItem = (from oI in db.OrderedItems
-                                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
-                                                                   select oI).FirstOrDefault();
-
-                                        Accessory accessory = (from a in db.Accessories
-                                                               where a.AccessoryPK == orderedItem.AccessoryPK
-                                                               select a).FirstOrDefault();
-                                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false));
-                                    }
-                                }
-                            }
-                            result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);
-                            return Content(HttpStatusCode.OK, result);
-
-                        }
+                        return Content(HttpStatusCode.OK, client_IdentifiedItems);
                     }
                     else
                     {
-                        return Content(HttpStatusCode.Conflict, "THÙNG NÀY CHƯA ĐƯỢC GHI NHẬN");
+                        Client_InBoxItems_Shelf<Client_Shelf> result;
+                        Client_Shelf client_Shelf;
+                        List<Client_InBoxItem> client_InBoxItems = new List<Client_InBoxItem>();
+
+                        Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
+                        Row row = db.Rows.Find(shelf.RowPK);
+                        client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
+
+                        // Get list inBoxItem
+                        List<Entry> entries = (from e in db.Entries
+                                               where e.StoredBoxPK == sBox.StoredBoxPK
+                                               select e).ToList();
+                        HashSet<Tuple<int, bool>> listItemPK = new HashSet<Tuple<int, bool>>();
+                        foreach (var entry in entries)
+                        {
+                            listItemPK.Add(new Tuple<int, bool>(entry.ItemPK, entry.IsRestored));
+                        }
+                        foreach (var itemPK in listItemPK)
+                        {
+                            if (storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2) > 0)
+                            {
+                                PassedItem passedItem;
+                                RestoredItem restoredItem;
+                                if (itemPK.Item2)
+                                {
+                                    restoredItem = db.RestoredItems.Find(itemPK.Item1);
+                                    Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                                    Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true));
+                                }
+                                else
+                                {
+                                    passedItem = db.PassedItems.Find(itemPK.Item1);
+                                    ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
+                                    PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                                    // lấy pack ID
+                                    Pack pack = (from p in db.Packs
+                                                 where p.PackPK == packedItem.PackPK
+                                                 select p).FirstOrDefault();
+
+                                    // lấy phụ liệu tương ứng
+                                    OrderedItem orderedItem = (from oI in db.OrderedItems
+                                                               where oI.OrderedItemPK == packedItem.OrderedItemPK
+                                                               select oI).FirstOrDefault();
+
+                                    Accessory accessory = (from a in db.Accessories
+                                                           where a.AccessoryPK == orderedItem.AccessoryPK
+                                                           select a).FirstOrDefault();
+                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false));
+                                }
+                            }
+                        }
+                        result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);
+                        return Content(HttpStatusCode.OK, result);
+
                     }
                 }
                 else

@@ -25,6 +25,6 @@ namespace StoreManagement.Models
 
         public int BoxPK { get; set; }
 
-        public int ShelfPK { get; set; }
+        public int? ShelfPK { get; set; }
     }
 }

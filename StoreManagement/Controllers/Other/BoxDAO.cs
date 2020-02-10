@@ -13,23 +13,7 @@ namespace StoreManagement.Controllers
     public class BoxDAO
     {
         private UserModel db = new UserModel();
-
-        public void UpdateIsIdentifyUnstoreBox(UnstoredBox uBox, bool value)
-        {
-            try
-            {
-                uBox.IsIdentified = value;
-                db.Entry(uBox).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-
-                throw e;
-            }
-
-        }
-
+        
         public bool IsStored(int boxPK)
         {
             try
@@ -109,14 +93,10 @@ namespace StoreManagement.Controllers
                 switch (boxKind)
                 {
                     case 1:
-                        unstoredBox = new UnstoredBox(boxPK, false);
+                        unstoredBox = new UnstoredBox(boxPK);
                         db.UnstoredBoxes.Add(unstoredBox);
                         break;
                     case 2:
-                        unstoredBox = new UnstoredBox(boxPK, true);
-                        db.UnstoredBoxes.Add(unstoredBox);
-                        break;
-                    case 3:
                         break;
                     default:
                         break;
@@ -252,6 +232,69 @@ namespace StoreManagement.Controllers
                 }
             }
             return false;
+        }
+
+        public bool IsUnstoredCase(int boxPK)
+        {
+            try
+            {
+                StoringDAO storingDAO = new StoringDAO();
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                List<Entry> entries = db.Entries.Where(unit => unit.StoredBoxPK == sBox.StoredBoxPK).ToList();
+                if (storingDAO.EntriesQuantity(entries) == 0 && 
+                    db.IssuedGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public bool IsStoredCase(int boxPK)
+        {
+            try
+            {
+                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                if (db.IssuedGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null &&
+                    db.RestoredGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null &&
+                    db.IdentifiedItems.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public bool IsEmptyCase(int boxPK)
+        {
+            try
+            {
+                StoringDAO storingDAO = new StoringDAO();
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                List<Entry> entries = db.Entries.Where(unit => unit.StoredBoxPK == sBox.StoredBoxPK).ToList();
+                if (storingDAO.EntriesQuantity(entries) == 0 &&
+                    db.IssuedGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null &&
+                    db.RestoredGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null &&
+                    db.IdentifiedItems.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

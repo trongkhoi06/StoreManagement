@@ -438,12 +438,12 @@ namespace StoreManagement.Controllers
 
         [Route("api/IssuingController/GetAccessoriesForRestoreItem")]
         [HttpPost]
-        public IHttpActionResult GetAccessoriesForRestoreItem(Client_ConceptionsAndAccessoryTypes input)
+        public IHttpActionResult GetAccessoriesForRestoreItem(List<int> conceptionPKs)
         {
             List<Accessory_RestoreItem> result = new List<Accessory_RestoreItem>();
             try
             {
-                foreach (var conceptionPK in input.conceptionPKs)
+                foreach (var conceptionPK in conceptionPKs)
                 {
                     List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
                                                    where unit.ConceptionPK == conceptionPK
@@ -451,9 +451,7 @@ namespace StoreManagement.Controllers
                     foreach (var AccessoryPK in tempAccessoriesPK)
                     {
                         Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
-
-                        if (input.accessorytypePKs.Contains(tempAccessory.AccessoryTypePK))
-                            result.Add(new Accessory_RestoreItem(tempAccessory));
+                        result.Add(new Accessory_RestoreItem(tempAccessory));
                     }
                 }
             }
@@ -655,15 +653,36 @@ namespace StoreManagement.Controllers
             public string UserID { get; set; }
         }
 
-        [Route("api/IssuingController/GetDemandsByWorkplaceByUserID")]
+        //[Route("api/IssuingController/GetDemandsByWorkplaceByUserID")]
+        //[HttpGet]
+        //public IHttpActionResult GetDemandsByWorkplaceByUserID(string userID)
+        //{
+        //    try
+        //    {
+        //        List<Client_Demand_IssueItems> result = new List<Client_Demand_IssueItems>();
+        //        Workplace workplace = db.Workplaces.Find(db.SystemUsers.Find(userID).WorkplacePK);
+        //        List<Demand> demands = db.Demands.Where(unit => unit.WorkplacePK == workplace.WorkplacePK && unit.IsOpened).ToList();
+        //        foreach (var demand in demands)
+        //        {
+        //            result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode));
+        //        }
+
+        //        return Content(HttpStatusCode.OK, result);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+        //    }
+        //}
+
+        [Route("api/IssuingController/GetDemandsPrepared")]
         [HttpGet]
-        public IHttpActionResult GetDemandsByWorkplaceByUserID(string userID)
+        public IHttpActionResult GetDemandsPrepared()
         {
             try
             {
                 List<Client_Demand_IssueItems> result = new List<Client_Demand_IssueItems>();
-                Workplace workplace = db.Workplaces.Find(db.SystemUsers.Find(userID).WorkplacePK);
-                List<Demand> demands = db.Demands.Where(unit => unit.WorkplacePK == workplace.WorkplacePK && unit.IsOpened).ToList();
+                List<Demand> demands = db.Demands.Where(unit => unit.IsOpened).ToList();
                 foreach (var demand in demands)
                 {
                     result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode));
@@ -694,22 +713,112 @@ namespace StoreManagement.Controllers
                     List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
                     result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes));
                 }
-                //List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-                //                                      where rI.RequestPK == request.RequestPK
-                //                                      select rI).ToList();
-                //foreach (var requestedItem in requestedItems)
-                //{
-                //    DemandedItem demandedItem = db.DemandedItems.Find(requestedItem.DemandedItemPK);
-                //    Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
-                //    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
-                //    client_RequestedItemDetails.Add(new Client_DemandedItem(requestedItem, accessory, issuingDAO.InStoredQuantity(accessory.AccessoryPK), client_Boxes));
-                //}
             }
             catch (Exception e)
             {
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
             return Content(HttpStatusCode.OK, result);
+        }
+
+        public class StoredItemForIssue
+        {
+            public StoredItemForIssue(int itemPK, bool isRestored, double issuedQuantity, string oldBoxID, string newBoxID)
+            {
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+                IssuedQuantity = issuedQuantity;
+                OldBoxID = oldBoxID;
+                NewBoxID = newBoxID;
+            }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+
+            public double IssuedQuantity { get; set; }
+
+            public int AccessoryPK { get; set; }
+
+            public string OldBoxID { get; set; }
+
+            public string NewBoxID { get; set; }
+        }
+
+        [Route("api/IssuingController/CollectStoredItemForIssue")]
+        [HttpPost]
+        public IHttpActionResult CollectStoredItemForIssue(int demandPK, string userID, List<StoredItemForIssue> input)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                Issue issue = null;
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    Demand demand = db.Demands.Find(demandPK);
+                    if (demand == null || demand.IsOpened == false)
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN CẤP PHÁP KHÔNG HỢP LỆ!");
+                    }
+                    issue = issuingDAO.CreateIssue(userID, demandPK);
+                    issuingDAO.CreateEntryAndIssuedGroup(input, demandPK, issue);
+                    return Content(HttpStatusCode.OK, "THU THẬP ĐỒ ĐỂ XUẤT THÀNH CÔNG!");
+                }
+                catch (Exception e)
+                {
+                    if (issue != null)
+                    {
+                        issuingDAO.DeleteIssue(issue.IssuePK);
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        public class RestoredGroupItem
+        {
+            public RestoredGroupItem(int restoredItemPK, double groupQuantity, int unstoredBoxPK)
+            {
+                RestoredItemPK = restoredItemPK;
+                GroupQuantity = groupQuantity;
+                UnstoredBoxPK = unstoredBoxPK;
+            }
+
+            public int RestoredItemPK { get; set; }
+
+            public double GroupQuantity { get; set; }
+
+            public int UnstoredBoxPK { get; set; }
+        }
+
+        [Route("api/IssuingController/IdentifyRestoredGroupItems")]
+        [HttpPost]
+        public IHttpActionResult IdentifyRestoredGroupItems(int restorationPK, string userID, List<RestoredGroupItem> input)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                ReceivingSession receivingSession = new ReceivingSession();
+                try
+                {
+                    receivingSession = issuingDAO.CreateReceivingSession(restorationPK, userID);
+                    issuingDAO.CreateRestoredGroup(restorationPK, userID, receivingSession, input);
+
+                    return Content(HttpStatusCode.OK, "GHI NHẬN THÀNH CÔNG!");
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
         }
     }
 }
