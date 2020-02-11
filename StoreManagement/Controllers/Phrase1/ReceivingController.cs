@@ -853,31 +853,30 @@ namespace StoreManagement.Controllers
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
-                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
-                BoxDAO boxController = new BoxDAO();
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+                BoxDAO boxDAO = new BoxDAO();
                 IdentifyingSession Iss = null;
                 // chạy lệnh identify
                 try
                 {
                     // kiếm Box by box ID
-                    Box box = boxController.GetBoxByBoxID(boxID);
+                    Box box = boxDAO.GetBoxByBoxID(boxID);
 
                     // kiểm xem box đã store hay chưa
-                    if (boxController.IsStored(box.BoxPK))
+                    if (!boxDAO.IsUnstoredCase(box.BoxPK))
                     {
-                        return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO");
+                        return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
                     }
                     // kiếm unstoredBox by boxPK
-                    UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                    UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
 
                     // tạo session
-                    Iss = identifyItemController.createdIdentifyingSession(userID);
+                    Iss = identifyItemDAO.createdIdentifyingSession(userID);
                     // chạy lệnh tạo n-indentifiedItem
-                    identifyItemController.createIndentifyItem(Iss, list, uBox);
+                    identifyItemDAO.createIndentifyItem(Iss, list, uBox);
                 }
                 catch (Exception e)
                 {
-                    var temp = e;
                     if (Iss != null)
                     {
                         db.IdentifyingSessions.Remove(Iss);
@@ -969,98 +968,77 @@ namespace StoreManagement.Controllers
             }
         }
 
-        //[Route("api/ReceivingController/ArrangeIdentifiedItemsBusiness")]
-        //[HttpPut]
-        //public IHttpActionResult ArrangeIdentifiedItemsBusiness(string boxFromID, string boxToID, string userID, [FromBody] List<int> listIdentifiedItemsPK)
-        //{
-        //    if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
-        //    {
-        //        // Arrange
-        //        IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
-        //        BoxDAO boxController = new BoxDAO();
-        //        ArrangingSession arrangingSession = null;
-        //        try
-        //        {
-        //            if (boxFromID == boxToID)
-        //            {
-        //                return Content(HttpStatusCode.Conflict, "KHÔNG ĐƯỢC CHỌN CÙNG MỘT THÙNG!");
-        //            }
+        public class Client_GroupItemArrange
+        {
+            public Client_GroupItemArrange()
+            {
+            }
 
-        //            // take box by boxID
-        //            Box boxFrom = boxController.GetBoxByBoxID(boxFromID);
-        //            Box boxTo = boxController.GetBoxByBoxID(boxToID);
+            public int ItemPK { get; set; }
 
-        //            // check xem box đã store hay chưa
-        //            if (boxController.IsStored(boxFrom.BoxPK) || boxController.IsStored(boxTo.BoxPK))
-        //            {
-        //                return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO, KHÔNG THỂ CHUYỂN ĐỔI");
-        //            }
+            public bool IsRestored { get; set; }
+        }
 
-        //            // select unstoredBox to check if box from really contain that item
-        //            UnstoredBox uBoxFrom = boxController.GetUnstoredBoxbyBoxPK(boxFrom.BoxPK);
-        //            if (uBoxFrom == null) return Content(HttpStatusCode.NotFound, "THÙNG KHÔNG TỒN TẠI");
+        [Route("api/ReceivingController/ArrangeGroupItems")]
+        [HttpPut]
+        public IHttpActionResult ArrangeGroupItems(string boxFromID, string boxToID, string userID, [FromBody] List<Client_GroupItemArrange> items)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                // Arrange
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+                BoxDAO boxDAO = new BoxDAO();
+                ArrangingSession arrangingSession = null;
+                try
+                {
+                    if (boxFromID == boxToID)
+                    {
+                        return Content(HttpStatusCode.Conflict, "KHÔNG ĐƯỢC CHỌN CÙNG MỘT ĐƠN VỊ!");
+                    }
 
-        //            // check identified
-        //            if (uBoxFrom.IsIdentified == true)
-        //            {
-        //                // select unstoredBox to arrange
-        //                UnstoredBox uBoxTo = boxController.GetUnstoredBoxbyBoxPK(boxTo.BoxPK);
-        //                if (uBoxTo == null) return Content(HttpStatusCode.NotFound, "THÙNG KHÔNG TỒN TẠI");
+                    // take box by boxID
+                    Box boxFrom = boxDAO.GetBoxByBoxID(boxFromID);
+                    Box boxTo = boxDAO.GetBoxByBoxID(boxToID);
 
-        //                // Nếu box mới thì chuyển thành box cũ
-        //                if (uBoxTo.IsIdentified == false)
-        //                {
-        //                    boxController.UpdateIsIdentifyUnstoreBox(uBoxTo, true);
-        //                }
+                    // check xem box đã store hay chưa
+                    if (boxFrom == null || boxTo == null || !boxDAO.IsUnstoredCase(boxFrom.BoxPK) || !boxDAO.IsUnstoredCase(boxTo.BoxPK))
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỌP LỆ!");
+                    }
 
-        //                // Create arranging session
-        //                arrangingSession = identifyItemController.createArrangingSession(uBoxFrom.UnstoredBoxPK, uBoxTo.UnstoredBoxPK, userID);
+                    // select unstoredBox to check if box from really contain that item
+                    UnstoredBox uBoxFrom = boxDAO.GetUnstoredBoxbyBoxPK(boxFrom.BoxPK);
+                    if (uBoxFrom == null) return Content(HttpStatusCode.NotFound, "ĐƠN VỊ KHÔNG HỌP LỆ!");
 
-        //                // Arrange item
-        //                foreach (var item in listIdentifiedItemsPK)
-        //                {
-        //                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item);
+                    // select unstoredBox to arrange
+                    UnstoredBox uBoxTo = boxDAO.GetUnstoredBoxbyBoxPK(boxTo.BoxPK);
+                    if (uBoxTo == null) return Content(HttpStatusCode.NotFound, "ĐƠN VỊ KHÔNG HỌP LỆ!");
 
-        //                    // check if box from really contain that item
-        //                    if (identifiedItem.UnstoredBoxPK == uBoxFrom.UnstoredBoxPK)
-        //                    {
-        //                        identifiedItem.UnstoredBoxPK = uBoxTo.UnstoredBoxPK;
-        //                        identifyItemController.ArrangeIndentifiedItem(identifiedItem);
+                    // Create arranging session
+                    arrangingSession = identifyItemDAO.createArrangingSession(uBoxFrom.UnstoredBoxPK, uBoxTo.UnstoredBoxPK, userID);
 
-        //                        // Map session with item
-        //                        IdentifiedItem_ArrangingSession identifiedItem_ArrangingSession = new IdentifiedItem_ArrangingSession
-        //                        {
-        //                            IdentifiedItemPK = identifiedItem.IdentifiedItemPK,
-        //                            ArrangingSessionPK = arrangingSession.ArrangingSessionPK
-        //                        };
-        //                        identifyItemController.MapItemWithSession(identifiedItem_ArrangingSession);
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                return Content(HttpStatusCode.OK, "THÙNG KHÔNG HỢP LỆ");
-        //            }
+                    // Arrange item
+                    identifyItemDAO.ArrangeItem(items,uBoxFrom,uBoxTo,arrangingSession);
 
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            if (arrangingSession != null)
-        //            {
-        //                db.ArrangingSessions.Remove(arrangingSession);
-        //                db.SaveChanges();
-        //            }
-        //            return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //        }
+                }
+                catch (Exception e)
+                {
+                    if (arrangingSession != null)
+                    {
+                        db.ArrangingSessions.Remove(arrangingSession);
+                        db.SaveChanges();
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
 
-        //        return Content(HttpStatusCode.OK, "SẮP XẾP CỤM PHỤ LIỆU THÀNH CÔNG");
-        //    }
-        //    else
-        //    {
-        //        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
-        //    }
+                return Content(HttpStatusCode.OK, "SẮP XẾP CỤM PHỤ LIỆU THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
 
-        //}
+        }
 
         [Route("api/ReceivingController/GetIsBoxStored")]
         [HttpGet]

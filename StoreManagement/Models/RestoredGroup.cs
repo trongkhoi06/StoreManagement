@@ -9,11 +9,16 @@ namespace StoreManagement.Models
     [Table("RestoredGroup")]
     public partial class RestoredGroup : IEquatable<RestoredGroup>
     {
+        public RestoredGroup()
+        {
+        }
+
         public RestoredGroup(double groupQuantity, int restoredItemPK, int unstoredBoxPK)
         {
             GroupQuantity = groupQuantity;
             RestoredItemPK = restoredItemPK;
             UnstoredBoxPK = unstoredBoxPK;
+            StoringSessionPK = null;
         }
 
         [Key]
@@ -23,7 +28,9 @@ namespace StoreManagement.Models
 
         public int RestoredItemPK { get; set; }
 
-        public int UnstoredBoxPK { get; set; }
+        public int? UnstoredBoxPK { get; set; }
+
+        public int? StoringSessionPK { get; set; }
 
         public override bool Equals(object obj)
         {

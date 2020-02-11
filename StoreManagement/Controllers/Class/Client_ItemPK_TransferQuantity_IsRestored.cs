@@ -9,8 +9,8 @@ namespace StoreManagement.Class
     {
         public int ItemPK { get; set; }
 
-        public double TransferQuantity { get; set; }
-
         public bool IsRestored { get; set; }
+
+        public double TransferQuantity { get; set; }
     }
 }

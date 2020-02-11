@@ -20,6 +20,9 @@ namespace StoreManagement.Models
             PackedItemPK = packedItemPK;
             IdentifyingSessionPK = identifyingSessionPK;
             UnstoredBoxPK = unstoredBoxPK;
+            IsChecked = false;
+            IsCounted = false;
+            StoringSessionPK = null;
         }
 
         [Key]
@@ -35,7 +38,7 @@ namespace StoreManagement.Models
 
         public int IdentifyingSessionPK { get; set; }
 
-        public int UnstoredBoxPK { get; set; }
+        public int? UnstoredBoxPK { get; set; }
 
         public int? StoringSessionPK { get; set; }
     }

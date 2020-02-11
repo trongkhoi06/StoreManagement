@@ -1,4 +1,5 @@
 ﻿using StoreManagement.Class;
+using StoreManagement.Controllers.Class;
 using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using static StoreManagement.Controllers.StoringController;
 
 namespace StoreManagement.Controllers
 {
@@ -14,15 +16,16 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public StoredBox CreateStoredBox(int boxPK, int shelfPK)
+        public StoredBox UpdateStoredBox(int boxPK, int? shelfPK)
         {
             try
             {
                 // tạo storedBox
-                StoredBox storedBox = new StoredBox(boxPK, shelfPK);
-                db.StoredBoxes.Add(storedBox);
+                StoredBox storedBox = db.StoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
+                storedBox.ShelfPK = shelfPK;
+                db.Entry(storedBox).State = EntityState.Modified;
                 db.SaveChanges();
-                return db.StoredBoxes.OrderByDescending(unit => unit.StoredBoxPK).FirstOrDefault();
+                return storedBox;
             }
             catch (Exception e)
             {
@@ -46,13 +49,14 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void CreateEntriesUpdatePassedItem(Box box, StoredBox storedBox, StoringSession storingSession)
+        public void CreateEntriesAndUpdateItem(Box box, StoredBox storedBox, StoringSession storingSession)
         {
             try
             {
                 IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
                 BoxDAO boxDAO = new BoxDAO();
                 UnstoredBox unstoredBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
                                                         where iI.UnstoredBoxPK == unstoredBox.UnstoredBoxPK
                                                         select iI).ToList();
@@ -88,7 +92,103 @@ namespace StoreManagement.Controllers
                     {
                         throw new Exception("PHỤ LIỆU KHÔNG HỢP LỆ");
                     }
+
+                    identifiedItem.StoringSessionPK = storingSession.StoringSessionPK;
+                    db.Entry(identifiedItem).State = EntityState.Modified;
                 }
+
+                List<RestoredGroup> restoredGroups = (from rg in db.RestoredGroups
+                                                      where rg.UnstoredBoxPK == unstoredBox.UnstoredBoxPK
+                                                      select rg).ToList();
+                foreach (var restoredGroup in restoredGroups)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+                    // lấy accessory
+                    Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+
+                    // tạo entry
+                    Entry entry = new Entry(storedBox, "Storing", storingSession.StoringSessionPK, true,
+                        restoredGroup.GroupQuantity, restoredItem.RestoredItemPK, accessory);
+                    db.Entries.Add(entry);
+
+                    restoredGroup.StoringSessionPK = storingSession.StoringSessionPK;
+                    db.Entry(restoredGroup).State = EntityState.Modified;
+                }
+
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateEntriesAndUpdateItem2(Box box, StoringSession storingSession, List<Client_GroupItem_Store> input)
+        {
+            try
+            {
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+                BoxDAO boxDAO = new BoxDAO();
+                UnstoredBox unstoredBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                StoredBox storedBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
+
+                foreach (var item in input)
+                {
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item.ItemPK);
+                    if (!item.IsRestored)
+                    {
+                        PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
+                        // lấy accessory
+                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                        Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                        //
+                        ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
+                                                         where cI.PackedItemPK == packedItem.PackedItemPK
+                                                         select cI).FirstOrDefault();
+                        if (classifiedItem != null)
+                        {
+                            PassedItem passedItem = (from pI in db.PassedItems
+                                                     where pI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                     select pI).FirstOrDefault();
+                            if (passedItem != null)
+                            {
+                                UpdatePassedItem(passedItem.PassedItemPK);
+                                // tạo entry
+                                Entry entry = new Entry(storedBox, "Storing", storingSession.StoringSessionPK, item.IsRestored,
+                                    identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), passedItem.PassedItemPK, accessory);
+                                db.Entries.Add(entry);
+                            }
+                            else
+                            {
+                                throw new Exception("PHỤ LIỆU KHÔNG HỢP LỆ");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("PHỤ LIỆU KHÔNG HỢP LỆ");
+                        }
+
+                        identifiedItem.StoringSessionPK = storingSession.StoringSessionPK;
+                        db.Entry(identifiedItem).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        RestoredGroup restoredGroup = db.RestoredGroups.Find(item.ItemPK);
+                        RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+                        // lấy accessory
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+
+                        // tạo entry
+                        Entry entry = new Entry(storedBox, "Storing", storingSession.StoringSessionPK, item.IsRestored,
+                            restoredGroup.GroupQuantity, restoredItem.RestoredItemPK, accessory);
+                        db.Entries.Add(entry);
+
+                        restoredGroup.StoringSessionPK = storingSession.StoringSessionPK;
+                        db.Entry(restoredGroup).State = EntityState.Modified;
+                    }
+                }
+
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -104,20 +204,6 @@ namespace StoreManagement.Controllers
                 PassedItem passedItem = db.PassedItems.Find(passedItemPK);
                 passedItem.IsStored = true;
                 db.Entry(passedItem).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void DeleteStoredBox(int storedBoxPK)
-        {
-            try
-            {
-                StoredBox storedBox = db.StoredBoxes.Find(storedBoxPK);
-                db.StoredBoxes.Remove(storedBox);
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -530,6 +616,16 @@ namespace StoreManagement.Controllers
             {
                 foreach (var item in list)
                 {
+                    AvailableItem availableItem = new AvailableItem(sBoxFrom.StoredBoxPK, item.ItemPK, item.IsRestored);
+                    if (availableItem.IsPending)
+                    {
+                        throw new Exception("CỤM PHỤ LIỆU ĐANG CHỜ XỬ LÝ ĐIỀU CHỈNH!");
+                    }
+                    if (item.TransferQuantity > availableItem.AvailableQuantity)
+                    {
+                        throw new Exception("SỐ LƯỢNG CHUYỂN CỦA CỤM PHỤ LIỆU KHÔNG HỢP LỆ!");
+                    }
+
                     Accessory accessory;
                     if (item.IsRestored)
                     {

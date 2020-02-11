@@ -42,7 +42,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateAllIdentifiedItemsToVirtualBox(int failedItemPK)
+        public void updateAllIdentifiedItems(int failedItemPK)
         {
             try
             {
@@ -52,15 +52,15 @@ namespace StoreManagement.Controllers
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems
                                                         where iI.PackedItemPK == packedItem.PackedItemPK
                                                         select iI).ToList();
-                UnstoredBox virtualBox = (from uB in db.UnstoredBoxes
-                                           where uB.BoxPK == (from b in db.Boxes
-                                                              where b.BoxID == "ĐÃ TRẢbox"
-                                                              select b).FirstOrDefault().BoxPK
-                                           select uB).FirstOrDefault();
+                //UnstoredBox virtualBox = (from uB in db.UnstoredBoxes
+                //                           where uB.BoxPK == (from b in db.Boxes
+                //                                              where b.BoxID == "ĐÃ TRẢbox"
+                //                                              select b).FirstOrDefault().BoxPK
+                //                           select uB).FirstOrDefault();
 
                 foreach (var item in identifiedItems)
                 {
-                    item.UnstoredBoxPK = virtualBox.UnstoredBoxPK;
+                    item.UnstoredBoxPK = null;
                     db.Entry(item).State = EntityState.Modified;
                 }
                 db.SaveChanges();

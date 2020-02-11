@@ -14,8 +14,9 @@ namespace StoreManagement.Models
 
         }
 
-        public Issue(int demandPK, string userID)
+        public Issue(int demandPK, string userID, string issueID)
         {
+            IssueID = issueID;
             ExecutedDate = DateTime.Now;
             DemandPK = demandPK;
             UserID = userID;
@@ -25,6 +26,9 @@ namespace StoreManagement.Models
 
         [Key]
         public int IssuePK { get; set; }
+
+        [StringLength(100)]
+        public string IssueID { get; set; }
 
         public DateTime ExecutedDate { get; set; }
 

@@ -35,7 +35,6 @@ namespace StoreManagement.Controllers
         {
             try
             {
-
                 foreach (var el in list)
                 {
                     // querry lấy pack
@@ -58,6 +57,9 @@ namespace StoreManagement.Controllers
                         throw new Exception("PHIẾU NHẬP ĐANG ĐÓNG, KO GHI NHẬN NHẬP HÀNG ĐƯỢC");
                     }
                 }
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == uBox.BoxPK).FirstOrDefault();
+                sBox.ShelfPK = null;
+                db.Entry(sBox).State = EntityState.Modified;
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -82,20 +84,6 @@ namespace StoreManagement.Controllers
                 }
                 db.IdentifyingSessions.Remove(identifyingSession);
                 db.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        public void ArrangeIndentifiedItem(IdentifiedItem identifiedItem)
-        {
-            try
-            {
-                db.Entry(identifiedItem).State = EntityState.Modified;
-                db.SaveChanges();
-
             }
             catch (Exception e)
             {
@@ -261,8 +249,16 @@ namespace StoreManagement.Controllers
                                     db.IdentifiedItems.Remove(identifiedItem);
                                     break;
                                 default:
-                                    identifiedItem.IdentifiedQuantity = el.IdentifiedQuantity;
-                                    db.Entry(identifiedItem).State = EntityState.Modified;
+                                    if (PrimitiveType.isValidQuantity(el.IdentifiedQuantity))
+                                    {
+
+                                        identifiedItem.IdentifiedQuantity = el.IdentifiedQuantity;
+                                        db.Entry(identifiedItem).State = EntityState.Modified;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception(SystemMessage.NotPassPrimitiveType);
+                                    }
                                     break;
                             }
                         }
@@ -285,6 +281,49 @@ namespace StoreManagement.Controllers
             {
                 throw e;
             }
+        }
+
+        public void ArrangeItem(List<ReceivingController.Client_GroupItemArrange> items, UnstoredBox uBoxFrom, UnstoredBox uBoxTo, ArrangingSession arrangingSession)
+        {
+            foreach (var item in items)
+            {
+                if (item.IsRestored == false)
+                {
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item.ItemPK);
+                    // check if box from really contain that item
+                    if (identifiedItem.UnstoredBoxPK == uBoxFrom.UnstoredBoxPK)
+                    {
+                        identifiedItem.UnstoredBoxPK = uBoxTo.UnstoredBoxPK;
+                        db.Entry(identifiedItem).State = EntityState.Modified;
+
+                        // Map session with item
+                        GroupItem_ArrangingSession groupItem_ArrangingSession = new GroupItem_ArrangingSession(
+                            identifiedItem.IdentifiedItemPK, item.IsRestored, arrangingSession.ArrangingSessionPK);
+
+                        db.GroupItem_ArrangingSession.Add(groupItem_ArrangingSession);
+                    }
+                }
+                else
+                {
+                    RestoredGroup restoredGroup = db.RestoredGroups.Find(item.ItemPK);
+                    // check if box from really contain that item
+                    if (restoredGroup.UnstoredBoxPK == uBoxFrom.UnstoredBoxPK)
+                    {
+                        restoredGroup.UnstoredBoxPK = uBoxTo.UnstoredBoxPK;
+                        db.Entry(restoredGroup).State = EntityState.Modified;
+
+                        // Map session with item
+                        GroupItem_ArrangingSession groupItem_ArrangingSession = new GroupItem_ArrangingSession(
+                            restoredGroup.RestoredGroupPK, item.IsRestored, arrangingSession.ArrangingSessionPK);
+
+                        db.GroupItem_ArrangingSession.Add(groupItem_ArrangingSession);
+                    }
+                }
+            }
+
+            StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == uBoxTo.BoxPK).FirstOrDefault();
+            db.Entry(sBox).State = EntityState.Modified;
+            db.SaveChanges();
         }
     }
 }

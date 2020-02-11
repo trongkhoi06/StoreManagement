@@ -149,6 +149,7 @@
   <ItemGroup>
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Class\AvailableItem.cs" />
     <Compile Include="Controllers\Class\Client_Accessory_DemandedQuantity_Comment.cs" />
     <Compile Include="Controllers\Class\Client_IssuingSession.cs" />
     <Compile Include="Controllers\Class\Client_IdentifiedItemRead.cs" />

@@ -1,4 +1,5 @@
 ﻿using StoreManagement.Class;
+using StoreManagement.Controllers.Class;
 using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -124,12 +125,12 @@ namespace StoreManagement.Controllers
                     Shelf shelf = (from s in db.Shelves
                                    where s.ShelfID == shelfID && s.ShelfID != "InvisibleShelf"
                                    select s).FirstOrDefault();
-                    if (!boxDAO.IsStored(box.BoxPK))
+                    if (boxDAO.IsUnstoredCase(box.BoxPK))
                     {
                         // chạy lệnh store box
-                        storedBox = storingItemDAO.CreateStoredBox(box.BoxPK, shelf.ShelfPK);
+                        storedBox = storingItemDAO.UpdateStoredBox(box.BoxPK, shelf.ShelfPK);
                         storingSession = storingItemDAO.CreateStoringSession(userID);
-                        storingItemDAO.CreateEntriesUpdatePassedItem(box, storedBox, storingSession);
+                        storingItemDAO.CreateEntriesAndUpdateItem(box, storedBox, storingSession);
                     }
                     else
                     {
@@ -139,7 +140,59 @@ namespace StoreManagement.Controllers
                 catch (Exception e)
                 {
                     if (storedBox != null)
-                        storingItemDAO.DeleteStoredBox(storedBox.StoredBoxPK);
+                        storingItemDAO.UpdateStoredBox(storedBox.BoxPK, null);
+                    if (storingSession != null)
+                        storingItemDAO.DeleteStoringSession(storingSession.StoringSessionPK);
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+
+
+                return Content(HttpStatusCode.OK, "STORE THÙNG THÀNH CÔNG");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
+            }
+
+        }
+
+        public class Client_GroupItem_Store
+        {
+            public Client_GroupItem_Store()
+            {
+            }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+        }
+
+        [Route("api/StoringController/StoreItemBusiness")]
+        [HttpPost]
+        public IHttpActionResult StoreItemBusiness(string boxID, string userID, List<Client_GroupItem_Store> input)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                BoxDAO boxDAO = new BoxDAO();
+                StoringDAO storingItemDAO = new StoringDAO();
+                StoredBox storedBox = null;
+                StoringSession storingSession = null;
+                try
+                {
+                    // khởi tạo
+                    Box box = boxDAO.GetBoxByBoxID(boxID);
+                    if (boxDAO.IsStoredCase(box.BoxPK))
+                    {
+                        storingSession = storingItemDAO.CreateStoringSession(userID);
+                        storingItemDAO.CreateEntriesAndUpdateItem2(box, storingSession, input);
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ");
+                    }
+                }
+                catch (Exception e)
+                {
                     if (storingSession != null)
                         storingItemDAO.DeleteStoringSession(storingSession.StoringSessionPK);
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
@@ -249,7 +302,7 @@ namespace StoreManagement.Controllers
                         Box boxTo = boxDAO.GetBoxByBoxID(boxToID);
                         StoredBox sBoxTo = boxDAO.GetStoredBoxbyBoxPK(boxTo.BoxPK);
                         // kiểm box
-                        if (sBoxFrom == null)
+                        if (!boxDAO.IsStoredCase(boxFrom.BoxPK) || !boxDAO.IsStoredCase(boxTo.BoxPK))
                         {
                             return Content(HttpStatusCode.Conflict, "THÙNG KHÔNG HỢP LỆ");
                         }
@@ -354,8 +407,13 @@ namespace StoreManagement.Controllers
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
+                        AvailableItem availableItem = new AvailableItem(sBox.StoredBoxPK, itemPK, isRestored);
+                        if (availableItem.IsPending)
+                        {
+                            return Content(HttpStatusCode.Conflict, "ĐƠN VỊ ĐANG CHỜ XỬ LÝ ĐIỀU CHỈNH");
+                        }
                         adjustingSession = storingDAO.CreateAdjustingSession(comment, false, userID);
-                        if (adjustedQuantity > storingDAO.AvailableQuantity(sBox, itemPK, isRestored) && PrimitiveType.isValidQuantity(adjustedQuantity))
+                        if (adjustedQuantity > availableItem.AvailableQuantity && PrimitiveType.isValidQuantity(adjustedQuantity))
                         {
                             storingDAO.CreateAdjustEntry(sBox, itemPK, adjustedQuantity - storingDAO.AvailableQuantity(sBox, itemPK, isRestored), isRestored, false, adjustingSession);
                         }
@@ -444,8 +502,13 @@ namespace StoreManagement.Controllers
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     if (sBox != null)
                     {
+                        AvailableItem availableItem = new AvailableItem(sBox.StoredBoxPK, itemPK, isRestored);
+                        if (availableItem.IsPending)
+                        {
+                            return Content(HttpStatusCode.Conflict, "ĐƠN VỊ ĐANG CHỜ XỬ LÝ ĐIỀU CHỈNH");
+                        }
                         discardingSession = storingDAO.CreateDiscardingSession(comment, false, userID);
-                        if (discardedQuantity <= storingDAO.AvailableQuantity(sBox, itemPK, isRestored) && discardedQuantity > 0)
+                        if (discardedQuantity <= availableItem.AvailableQuantity && discardedQuantity > 0)
                         {
                             storingDAO.CreateDiscardEntry(sBox, itemPK, discardedQuantity, isRestored, discardingSession);
                         }

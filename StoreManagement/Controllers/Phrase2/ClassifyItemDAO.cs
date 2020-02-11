@@ -13,12 +13,13 @@ namespace StoreManagement.Controllers
     {
         private UserModel db = new UserModel();
 
-        public void createClassifyingSession(ClassifyingSession classifyingSession)
+        public ClassifyingSession createClassifyingSession(ClassifyingSession classifyingSession)
         {
             try
             {
                 db.ClassifyingSessions.Add(classifyingSession);
                 db.SaveChanges();
+                return db.ClassifyingSessions.OrderByDescending(unit => unit.ClassifyingSessionPK).FirstOrDefault();
             }
             catch (Exception e)
             {
@@ -26,7 +27,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateClassifyingSession(int classifyingSessionPK,string comment)
+        public void updateClassifyingSession(int classifyingSessionPK, string comment)
         {
             try
             {
@@ -55,7 +56,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public ClassifiedItem createClassifiedItem(ClassifiedItem classifiedItem)
+        public ClassifiedItem CreateClassifiedItem(ClassifiedItem classifiedItem)
         {
             try
             {
@@ -70,7 +71,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public void updateClassifiedItem(int classifiedItemPK,int qualityState)
+        public void updateClassifiedItem(int classifiedItemPK, int qualityState)
         {
             try
             {
@@ -214,6 +215,47 @@ namespace StoreManagement.Controllers
                 if (failedItem.IsReturned) return false;
             }
             return true;
+        }
+
+        public void DeleteClassification(ClassifyingSession classifyingSession, ClassifiedItem classifiedItem, PackedItem packedItem)
+        {
+            try
+            {
+                // delete classifying ss
+                db.ClassifyingSessions.Remove(classifyingSession);
+
+                // delete passeditem or faileditem
+                switch (classifiedItem.QualityState)
+                {
+                    case 2:
+                        PassedItem passedItem = (from pI in db.PassedItems
+                                                 where pI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                 select pI).FirstOrDefault();
+                        db.PassedItems.Remove(passedItem);
+                        break;
+                    case 3:
+                        FailedItem failedItem = (from fI in db.FailedItems
+                                                 where fI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                                 select fI).FirstOrDefault();
+                        db.FailedItems.Remove(failedItem);
+                        break;
+                    default:
+                        break;
+                }
+
+                // delete classifiedItem
+                db.ClassifiedItems.Remove(classifiedItem);
+
+                // change packeditem
+                packedItem.IsClassified = false;
+                db.Entry(packedItem).State = EntityState.Modified;
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

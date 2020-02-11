@@ -8,6 +8,17 @@ namespace StoreManagement.Models
 
     public partial class GroupItem_ArrangingSession
     {
+        public GroupItem_ArrangingSession()
+        {
+        }
+
+        public GroupItem_ArrangingSession(int itemPK, bool isRestored, int arrangingSessionPK)
+        {
+            ItemPK = itemPK;
+            IsRestored = isRestored;
+            ArrangingSessionPK = arrangingSessionPK;
+        }
+
         [Key]
         public int GroupItem_ArrangingSessionPK { get; set; }
 

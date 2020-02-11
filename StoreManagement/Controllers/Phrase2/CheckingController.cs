@@ -699,9 +699,9 @@ namespace StoreManagement.Controllers
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
-                IdentifyItemDAO identifyItemController = new IdentifyItemDAO();
-                ClassifyItemDAO classifyingItemController = new ClassifyItemDAO();
-                PackedItemsDAO packedItemsController = new PackedItemsDAO();
+                IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
+                ClassifyItemDAO classifyItemDAO = new ClassifyItemDAO();
+                PackedItemsDAO packedItemsDAO = new PackedItemsDAO();
                 // chạy lệnh classify
                 try
                 {
@@ -727,15 +727,14 @@ namespace StoreManagement.Controllers
                                                          select cS).FirstOrDefault();
                             if (userID.Equals(tempSS.UserID))
                             {
-                                if (classifyingItemController.isNotStoredOrReturned(tempItem.ClassifiedItemPK))
+                                if (classifyItemDAO.isNotStoredOrReturned(tempItem.ClassifiedItemPK))
                                 {
                                     // tạo failed or passed item
-                                    classifyingItemController.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
+                                    classifyItemDAO.manageItemByQualityState(tempItem.ClassifiedItemPK, tempItem.QualityState, qualityState);
                                     // edit
 
-
-                                    classifyingItemController.updateClassifiedItem(tempItem.ClassifiedItemPK, qualityState);
-                                    classifyingItemController.updateClassifyingSession(tempSS.ClassifyingSessionPK, comment);
+                                    classifyItemDAO.updateClassifiedItem(tempItem.ClassifiedItemPK, qualityState);
+                                    classifyItemDAO.updateClassifyingSession(tempSS.ClassifyingSessionPK, comment);
                                 }
                                 else
                                 {
@@ -751,21 +750,45 @@ namespace StoreManagement.Controllers
                         // nếu chưa có classify item của packitem thì tạo mới
                         else
                         {
-                            double finalQuantity = identifyItemController.FinalQuantity(packedItemPK);
-                            ClassifiedItem classifiedItem = new ClassifiedItem(finalQuantity, qualityState, packedItemPK);
+                            ClassifiedItem classifiedItem = null;
+                            ClassifyingSession classifyingSession = null;
+                            try
+                            {
 
-                            // tạo classified item
-                            classifiedItem = classifyingItemController.createClassifiedItem(classifiedItem);
+                                double finalQuantity = identifyItemDAO.FinalQuantity(packedItemPK);
+                                classifiedItem = new ClassifiedItem(finalQuantity, qualityState, packedItemPK);
 
-                            // tạo classifying session
-                            classifyingItemController.createClassifyingSession(new ClassifyingSession(comment, classifiedItem.ClassifiedItemPK, userID));
+                                // tạo classified item
+                                classifiedItem = classifyItemDAO.CreateClassifiedItem(classifiedItem);
 
-                            // đổi IsClassified của pack item
-                            packedItem.IsClassified = true;
-                            packedItemsController.IsUpdatedPackedItem(packedItem);
+                                // tạo classifying session
+                                classifyingSession = classifyItemDAO.createClassifyingSession(new ClassifyingSession(comment, classifiedItem.ClassifiedItemPK, userID));
 
-                            // tạo failed or passed item
-                            classifyingItemController.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
+                                // đổi IsClassified của pack item
+                                packedItem.IsClassified = true;
+                                packedItemsDAO.IsUpdatedPackedItem(packedItem);
+
+                                // tạo failed or passed item
+                                classifyItemDAO.createItemByQualityState(classifiedItem.ClassifiedItemPK, qualityState);
+                            }
+                            catch (Exception e)
+                            {
+                                if (classifiedItem != null)
+                                {
+                                    classifyItemDAO.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
+                                }
+                                if (classifyingSession != null)
+                                {
+                                    classifyItemDAO.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
+                                }
+                                if (packedItem.IsClassified == true)
+                                {
+                                    packedItem.IsClassified = false;
+                                    packedItemsDAO.IsUpdatedPackedItem(packedItem);
+                                }
+                                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                            }
+
                         }
                     }
                     else
@@ -898,7 +921,7 @@ namespace StoreManagement.Controllers
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Inspector"))
             {
                 // khởi tạo
-                ClassifyItemDAO classifyingItemController = new ClassifyItemDAO();
+                ClassifyItemDAO classifyItemDAO = new ClassifyItemDAO();
                 PackedItemsDAO packedItemsController = new PackedItemsDAO();
                 // chạy lệnh delete classify
                 try
@@ -910,14 +933,16 @@ namespace StoreManagement.Controllers
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifyingSession.ClassifiedItemPK);
                         PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
 
-                        if (classifyingItemController.isNotStoredOrReturned(classifiedItem.ClassifiedItemPK))
+                        if (classifyItemDAO.isNotStoredOrReturned(classifiedItem.ClassifiedItemPK))
                         {
                             // delete
-                            classifyingItemController.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
-                            classifyingItemController.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
-                            classifyingItemController.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
-                            packedItem.IsClassified = false;
-                            packedItemsController.IsUpdatedPackedItem(packedItem);
+                            classifyItemDAO.DeleteClassification(classifyingSession, classifiedItem, packedItem);
+
+                            //classifyItemDAO.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
+                            //classifyItemDAO.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
+                            //classifyItemDAO.deleteClassifiedItem(classifiedItem.ClassifiedItemPK);
+                            //packedItem.IsClassified = false;
+                            //packedItemsController.IsUpdatedPackedItem(packedItem);
                         }
                         else
                         {
@@ -926,7 +951,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY");
                     }
                 }
                 catch (Exception e)
@@ -1078,7 +1103,7 @@ namespace StoreManagement.Controllers
                 {
                     returningItemController.createReturningSession(failedItemPK, userID);
                     returningItemController.updateFailedItemIsReturned(failedItemPK);
-                    returningItemController.updateAllIdentifiedItemsToVirtualBox(failedItemPK);
+                    returningItemController.updateAllIdentifiedItems(failedItemPK);
                 }
                 catch (Exception e)
                 {

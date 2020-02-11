@@ -787,7 +787,13 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                Issue issue = new Issue(demandPK, userID);
+                // generate IssueID
+                string issueID = db.Demands.Find(demandPK).DemandID;
+                int issuePos = db.Issues.Where(unit => unit.DemandPK == demandPK).Count() + 1;
+                if (issuePos < 10) issueID += "0" + issuePos;
+                else issueID += issuePos;
+
+                Issue issue = new Issue(demandPK, userID, issueID);
                 db.Issues.Add(issue);
                 db.SaveChanges();
                 return db.Issues.OrderByDescending(unit => unit.IssuePK).FirstOrDefault();
