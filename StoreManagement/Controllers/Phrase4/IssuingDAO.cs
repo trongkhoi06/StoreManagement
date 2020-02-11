@@ -29,6 +29,44 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public class algo_AvailableItem : IEquatable<algo_AvailableItem>
+        {
+            public algo_AvailableItem(int storeBoxPK, int itemPK, bool isRestored)
+            {
+                StoreBoxPK = storeBoxPK;
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+            }
+
+            public int StoreBoxPK { get; set; }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as algo_AvailableItem);
+            }
+
+            public bool Equals(algo_AvailableItem other)
+            {
+                return other != null &&
+                       StoreBoxPK == other.StoreBoxPK &&
+                       ItemPK == other.ItemPK &&
+                       IsRestored == other.IsRestored;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -2037694240;
+                hashCode = hashCode * -1521134295 + StoreBoxPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + ItemPK.GetHashCode();
+                hashCode = hashCode * -1521134295 + IsRestored.GetHashCode();
+                return hashCode;
+            }
+        }
+
         // InStoredQuantity là available quantity của tất cả các box
         public double InStoredQuantity(int accessoryPK)
         {
@@ -36,18 +74,25 @@ namespace StoreManagement.Controllers
             StoringDAO storingDAO = new StoringDAO();
             try
             {
-                //List<Entry> entries = (from e in db.Entries
-                //                       where e.AccessoryPK == accessoryPK
-                //                       select e).ToList();
-
-                //Entry entry = entries[0];
-
-                Entry entry = db.Entries.Where(e => e.AccessoryPK == accessoryPK).FirstOrDefault();
-                if (entry != null)
+                HashSet<algo_AvailableItem> availableItems = new HashSet<algo_AvailableItem>();
+                List<Entry> entries = (from e in db.Entries
+                                       where e.AccessoryPK == accessoryPK
+                                       select e).ToList();
+                foreach (var item in entries)
                 {
-                    StoredBox sBox = db.StoredBoxes.Find(entry.StoredBoxPK);
-                    result += storingDAO.AvailableQuantity(sBox, entry.ItemPK, entry.IsRestored);
+                    availableItems.Add(new algo_AvailableItem(item.StoredBoxPK, item.ItemPK, item.IsRestored));
                 }
+
+                foreach (var availableItem in availableItems)
+                {
+                    StoredBox sBox = db.StoredBoxes.Find(availableItem.StoreBoxPK);
+                    double availableQuantity = new StoringDAO().AvailableQuantity(sBox, availableItem.ItemPK, availableItem.IsRestored);
+                    if (availableQuantity != -1)
+                    {
+                        result += availableQuantity;
+                    }
+                }
+
 
             }
             catch (Exception e)
@@ -524,7 +569,7 @@ namespace StoreManagement.Controllers
             {
                 // cực phẩm IQ
                 double inStoredQuantity = InStoredQuantity(accessory.AccessoryPK);
-                if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
+                //if (inStoredQuantity == 0) throw new Exception("HÀNG TRONG KHO ĐÃ HẾT!");
                 List<Entry> entries = (from e in db.Entries
                                        where e.AccessoryPK == accessory.AccessoryPK
                                        select e).ToList();

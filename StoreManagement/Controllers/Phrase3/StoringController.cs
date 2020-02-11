@@ -156,15 +156,121 @@ namespace StoreManagement.Controllers
 
         }
 
+        [Route("api/StoringController/GetGroupItemByBoxID")]
+        [HttpGet]
+        public IHttpActionResult GetGroupItemByBoxID(string boxID)
+        {
+            BoxDAO boxDAO = new BoxDAO();
+            try
+            {
+                List<Client_GroupItem_Store> result = new List<Client_GroupItem_Store>();
+                Box box = db.Boxes.Where(unit => unit.BoxID == boxID).FirstOrDefault();
+                if (box == null || !boxDAO.IsUnstoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
+                // list of identifiedItems
+                List<IdentifiedItem> identifiedItems = db.IdentifiedItems.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
+                foreach (var item in identifiedItems)
+                {
+                    PackedItem packedItem = db.PackedItems.Find(item.PackedItemPK);
+                    OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    result.Add(new Client_GroupItem_Store(item.IdentifiedItemPK, false, accessory.AccessoryID,
+                        accessory.AccessoryDescription, accessory.Item, accessory.Art, accessory.Color));
+                }
+
+                // list of restoredGroups
+                List<RestoredGroup> restoredGroups = db.RestoredGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
+                foreach (var item in restoredGroups)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
+                    Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                    result.Add(new Client_GroupItem_Store(item.RestoredGroupPK, true, accessory.AccessoryID,
+                        accessory.AccessoryDescription, accessory.Item, accessory.Art, accessory.Color));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_Shelf_Row_Store
+        {
+            public Client_Shelf_Row_Store()
+            {
+            }
+
+            public string ShelfID { get; set; }
+
+            public string RowID { get; set; }
+        }
+
+        [Route("api/StoringController/GetShelfAndRowByBoxID")]
+        [HttpGet]
+        public IHttpActionResult GetShelfAndRowByBoxID(string boxID)
+        {
+            BoxDAO boxDAO = new BoxDAO();
+            try
+            {
+                Client_Shelf_Row_Store result;
+
+                Box box = db.Boxes.Where(unit => unit.BoxID == boxID).FirstOrDefault();
+                if (box == null || !boxDAO.IsStoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+                StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
+                Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
+                Row row = db.Rows.Find(shelf.RowPK);
+
+                result = new Client_Shelf_Row_Store()
+                {
+                    ShelfID = shelf.ShelfID,
+                    RowID = row.RowID
+                };
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
         public class Client_GroupItem_Store
         {
             public Client_GroupItem_Store()
             {
             }
 
+            public Client_GroupItem_Store(int itemPK, bool isRestored, string accessoryID, string accessoryDescription, string item, string art, string color)
+            {
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+                AccessoryID = accessoryID;
+                AccessoryDescription = accessoryDescription;
+                Item = item;
+                Art = art;
+                Color = color;
+            }
+
             public int ItemPK { get; set; }
 
             public bool IsRestored { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
         }
 
         [Route("api/StoringController/StoreItemBusiness")]

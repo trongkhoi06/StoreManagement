@@ -847,6 +847,25 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, client_IdentifiedItems);
         }
 
+        [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
+        [HttpGet]
+        public IHttpActionResult GetIsBoxStoredOrIdentified(string boxID)
+        {
+            BoxDAO boxDAO = new BoxDAO();
+            bool result = false;
+            try
+            {
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+                result = boxDAO.IsUnstoredCase(box.BoxPK);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+
+            return Content(HttpStatusCode.OK, result);
+        }
+
         [Route("api/ReceivingController/IdentifyItemBusiness")]
         [HttpPost]
         public IHttpActionResult IdentifyItemBusiness(string boxID, string userID, [FromBody] List<Client_PackedItemPK_IdentifiedQuantity> list)

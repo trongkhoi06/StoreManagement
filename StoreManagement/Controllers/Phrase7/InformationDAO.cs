@@ -330,24 +330,36 @@ namespace StoreManagement.Controllers
 
                 // tạo ID cho phụ liệu
                 List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
-                                               where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK && acc.SupplierPK == supplierPK
+                                               where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK
                                                select acc).ToList();
                 if (accessories.Count == 0)
-                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + "00001";
+                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + "00001" + "-" + supplier.SupplierCode;
                 else
                 {
                     string tempStr;
                     Int32 tempInt;
+                    Accessory tmpAccessory = accessories.Where(unit => unit.SupplierPK == supplierPK).FirstOrDefault();
+                    Accessory tmpAccessory2 = accessories.Where(unit => unit.Item == item).FirstOrDefault();
+                    // check if item is duplicate to change rule of accID
+                    if (tmpAccessory2 != null)
+                    {
+                        tmpAccessory = tmpAccessory2;
+                        tempStr = tmpAccessory.AccessoryID.Substring(7, 5);
+                        tempInt = Int32.Parse(tempStr);
+                    }
+                    else
+                    {
+                        tempStr = tmpAccessory.AccessoryID.Substring(7, 5);
+                        tempInt = Int32.Parse(tempStr) + 1;
+                    }
 
-                    tempStr = accessories[0].AccessoryID.Substring(accessories[0].AccessoryID.Length - 5);
-                    tempInt = Int32.Parse(tempStr) + 1;
 
                     tempStr = tempInt + "";
                     if (tempStr.Length == 1) tempStr = "0000" + tempStr;
                     if (tempStr.Length == 2) tempStr = "000" + tempStr;
                     if (tempStr.Length == 3) tempStr = "00" + tempStr;
                     if (tempStr.Length == 4) tempStr = "0" + tempStr;
-                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + supplier.SupplierCode + "-" + tempStr;
+                    accessoryID = accessoryType.Abbreviation + "-" + customer.CustomerCode + "-" + tempStr + "-" + supplier.SupplierCode;
                 }
                 // create accessory
                 Accessory accessory = new Accessory(accessoryID, description, item, art, color, comment, accessoryTypePK, supplierPK, customerPK);

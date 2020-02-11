@@ -859,6 +859,76 @@ namespace StoreManagement.Controllers
         //    }
         //}
 
+        [Route("api/IssuingController/GetRestorationNotReceived")]
+        [HttpGet]
+        public IHttpActionResult GetRestorationNotReceived()
+        {
+            try
+            {
+                List<Restoration> result = db.Restorations.Where(unit => unit.IsReceived == false).ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_RestoredItem_Identify
+        {
+            public Client_RestoredItem_Identify(int restoredItemPK, double restoredQuantity, string accessoryID, string accessoryDescription, string item, string art, string color)
+            {
+                RestoredItemPK = restoredItemPK;
+                RestoredQuantity = restoredQuantity;
+                AccessoryID = accessoryID;
+                AccessoryDescription = accessoryDescription;
+                Item = item;
+                Art = art;
+                Color = color;
+            }
+
+            public int RestoredItemPK { get; set; }
+
+            public double RestoredQuantity { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+        }
+
+        [Route("api/IssuingController/GetRestoredItemByRestoration")]
+        [HttpGet]
+        public IHttpActionResult GetRestoredItemByRestoration(int restorationPK)
+        {
+            try
+            {
+                Restoration restoration = db.Restorations.Find(restorationPK);
+                List<Client_RestoredItem_Identify> result = new List<Client_RestoredItem_Identify>();
+
+                List<RestoredItem> restoredItems = db.RestoredItems
+                            .Where(unit => unit.RestorationPK == restoration.RestorationPK).ToList();
+
+                foreach (var item in restoredItems)
+                {
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    result.Add(new Client_RestoredItem_Identify(item.RestoredItemPK, item.RestoredQuantity,
+                        accessory.AccessoryID, accessory.AccessoryDescription, accessory.Image, accessory.Art, accessory.Color));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
         public class RestoredGroupItem
         {
             public RestoredGroupItem(int restoredItemPK, double groupQuantity, int unstoredBoxPK)
