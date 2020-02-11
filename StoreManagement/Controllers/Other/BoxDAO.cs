@@ -13,7 +13,7 @@ namespace StoreManagement.Controllers
     public class BoxDAO
     {
         private UserModel db = new UserModel();
-        
+
         public bool IsStored(int boxPK)
         {
             try
@@ -84,24 +84,53 @@ namespace StoreManagement.Controllers
             db.SaveChanges();
         }
 
-        public void CreateBox(int boxKind, int boxPK)
+        public Box CreateBox()
         {
             try
             {
-                UnstoredBox unstoredBox;
-                //StoredBox storedBox;
-                switch (boxKind)
-                {
-                    case 1:
-                        unstoredBox = new UnstoredBox(boxPK);
-                        db.UnstoredBoxes.Add(unstoredBox);
-                        break;
-                    case 2:
-                        break;
-                    default:
-                        break;
-                }
+                // delete accessory
+                DateTime now = DateTime.Now;
+                string tempDay = (now.Day + "").Length == 1 ? '0' + (now.Day + "") : (now.Day + "");
+                string tempMonth = (now.Month + "").Length == 1 ? '0' + (now.Month + "") : (now.Month + "");
+                string tempYear = (now.Year + "").Substring((now.Year + "").Length - 2);
 
+                string boxID = tempDay + tempMonth + tempYear;
+                Box box = (from b in db.Boxes.OrderByDescending(unit => unit.BoxPK)
+                           where b.BoxID.Contains(boxID)
+                           select b).FirstOrDefault();
+
+                if (box == null)
+                {
+                    boxID += "001";
+                }
+                else
+                {
+                    int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 6, 3)) + 1;
+                    string tempStr = tempInt + "";
+                    if (tempStr.Length == 1) boxID += "00" + tempStr;
+                    if (tempStr.Length == 2) boxID += "0" + tempStr;
+                    if (tempStr.Length == 3) boxID += tempStr;
+                }
+                boxID += "box";
+                box = new Box(boxID);
+                db.Boxes.Add(box);
+                db.SaveChanges();
+                return db.Boxes.OrderByDescending(unit => unit.BoxPK).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateUnstoredBoxStoredBox(int boxPK)
+        {
+            try
+            {
+                UnstoredBox unstoredBox = new UnstoredBox(boxPK);
+                db.UnstoredBoxes.Add(unstoredBox);
+                StoredBox storedBox = new StoredBox(boxPK, null);
+                db.StoredBoxes.Add(storedBox);
                 db.SaveChanges();
             }
             catch (Exception e)
@@ -115,36 +144,13 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = db.Boxes.Find(boxPK);
-                UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                 StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
-                if (sBox != null)
-                {
-                    if (!IsStoredBoxContainItem(sBox))
-                    {
-                        box.IsActive = false;
-                        db.Entry(box).State = EntityState.Modified;
 
-                        sBox.ShelfPK = db.Shelves.Where(unit => unit.ShelfID == "InvisibleShelf").FirstOrDefault().ShelfPK;
-                        db.Entry(sBox).State = EntityState.Modified;
-                    }
-                    else
-                    {
-                        throw new Exception("THÙNG TRONG KHO CÓ CHỨA ĐỒ");
-                    }
-                }
-                else
-                {
-                    List<IdentifiedItem> identifiedItems = db.IdentifiedItems.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
-                    if (identifiedItems.Count == 0)
-                    {
-                        box.IsActive = false;
-                        db.Entry(box).State = EntityState.Modified;
-                    }
-                    else
-                    {
-                        throw new Exception("THÙNG NGOÀI KHO CÓ CHỨA ĐỒ");
-                    }
-                }
+                box.IsActive = false;
+                db.Entry(box).State = EntityState.Modified;
+
+                sBox.ShelfPK = null;
+                db.Entry(sBox).State = EntityState.Modified;
 
                 db.SaveChanges();
             }
@@ -242,7 +248,7 @@ namespace StoreManagement.Controllers
                 StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
                 UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == boxPK).FirstOrDefault();
                 List<Entry> entries = db.Entries.Where(unit => unit.StoredBoxPK == sBox.StoredBoxPK).ToList();
-                if (storingDAO.EntriesQuantity(entries) == 0 && 
+                if (storingDAO.EntriesQuantity(entries) == 0 &&
                     db.IssuedGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).FirstOrDefault() == null)
                 {
                     return true;

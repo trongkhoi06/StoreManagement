@@ -698,43 +698,15 @@ namespace StoreManagement.Controllers
 
         [Route("api/InformationController/CreateBox")]
         [HttpPost]
-        public IHttpActionResult CreateBox(int boxKind, string userID)
+        public IHttpActionResult CreateBox(string userID)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Manager"))
             {
                 BoxDAO boxDAO = new BoxDAO();
                 try
                 {
-                    // delete accessory
-                    DateTime now = DateTime.Now;
-                    string tempDay = (now.Day + "").Length == 1 ? '0' + (now.Day + "") : (now.Day + "");
-                    string tempMonth = (now.Month + "").Length == 1 ? '0' + (now.Month + "") : (now.Month + "");
-                    string tempYear = (now.Year + "").Substring((now.Year + "").Length - 2);
-
-                    string boxID = tempDay + tempMonth + tempYear;
-                    Box box = (from b in db.Boxes.OrderByDescending(unit => unit.BoxPK)
-                               where b.BoxID.Contains(boxID)
-                               select b).FirstOrDefault();
-
-                    if (box == null)
-                    {
-                        boxID += "001";
-                    }
-                    else
-                    {
-                        int tempInt = Int32.Parse(box.BoxID.Substring(box.BoxID.Length - 6, 3)) + 1;
-                        string tempStr = tempInt + "";
-                        if (tempStr.Length == 1) boxID += "00" + tempStr;
-                        if (tempStr.Length == 2) boxID += "0" + tempStr;
-                        if (tempStr.Length == 3) boxID += tempStr;
-                    }
-                    boxID += "box";
-                    box = new Box(boxID);
-                    db.Boxes.Add(box);
-                    db.SaveChanges();
-
-                    box = boxDAO.GetBoxByBoxID(boxID);
-                    boxDAO.CreateBox(boxKind, box.BoxPK);
+                    Box box = boxDAO.CreateBox();
+                    boxDAO.CreateUnstoredBoxStoredBox(box.BoxPK);
                 }
                 catch (Exception e)
                 {
@@ -757,6 +729,10 @@ namespace StoreManagement.Controllers
                 BoxDAO boxDAO = new BoxDAO();
                 try
                 {
+                    if (!boxDAO.IsEmptyCase(boxPK))
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                    }
                     boxDAO.DeleteBox(boxPK, userID);
                 }
                 catch (Exception e)
@@ -769,7 +745,6 @@ namespace StoreManagement.Controllers
             else
             {
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
-
             }
         }
 
@@ -917,7 +892,7 @@ namespace StoreManagement.Controllers
 
             }
         }
-        
+
         /* comment this code because debug problem
          if upload file have problem with multiple user then replace this on the remainning api */
         //[Route("api/InformationController/UploadFile")]
