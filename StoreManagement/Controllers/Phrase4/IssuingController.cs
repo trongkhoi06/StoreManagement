@@ -36,7 +36,7 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "KHÔNG ĐÚNG KHÁCH HÀNG");
                     }
-                    demand = issuingDAO.CreateDemand(customerPK, conception.ConceptionPK, totalDemand, workplacePK, userID);
+                    demand = issuingDAO.CreateDemand(conception.ConceptionPK, totalDemand, workplacePK, userID);
                     issuingDAO.CreateDemandedItems(demand, list, conception.ConceptionPK);
                 }
                 catch (Exception e)
@@ -70,10 +70,10 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
                     }
-                    //if (issuingDAO.GetRequestFromDemandPK(demandPK).Count > 0)
-                    //{
-                    //    return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ YÊU CẦU XUẤT!");
-                    //}
+                    if (issuingDAO.GetIssueFromDemandPKNotStorebacked(demandPK).Count > 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ PHIẾU XUẤT!");
+                    }
                     issuingDAO.UpdateDemandedItem(demandedItemPK, demandedQuantity, comment);
                     issuingDAO.UpdateDemand(demandPK);
                 }
@@ -104,10 +104,10 @@ namespace StoreManagement.Controllers
                     {
                         return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
                     }
-                    //if (issuingDAO.GetRequestFromDemandPK(demandPK).Count > 0)
-                    //{
-                    //    return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ YÊU CẦU XUẤT!");
-                    //}
+                    if (issuingDAO.GetIssueFromDemandPKNotStorebacked(demandPK).Count > 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND ĐÃ CÓ PHIẾU XUẤT!");
+                    }
                     issuingDAO.DeleteDemandedItem(demandPK);
                     issuingDAO.DeleteDemand(demandPK);
                 }
@@ -132,6 +132,10 @@ namespace StoreManagement.Controllers
                 IssuingDAO issuingDAO = new IssuingDAO();
                 try
                 {
+                    if (issuingDAO.GetIssueFromDemandPKNotStorebacked(demandPK).Count == 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DEMAND CHƯA CÓ PHIẾU XUẤT, KHÔNG THỂ ĐÓNG!");
+                    }
                     issuingDAO.SwiftDemand(demandPK);
                 }
                 catch (Exception e)
@@ -139,6 +143,186 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
                 return Content(HttpStatusCode.OK, "TẠO YÊU CẦU XUẤT THÀNH CÔNG!");
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/GetDemandsPrepared")]
+        [HttpGet]
+        public IHttpActionResult GetDemandsPrepared()
+        {
+            try
+            {
+                List<Client_Demand_IssueItems> result = new List<Client_Demand_IssueItems>();
+                List<Demand> demands = db.Demands.Where(unit => unit.IsOpened).ToList();
+                foreach (var demand in demands)
+                {
+                    result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/IssuingController/GetDemandedItemsByDemandPrepared")]
+        [HttpGet]
+        public IHttpActionResult GetDemandedItemsByDemandPrepared(int demandPK)
+        {
+            List<Client_DemandedItem> result = new List<Client_DemandedItem>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                Demand demand = db.Demands.Find(demandPK);
+                if (demand == null) return Content(HttpStatusCode.Conflict, "ĐƠN CẤP PHÁT KHÔNG TỒN TẠI!");
+                List<DemandedItem> demandedItems = db.DemandedItems.Where(unit => unit.DemandPK == demandPK).ToList();
+                foreach (var item in demandedItems)
+                {
+                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
+                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+            return Content(HttpStatusCode.OK, result);
+        }
+
+        public class StoredItemForIssue
+        {
+            public StoredItemForIssue(int itemPK, bool isRestored, double issuedQuantity, string oldBoxID, string newBoxID)
+            {
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+                IssuedQuantity = issuedQuantity;
+                OldBoxID = oldBoxID;
+                NewBoxID = newBoxID;
+            }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+
+            public double IssuedQuantity { get; set; }
+
+            public int AccessoryPK { get; set; }
+
+            public string OldBoxID { get; set; }
+
+            public string NewBoxID { get; set; }
+        }
+
+        [Route("api/IssuingController/CollectStoredItemForIssue")]
+        [HttpPost]
+        public IHttpActionResult CollectStoredItemForIssue(int demandPK, string userID, List<StoredItemForIssue> input)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                Issue issue = null;
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    Demand demand = db.Demands.Find(demandPK);
+                    if (demand == null || demand.IsOpened == false)
+                    {
+                        return Content(HttpStatusCode.Conflict, "ĐƠN CẤP PHÁP KHÔNG HỢP LỆ!");
+                    }
+                    issue = issuingDAO.CreateIssue(userID, demandPK);
+                    issuingDAO.CreateEntryAndIssuedGroup(input, demandPK, issue);
+                    return Content(HttpStatusCode.OK, "THU THẬP ĐỒ ĐỂ XUẤT THÀNH CÔNG!");
+                }
+                catch (Exception e)
+                {
+                    if (issue != null)
+                    {
+                        issuingDAO.DeleteIssue(issue.IssuePK);
+                    }
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        public class Client_Box_Shelf_Storeback
+        {
+            public string BoxID { get; set; }
+
+            public string ShelfID { get; set; }
+        }
+
+        [Route("api/IssuingController/StorebackIssue")]
+        [HttpPost]
+        public IHttpActionResult StorebackIssue(int issuePK, string userID, List<Client_Box_Shelf_Storeback> input)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    Issue issue = db.Issues.Find(issuePK);
+                    if (issue.UserID != userID)
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+                    }
+                    if (issue.IsConfirmed == true || issue.IsStorebacked == true)
+                    {
+                        return Content(HttpStatusCode.Conflict, "PHIẾU CẤP PHÁT KHÔNG HỢP LỆ!");
+                    }
+                    StorebackSession storebackSession = issuingDAO.CreateStorebackSession(issuePK, userID);
+                    issuingDAO.CreateEntryAndUpdateIssueThings(issuePK, storebackSession, input);
+                    return Content(HttpStatusCode.OK, "NHẬP KHO THÀNH CÔNG!");
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
+            }
+            else
+            {
+                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/ConfirmReceivingIssue")]
+        [HttpPost]
+        public IHttpActionResult ConfirmReceivingIssue(int issuePK, string userID, List<string> takenAwayBoxIDs)
+        {
+            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
+            {
+                IssuingDAO issuingDAO = new IssuingDAO();
+                try
+                {
+                    SystemUser systemUser = db.SystemUsers.Find(userID);
+                    Issue issue = db.Issues.Find(issuePK);
+                    Demand demand = db.Demands.Find(issue.DemandPK);
+                    if (demand.WorkplacePK != systemUser.WorkplacePK)
+                    {
+                        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG ĐẾN TỪ ĐÚNG NƠI LÀM VIỆC CỦA ĐƠN XUẤT!");
+                    }
+                    if (issue.IsConfirmed == true || issue.IsStorebacked == true)
+                    {
+                        return Content(HttpStatusCode.Conflict, "PHIẾU XUẤT KHÔNG HỢP LỆ!");
+                    }
+
+                    issuingDAO.CreateConfirmingSessionAndUpdateIssueThings(userID, issuePK, takenAwayBoxIDs);
+
+                    return Content(HttpStatusCode.OK, "NHÂN PHIẾU XUẤT THÀNH CÔNG!");
+                }
+                catch (Exception e)
+                {
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                }
             }
             else
             {
@@ -479,9 +663,9 @@ namespace StoreManagement.Controllers
             public double RestoredQuantity { get; set; }
         }
 
-        [Route("api/IssuingController/RestoreItems")]
+        [Route("api/IssuingController/CreateRestoration")]
         [HttpPost]
-        public IHttpActionResult RestoreItems(string userID, string comment, List<Client_AccessoryPK_RestoredQuantity> list)
+        public IHttpActionResult CreateRestoration(string userID, string comment, List<Client_AccessoryPK_RestoredQuantity> list)
         {
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Receiver"))
             {
@@ -674,110 +858,6 @@ namespace StoreManagement.Controllers
         //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
         //    }
         //}
-
-        [Route("api/IssuingController/GetDemandsPrepared")]
-        [HttpGet]
-        public IHttpActionResult GetDemandsPrepared()
-        {
-            try
-            {
-                List<Client_Demand_IssueItems> result = new List<Client_Demand_IssueItems>();
-                List<Demand> demands = db.Demands.Where(unit => unit.IsOpened).ToList();
-                foreach (var demand in demands)
-                {
-                    result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode));
-                }
-
-                return Content(HttpStatusCode.OK, result);
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-        }
-
-        [Route("api/IssuingController/GetDemandedItemsByDemandPrepared")]
-        [HttpGet]
-        public IHttpActionResult GetDemandedItemsByDemandPrepared(int demandPK)
-        {
-            List<Client_DemandedItem> result = new List<Client_DemandedItem>();
-            IssuingDAO issuingDAO = new IssuingDAO();
-            try
-            {
-                Demand demand = db.Demands.Find(demandPK);
-                if (demand == null) return Content(HttpStatusCode.Conflict, "ĐƠN CẤP PHÁT KHÔNG TỒN TẠI!");
-                List<DemandedItem> demandedItems = db.DemandedItems.Where(unit => unit.DemandPK == demandPK).ToList();
-                foreach (var item in demandedItems)
-                {
-                    Accessory accessory = db.Accessories.Find(item.AccessoryPK);
-                    List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
-                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes));
-                }
-            }
-            catch (Exception e)
-            {
-                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-            }
-            return Content(HttpStatusCode.OK, result);
-        }
-
-        public class StoredItemForIssue
-        {
-            public StoredItemForIssue(int itemPK, bool isRestored, double issuedQuantity, string oldBoxID, string newBoxID)
-            {
-                ItemPK = itemPK;
-                IsRestored = isRestored;
-                IssuedQuantity = issuedQuantity;
-                OldBoxID = oldBoxID;
-                NewBoxID = newBoxID;
-            }
-
-            public int ItemPK { get; set; }
-
-            public bool IsRestored { get; set; }
-
-            public double IssuedQuantity { get; set; }
-
-            public int AccessoryPK { get; set; }
-
-            public string OldBoxID { get; set; }
-
-            public string NewBoxID { get; set; }
-        }
-
-        [Route("api/IssuingController/CollectStoredItemForIssue")]
-        [HttpPost]
-        public IHttpActionResult CollectStoredItemForIssue(int demandPK, string userID, List<StoredItemForIssue> input)
-        {
-            if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
-            {
-                Issue issue = null;
-                IssuingDAO issuingDAO = new IssuingDAO();
-                try
-                {
-                    Demand demand = db.Demands.Find(demandPK);
-                    if (demand == null || demand.IsOpened == false)
-                    {
-                        return Content(HttpStatusCode.Conflict, "ĐƠN CẤP PHÁP KHÔNG HỢP LỆ!");
-                    }
-                    issue = issuingDAO.CreateIssue(userID, demandPK);
-                    issuingDAO.CreateEntryAndIssuedGroup(input, demandPK, issue);
-                    return Content(HttpStatusCode.OK, "THU THẬP ĐỒ ĐỂ XUẤT THÀNH CÔNG!");
-                }
-                catch (Exception e)
-                {
-                    if (issue != null)
-                    {
-                        issuingDAO.DeleteIssue(issue.IssuePK);
-                    }
-                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                }
-            }
-            else
-            {
-                return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
-            }
-        }
 
         public class RestoredGroupItem
         {

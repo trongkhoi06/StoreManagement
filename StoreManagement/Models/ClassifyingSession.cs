@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("ClassifyingSession")]
     public partial class ClassifyingSession
     {
+        public ClassifyingSession()
+        {
+        }
+
         public ClassifyingSession(string comment, int classifiedItemPK, string userID)
         {
             Comment = comment;

@@ -33,7 +33,7 @@ namespace StoreManagement.Models
 
         public int DemandedItemPK { get; set; }
 
-        public int UnstoredBoxPK { get; set; }
+        public int? UnstoredBoxPK { get; set; }
 
         public int ItemPK { get; set; }
 

@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("AdjustingSession")]
     public partial class AdjustingSession
     {
+        public AdjustingSession()
+        {
+        }
+
         public AdjustingSession(string comment, bool isVerified, string userID)
         {
             Comment = comment;

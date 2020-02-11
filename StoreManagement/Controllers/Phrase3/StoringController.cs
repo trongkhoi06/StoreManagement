@@ -175,7 +175,6 @@ namespace StoreManagement.Controllers
             {
                 BoxDAO boxDAO = new BoxDAO();
                 StoringDAO storingItemDAO = new StoringDAO();
-                StoredBox storedBox = null;
                 StoringSession storingSession = null;
                 try
                 {
@@ -226,10 +225,16 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, "BOX KHÔNG HỢP LỆ!");
                 }
-                Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
-                Row row = db.Rows.Find(shelf.RowPK);
-                client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
-
+                if (sBox.ShelfPK != null)
+                {
+                    Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
+                    Row row = db.Rows.Find(shelf.RowPK);
+                    client_Shelf = new Client_Shelf(shelf.ShelfID, row.RowID);
+                }
+                else
+                {
+                    client_Shelf = null;
+                }
                 // lấy tất cả entry theo box
                 List<Entry> entries = (from e in db.Entries
                                        where e.StoredBoxPK == sBox.StoredBoxPK

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using static StoreManagement.Controllers.IssuingController;
 
 namespace StoreManagement.Controllers
 {
@@ -114,6 +115,18 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public List<Issue> GetIssueFromDemandPKNotStorebacked(int demandPK)
+        {
+            try
+            {
+                return db.Issues.Where(unit => unit.DemandPK == demandPK && unit.IsStorebacked == false).ToList();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public void CreateDemandedItems(Demand demand, List<Client_Accessory_DemandedQuantity_Comment> list, int conceptionPK)
         {
             try
@@ -185,7 +198,7 @@ namespace StoreManagement.Controllers
             }
         }
 
-        public Demand CreateDemand(int customerPK, int conceptionPK, double totalDemand, int workplacePK, string userID)
+        public Demand CreateDemand(int conceptionPK, double totalDemand, int workplacePK, string userID)
         {
             try
             {
@@ -311,6 +324,101 @@ namespace StoreManagement.Controllers
 
             public double AvailableQuantity { get; set; }
         }
+
+        public StorebackSession CreateStorebackSession(int issuePK, string userID)
+        {
+            try
+            {
+                StorebackSession storebackSession = new StorebackSession(userID, issuePK);
+                db.StorebackSessions.Add(storebackSession);
+                db.SaveChanges();
+                return db.StorebackSessions.OrderByDescending(unit => unit.StorebackSessionPK).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateEntryAndUpdateIssueThings(int issuePK, StorebackSession storebackSession, List<Client_Box_Shelf_Storeback> input)
+        {
+            try
+            {
+                // update issue
+                Issue issue = db.Issues.Find(issuePK);
+                issue.IsStorebacked = true;
+                db.Entry(issue).State = EntityState.Modified;
+
+                List<IssuedGroup> issuedGroups = db.IssuedGroups.Where(unit => unit.IssuePK == issue.IssuePK).ToList();
+                foreach (var issuedGroup in issuedGroups)
+                {
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(issuedGroup.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+                    StoredBox storedBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
+
+                    // update storedbox shelfpk
+                    var temp = input.Where(unit => unit.BoxID == box.BoxID).FirstOrDefault();
+                    Shelf shelf = db.Shelves.Where(unit => unit.ShelfID == temp.ShelfID).FirstOrDefault();
+                    storedBox.ShelfPK = shelf.ShelfPK;
+                    db.Entry(storedBox).State = EntityState.Modified;
+
+                    // update issued group
+                    issuedGroup.UnstoredBoxPK = null;
+                    db.Entry(issuedGroup).State = EntityState.Modified;
+
+                    // create entries
+                    Accessory accessory = db.Accessories.Find(issuedGroup.AccessoryPK);
+                    Entry entry = new Entry(storedBox, "Storeback", storebackSession.StorebackSessionPK,
+                        issuedGroup.IsRestored, issuedGroup.IssuedGroupQuantity, issuedGroup.ItemPK, accessory);
+                    db.Entries.Add(entry);
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void CreateConfirmingSessionAndUpdateIssueThings(string userID, int issuePK, List<string> takenAwayBoxIDs)
+        {
+            try
+            {
+                // update issue
+                Issue issue = db.Issues.Find(issuePK);
+                issue.IsConfirmed = true;
+                db.Entry(issue).State = EntityState.Modified;
+
+                // update issuegroup
+                List<IssuedGroup> issuedGroups = db.IssuedGroups.Where(unit => unit.IssuePK == issuePK).ToList();
+                foreach (var item in issuedGroups)
+                {
+                    item.UnstoredBoxPK = null;
+                    db.Entry(item).State = EntityState.Modified;
+                }
+
+                // update takenawaybox
+                foreach (var item in takenAwayBoxIDs)
+                {
+                    Box box = db.Boxes.Where(unit => unit.BoxID == item).FirstOrDefault();
+                    box.IsActive = false;
+                    db.Entry(box).State = EntityState.Modified;
+                }
+
+                // create confirmingsession
+                ConfirmingSession confirmingSession = new ConfirmingSession(userID, issuePK);
+                db.ConfirmingSessions.Add(confirmingSession);
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
         //public List<Client_Box_Shelf_Row> StoredBox_ItemPK_IsRestoredOfEntries(Accessory accessory)
         //{
         //    List<Client_Box_Shelf_Row> result = new List<Client_Box_Shelf_Row>();

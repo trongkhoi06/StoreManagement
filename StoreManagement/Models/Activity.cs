@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("Activity")]
     public partial class Activity
     {
+        public Activity()
+        {
+        }
+
         public Activity(string action, string objectID, string @object, string userID)
         {
             Action = action;

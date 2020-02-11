@@ -9,6 +9,10 @@ namespace StoreManagement.Models
     [Table("ConfirmingSession")]
     public partial class ConfirmingSession
     {
+        public ConfirmingSession()
+        {
+        }
+
         public ConfirmingSession(string userID, int issuePK)
         {
             UserID = userID;

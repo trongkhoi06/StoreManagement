@@ -9,6 +9,17 @@ namespace StoreManagement.Models
     [Table("RestoringSession")]
     public partial class StorebackSession
     {
+        public StorebackSession()
+        {
+        }
+
+        public StorebackSession(string userID, int issuePK)
+        {
+            UserID = userID;
+            IssuePK = issuePK;
+            ExecutedDate = DateTime.Now;
+        }
+
         [Key]
         public int StorebackSessionPK { get; set; }
 

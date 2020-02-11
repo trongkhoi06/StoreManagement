@@ -50,7 +50,7 @@ namespace StoreManagement.Models
         public virtual DbSet<Restoration> Restorations { get; set; }
         public virtual DbSet<RestoredGroup> RestoredGroups { get; set; }
         public virtual DbSet<RestoredItem> RestoredItems { get; set; }
-        public virtual DbSet<StorebackSession> RestoringSessions { get; set; }
+        public virtual DbSet<StorebackSession> StorebackSessions { get; set; }
         public virtual DbSet<ReturningSession> ReturningSessions { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<Row> Rows { get; set; }

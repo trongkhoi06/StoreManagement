@@ -917,10 +917,90 @@ namespace StoreManagement.Controllers
 
             }
         }
+        
+        /* comment this code because debug problem
+         if upload file have problem with multiple user then replace this on the remainning api */
+        //[Route("api/InformationController/UploadFile")]
+        //[HttpPost]
+        //public async Task<IHttpActionResult> UploadFile(int AccessoryPK, string userID)
+        //{
+        //    if (!Request.Content.IsMimeMultipartContent())
+        //    {
+        //        return Content(HttpStatusCode.Conflict, "DATA GỬI LÊN KHÔNG PHẢI HÌNH!");
+        //    }
+        //    if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Merchandiser"))
+        //    {
+        //        try
+        //        {
+        //            Accessory accessory = db.Accessories.Find(AccessoryPK);
+        //            if (accessory == null)
+        //            {
+        //                return Content(HttpStatusCode.Conflict, "ACCESSORY KHÔNG TỒN TẠI!");
+        //            }
+        //            else
+        //            {
+        //                // upload img
+        //                var root = HttpContext.Current.Server.MapPath("~/Image");
+        //                var provider = new MultipartFormDataStreamProvider(root);
+        //                await Request.Content.ReadAsMultipartAsync(provider);
+        //                //foreach (var file in provider.FileData)
+        //                //{
+        //                //    var name = file.Headers.ContentDisposition.FileName;
+        //                //    string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+        //                //    name = now.Replace('.', '8') + ".png";
+        //                //    var localFileName = file.LocalFileName;
+        //                //    var filePath = Path.Combine(root, name);
+        //                //    File.Move(localFileName, filePath);
+        //                //    if (accessory.Image != null)
+        //                //    {
+        //                //        File.Delete(Path.Combine(root, accessory.Image));
+        //                //    }
+        //                //    accessory.Image = name;
+        //                //    db.Entry(accessory).State = EntityState.Modified;
+        //                //    db.SaveChanges();
+        //                //    return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+        //                //}
+
+        //                // nạp hình và tìm đường dẫn, ko đc upload nhiều hình cùng lúc
+        //                MultipartFileData file = provider.FileData[0];
+        //                var name = file.Headers.ContentDisposition.FileName;
+        //                string now = DateTime.Now.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + "";
+        //                name = now.Replace('.', '8') + ".png";
+        //                var localFileName = file.LocalFileName;
+        //                var filePath = Path.Combine(root, name);
+        //                File.Move(localFileName, filePath);
+
+        //                // nếu đã có hình thì xóa hình cũ
+        //                if (accessory.Image != null)
+        //                {
+        //                    File.Delete(Path.Combine(root, accessory.Image));
+        //                }
+        //                accessory.Image = name;
+        //                db.Entry(accessory).State = EntityState.Modified;
+
+        //                // create activity
+        //                Activity activity = new Activity("photoUpdate", accessory.AccessoryID, "Accessory", userID);
+        //                db.Activities.Add(activity);
+
+        //                db.SaveChanges();
+        //                return Content(HttpStatusCode.OK, "ĐĂNG HÌNH THÀNH CÔNG!");
+        //            }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+
+        //    }
+        //}
 
         [Route("api/InformationController/UploadFile")]
         [HttpPost]
-        public async Task<IHttpActionResult> UploadFile(int AccessoryPK, string userID)
+        public IHttpActionResult UploadFile(int AccessoryPK, string userID)
         {
             if (!Request.Content.IsMimeMultipartContent())
             {
@@ -940,7 +1020,7 @@ namespace StoreManagement.Controllers
                         // upload img
                         var root = HttpContext.Current.Server.MapPath("~/Image");
                         var provider = new MultipartFormDataStreamProvider(root);
-                        await Request.Content.ReadAsMultipartAsync(provider);
+                        Request.Content.ReadAsMultipartAsync(provider);
                         //foreach (var file in provider.FileData)
                         //{
                         //    var name = file.Headers.ContentDisposition.FileName;
