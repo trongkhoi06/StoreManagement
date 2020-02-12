@@ -184,7 +184,7 @@ namespace StoreManagement.Controllers
             {
             }
 
-            public Client_GroupItem_Store(int itemPK, bool isRestored, Accessory accessory, string typeName, string containerID, double quantity)
+            public Client_GroupItem_Store(int itemPK, bool isRestored, Accessory accessory, string typeName, string containerID, double quantity, int? qualityState)
             {
                 ItemPK = itemPK;
                 IsRestored = isRestored;
@@ -196,6 +196,7 @@ namespace StoreManagement.Controllers
                 TypeName = typeName;
                 PackID = containerID;
                 ActualQuantity = quantity;
+                QualityState = qualityState;
             }
 
             public int ItemPK { get; set; }
@@ -217,6 +218,8 @@ namespace StoreManagement.Controllers
             public string Color { get; set; }
 
             public string TypeName { get; set; }
+
+            public int? QualityState { get; set; }
         }
 
         [Route("api/StoringController/GetGroupItemByBoxID")]
@@ -242,8 +245,14 @@ namespace StoreManagement.Controllers
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                     AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     Pack pack = db.Packs.Find(packedItem.PackPK);
+                    ClassifiedItem classifiedItem = db.ClassifiedItems.Where(unit => unit.PackedItemPK == packedItem.PackedItemPK).FirstOrDefault();
+                    int? qualityState = 0;
+                    if (classifiedItem != null)
+                    {
+                        qualityState = classifiedItem.QualityState;
+                    }
                     result.Add(new Client_GroupItem_Store(item.IdentifiedItemPK, false, accessory, accessoryType.Name,
-                        pack.PackID, new IdentifyItemDAO().ActualQuantity(item.IdentifiedItemPK)));
+                        pack.PackID, new IdentifyItemDAO().ActualQuantity(item.IdentifiedItemPK), qualityState));
                 }
 
                 // list of restoredGroups
@@ -255,7 +264,7 @@ namespace StoreManagement.Controllers
                     AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                     result.Add(new Client_GroupItem_Store(item.RestoredGroupPK, true, accessory, accessoryType.Name,
-                        restoration.RestorationID, restoredItem.RestoredQuantity));
+                        restoration.RestorationID, restoredItem.RestoredQuantity, null));
                 }
 
                 return Content(HttpStatusCode.OK, result);

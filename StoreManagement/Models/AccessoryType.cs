@@ -24,7 +24,5 @@ namespace StoreManagement.Models
         [Required]
         [StringLength(2)]
         public string Abbreviation { get; set; }
-
-        public bool IsTextile { get; set; }
     }
 }
