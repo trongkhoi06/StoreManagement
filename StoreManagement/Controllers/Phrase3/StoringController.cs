@@ -287,10 +287,12 @@ namespace StoreManagement.Controllers
                 Client_Shelf_Row_Store result;
 
                 Box box = db.Boxes.Where(unit => unit.BoxID == boxID).FirstOrDefault();
+                var debug = box;
                 if (box == null || !boxDAO.IsStoredCase(box.BoxPK))
                 {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                    return Content(HttpStatusCode.Conflict, box);
                 }
+
                 StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                 Shelf shelf = db.Shelves.Find(sBox.ShelfPK);
                 Row row = db.Rows.Find(shelf.RowPK);
@@ -378,10 +380,16 @@ namespace StoreManagement.Controllers
             {
                 // Get client Shelf
                 Box box = boxDAO.GetBoxByBoxID(boxID);
+
+                if (box == null || !boxDAO.IsStored(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+
                 StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                 if (sBox == null)
                 {
-                    return Content(HttpStatusCode.Conflict, "BOX KHÔNG HỢP LỆ!");
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
                 }
                 if (sBox.ShelfPK != null)
                 {
@@ -414,7 +422,8 @@ namespace StoreManagement.Controllers
                         restoredItem = db.RestoredItems.Find(key.Item1);
                         Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), restoredItem.RestoredItemPK, true));
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                        client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), restoredItem.RestoredItemPK, true, accessoryType.Name));
                     }
                     else
                     {
@@ -434,7 +443,8 @@ namespace StoreManagement.Controllers
                         Accessory accessory = (from a in db.Accessories
                                                where a.AccessoryPK == orderedItem.AccessoryPK
                                                select a).FirstOrDefault();
-                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), passedItem.PassedItemPK, false));
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                        client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, key.Item1, key.Item2), passedItem.PassedItemPK, false, accessoryType.Name));
                     }
                 }
                 result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);

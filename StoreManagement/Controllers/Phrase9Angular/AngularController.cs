@@ -3131,7 +3131,6 @@ namespace StoreManagement.Controllers
                 {
                     StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                     UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
-                    int debug = 0;
                     if (boxDAO.IsUnstoredCase(box.BoxPK))
                     {
                         List<IdentifiedItem> identifiedItems;

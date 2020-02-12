@@ -30,7 +30,7 @@ namespace StoreManagement.Controllers
                     StoredBox sBox = boxDAO.GetStoredBoxbyBoxPK(box.BoxPK);
                     UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
                     // nếu box chưa được store
-                    if (!(boxDAO.IsStored(box.BoxPK)))
+                    if (boxDAO.IsUnstoredCase(box.BoxPK))
                     {
                         List<Client_IdentifiedItemRead> client_IdentifiedItems = new List<Client_IdentifiedItemRead>();
                         List<IdentifiedItem> identifiedItems;
@@ -58,7 +58,7 @@ namespace StoreManagement.Controllers
                         }
                         return Content(HttpStatusCode.OK, client_IdentifiedItems);
                     }
-                    else
+                    else if (boxDAO.IsStoredCase(box.BoxPK))
                     {
                         Client_InBoxItems_Shelf<Client_Shelf> result;
                         Client_Shelf client_Shelf;
@@ -88,7 +88,8 @@ namespace StoreManagement.Controllers
                                     restoredItem = db.RestoredItems.Find(itemPK.Item1);
                                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                     Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true));
+                                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, restoration.RestorationID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), restoredItem.RestoredItemPK, true, accessoryType.Name));
                                 }
                                 else
                                 {
@@ -108,13 +109,17 @@ namespace StoreManagement.Controllers
                                     Accessory accessory = (from a in db.Accessories
                                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                                            select a).FirstOrDefault();
-                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false));
+                                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                                    client_InBoxItems.Add(new Client_InBoxItem(accessory, pack.PackID, storingDAO.AvailableQuantity(sBox, itemPK.Item1, itemPK.Item2), passedItem.PassedItemPK, false, accessoryType.Name));
                                 }
                             }
                         }
                         result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);
                         return Content(HttpStatusCode.OK, result);
-
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.OK, "");
                     }
                 }
                 else
@@ -180,10 +185,11 @@ namespace StoreManagement.Controllers
                                     restoredItem = db.RestoredItems.Find(item.Item1);
                                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                     Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2));
+                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2, accessoryType.Name));
                                     }
                                     else
                                     {
@@ -201,12 +207,13 @@ namespace StoreManagement.Controllers
 
                                     // lấy phụ liệu tương ứng
                                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-
                                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                                     if (!client_InBoxItems.ContainsKey(item))
                                     {
                                         client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2));
+                                        storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2, accessoryType.Name));
                                     }
                                     else
                                     {
@@ -292,10 +299,11 @@ namespace StoreManagement.Controllers
                                         restoredItem = db.RestoredItems.Find(item.Item1);
                                         Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, restoration.RestorationID,
-                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2));
+                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), restoredItem.RestoredItemPK, item.Item2, accessoryType.Name));
                                         }
                                         else
                                         {
@@ -313,12 +321,13 @@ namespace StoreManagement.Controllers
 
                                         // lấy phụ liệu tương ứng
                                         OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-
                                         Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                                         if (!client_InBoxItems.ContainsKey(item))
                                         {
                                             client_InBoxItems.Add(item, new Client_InBoxItem(accessory, pack.PackID,
-                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2));
+                                            storingDAO.AvailableQuantity(sBox, item.Item1, item.Item2), passedItem.PassedItemPK, item.Item2, accessoryType.Name));
                                         }
                                         else
                                         {

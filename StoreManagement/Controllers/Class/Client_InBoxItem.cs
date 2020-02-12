@@ -8,7 +8,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_InBoxItem(Accessory accessory,string containerID,double inBoxQuantity,int itemPK, bool isRestored)
+        public Client_InBoxItem(Accessory accessory,string containerID,double inBoxQuantity,int itemPK, bool isRestored, string typeName)
         {
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
@@ -19,6 +19,7 @@ namespace StoreManagement.Class
             InBoxQuantity = inBoxQuantity;
             ItemPK = itemPK;
             IsRestored = isRestored;
+            TypeName = typeName;
         }
 
         public string AccessoryID { get; set; }
@@ -30,6 +31,8 @@ namespace StoreManagement.Class
         public string Color { get; set; }
 
         public string Item { get; set; }
+
+        public string TypeName { get; set; }
 
         public string ContainerID { get; set; }
 
