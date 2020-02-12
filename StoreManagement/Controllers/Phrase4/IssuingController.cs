@@ -403,11 +403,17 @@ namespace StoreManagement.Controllers
 
         public class Client_IssuedGroups_IssuedItems
         {
-            public Client_IssuedGroups_IssuedItems(List<Client_IssuedGroup> issuedGroups, List<Client_IssuedItem> issuedItems)
+            public Client_IssuedGroups_IssuedItems(bool isConfirmed, bool isStorebacked, List<Client_IssuedGroup> issuedGroups, List<Client_IssuedItem> issuedItems)
             {
+                IsConfirmed = isConfirmed;
+                IsStorebacked = isStorebacked;
                 IssuedGroups = issuedGroups;
                 IssuedItems = issuedItems;
             }
+
+            public bool IsConfirmed { get; set; }
+
+            public bool IsStorebacked { get; set; }
 
             public List<Client_IssuedGroup> IssuedGroups { get; set; }
 
@@ -448,7 +454,7 @@ namespace StoreManagement.Controllers
                     }
                 }
 
-                result = new Client_IssuedGroups_IssuedItems(client_IssuedGroups, client_IssuedItems);
+                result = new Client_IssuedGroups_IssuedItems(issue.IsConfirmed, issue.IsStorebacked, client_IssuedGroups, client_IssuedItems);
                 return Content(HttpStatusCode.OK, result);
             }
             catch (Exception e)
