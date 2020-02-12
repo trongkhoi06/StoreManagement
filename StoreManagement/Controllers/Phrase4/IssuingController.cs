@@ -185,8 +185,9 @@ namespace StoreManagement.Controllers
                 foreach (var item in demandedItems)
                 {
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
-                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes));
+                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes, accessoryType.Name));
                 }
             }
             catch (Exception e)
@@ -254,6 +255,186 @@ namespace StoreManagement.Controllers
             }
         }
 
+        public class Client_Issue1
+        {
+            public Client_Issue1(Issue issue, Demand demand, Workplace workplace)
+            {
+                IssuePK = issue.IssuePK;
+                IssueID = issue.IssueID;
+                ExecutedDate = issue.ExecutedDate;
+                TotalDemand = demand.TotalDemand;
+                WorkplaceID = workplace.WorkplaceID;
+            }
+
+            public int IssuePK { get; set; }
+
+            public string IssueID { get; set; }
+
+            public DateTime ExecutedDate { get; set; }
+
+            public double TotalDemand { get; set; }
+
+            public string WorkplaceID { get; set; }
+        }
+
+        [Route("api/IssuingController/GetIssueByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetIssueByUserID(string userID)
+        {
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                List<Client_Issue1> result = new List<Client_Issue1>();
+
+                List<Issue> issues = db.Issues.Where(unit => unit.UserID == userID).ToList();
+                foreach (var issue in issues)
+                {
+                    Demand demand = db.Demands.Find(issue.DemandPK);
+                    Workplace workplace = db.Workplaces.Find(demand.WorkplacePK);
+                    result.Add(new Client_Issue1(issue, demand, workplace));
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_IssuedGroup
+        {
+            public Client_IssuedGroup(IssuedGroup issuedGroup, Box box, Accessory accessory, string typeName)
+            {
+                GroupQuantity = issuedGroup.IssuedGroupQuantity;
+                BoxID = box.BoxID;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                TypeName = typeName;
+            }
+
+            public double GroupQuantity { get; set; }
+
+            public string BoxID { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string TypeName { get; set; }
+        }
+
+        public class Client_IssuedItem : IEquatable<Client_IssuedItem>
+        {
+            public Client_IssuedItem(DemandedItem demandedItem, Accessory accessory, string typeName)
+            {
+                DemandedQuantity = demandedItem.DemandedQuantity;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                TypeName = typeName;
+            }
+
+            public double DemandedQuantity { get; set; }
+
+            public double SumIssuedGroupQuantity { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string TypeName { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as Client_IssuedItem);
+            }
+
+            public bool Equals(Client_IssuedItem other)
+            {
+                return other != null &&
+                       AccessoryID == other.AccessoryID;
+            }
+
+            public override int GetHashCode()
+            {
+                return -885560036 + EqualityComparer<string>.Default.GetHashCode(AccessoryID);
+            }
+        }
+
+        public class Client_IssuedGroups_IssuedItems
+        {
+            public Client_IssuedGroups_IssuedItems(List<Client_IssuedGroup> issuedGroups, List<Client_IssuedItem> issuedItems)
+            {
+                IssuedGroups = issuedGroups;
+                IssuedItems = issuedItems;
+            }
+
+            public List<Client_IssuedGroup> IssuedGroups { get; set; }
+
+            public List<Client_IssuedItem> IssuedItems { get; set; }
+        }
+
+
+        [Route("api/IssuingController/GetIssuedItemsAndGroupByIssue")]
+        [HttpGet]
+        public IHttpActionResult GetIssuedItemsAndGroupByIssue(int issuePK)
+        {
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                Client_IssuedGroups_IssuedItems result;
+                List<Client_IssuedItem> client_IssuedItems = new List<Client_IssuedItem>();
+                List<Client_IssuedGroup> client_IssuedGroups = new List<Client_IssuedGroup>();
+                Issue issue = db.Issues.Find(issuePK);
+                List<IssuedGroup> issuedGroups = db.IssuedGroups.Where(unit => unit.IssuePK == issue.IssuePK).ToList();
+                foreach (var issuedGroup in issuedGroups)
+                {
+                    Box box = db.Boxes.Find(db.UnstoredBoxes.Find(issuedGroup.UnstoredBoxPK).BoxPK);
+                    Accessory accessory = db.Accessories.Find(issuedGroup.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                    DemandedItem demandedItem = db.DemandedItems.Find(issuedGroup.DemandedItemPK);
+
+                    client_IssuedGroups.Add(new Client_IssuedGroup(issuedGroup, box, accessory, accessoryType.Name));
+
+                    Client_IssuedItem client_IssuedItem = new Client_IssuedItem(demandedItem, accessory, accessoryType.Name);
+                    if (!client_IssuedItems.Contains(client_IssuedItem))
+                    {
+                        client_IssuedItem.SumIssuedGroupQuantity = issuedGroup.IssuedGroupQuantity;
+                        client_IssuedItems.Add(client_IssuedItem);
+                    }
+                    else
+                    {
+                        client_IssuedItems.Find(unit => unit == client_IssuedItem).SumIssuedGroupQuantity += client_IssuedItem.SumIssuedGroupQuantity;
+                    }
+                }
+
+                result = new Client_IssuedGroups_IssuedItems(client_IssuedGroups, client_IssuedItems);
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
         public class Client_Box_Shelf_Storeback
         {
             public string BoxID { get; set; }
@@ -291,6 +472,34 @@ namespace StoreManagement.Controllers
             else
             {
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
+            }
+        }
+
+        [Route("api/IssuingController/GetIssueByUserWorkplace")]
+        [HttpGet]
+        public IHttpActionResult GetIssueByUserWorkplace(string userID)
+        {
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                List<Client_Issue1> result = new List<Client_Issue1>();
+                SystemUser systemUser = db.SystemUsers.Find(userID);
+                List<Issue> issues = db.Issues.Where(unit => unit.UserID == userID).ToList();
+                foreach (var issue in issues)
+                {
+                    Demand demand = db.Demands.Find(issue.DemandPK);
+                    Workplace workplace = db.Workplaces.Find(demand.WorkplacePK);
+                    if (workplace.WorkplacePK == systemUser.WorkplacePK)
+                    {
+                        result.Add(new Client_Issue1(issue, demand, workplace));
+                    }
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
         }
 
@@ -593,14 +802,19 @@ namespace StoreManagement.Controllers
             {
             }
 
-            public Accessory_RestoreItem(Accessory accessory)
+            public Accessory_RestoreItem(Accessory accessory, string typeName)
             {
+                AccessoryPK = accessory.AccessoryPK;
                 AccessoryID = accessory.AccessoryID;
                 AccessoryDescription = accessory.AccessoryDescription;
                 Item = accessory.Item;
                 Art = accessory.Art;
                 Color = accessory.Color;
+                AccessoryTypePK = accessory.AccessoryTypePK;
+                TypeName = typeName;
             }
+
+            public int AccessoryPK { get; set; }
 
             public string AccessoryID { get; set; }
 
@@ -611,6 +825,10 @@ namespace StoreManagement.Controllers
             public string Art { get; set; }
 
             public string Color { get; set; }
+
+            public int AccessoryTypePK { get; set; }
+
+            public string TypeName { get; set; }
         }
 
         public class Client_ConceptionsAndAccessoryTypes
@@ -627,6 +845,15 @@ namespace StoreManagement.Controllers
             List<Accessory_RestoreItem> result = new List<Accessory_RestoreItem>();
             try
             {
+                if (conceptionPKs.Count == 0)
+                {
+                    List<Accessory> accessories = db.Accessories.ToList();
+                    foreach (var item in accessories)
+                    {
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(item.AccessoryTypePK);
+                        result.Add(new Accessory_RestoreItem(item, accessoryType.Name));
+                    }
+                }
                 foreach (var conceptionPK in conceptionPKs)
                 {
                     List<int> tempAccessoriesPK = (from unit in db.ConceptionAccessories
@@ -635,7 +862,8 @@ namespace StoreManagement.Controllers
                     foreach (var AccessoryPK in tempAccessoriesPK)
                     {
                         Accessory tempAccessory = db.Accessories.Find(AccessoryPK);
-                        result.Add(new Accessory_RestoreItem(tempAccessory));
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(tempAccessory.AccessoryTypePK);
+                        result.Add(new Accessory_RestoreItem(tempAccessory, accessoryType.Name));
                     }
                 }
             }
@@ -691,6 +919,78 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
             }
         }
+
+        [Route("api/IssuingController/GetRestorationByUserID")]
+        [HttpGet]
+        public IHttpActionResult GetRestorationByUserID(string userID)
+        {
+            try
+            {
+                List<Restoration> result = new List<Restoration>();
+
+                result = db.Restorations.ToList();
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        public class Client_RestoredItem
+        {
+            public Client_RestoredItem()
+            {
+            }
+
+            public Client_RestoredItem(Accessory accessory, RestoredItem restoredItem)
+            {
+                RestoredItemPK = restoredItem.RestoredItemPK;
+                RestoredQuantity = restoredItem.RestoredQuantity;
+                AccessoryPK = accessory.AccessoryPK;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+            }
+
+            public int RestoredItemPK { get; set; }
+
+            public double RestoredQuantity { get; set; }
+
+            public int AccessoryPK { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+        }
+
+        //[Route("api/IssuingController/GetRestorationByUserID")]
+        //[HttpGet]
+        //public IHttpActionResult GetRestoredItemByRestoration(int restorationPK)
+        //{
+        //    try
+        //    {
+        //        List<Client_RestoredItem> result = new List<Client_RestoredItem>();
+        //        Restoration restoration = db.Restorations.Find(restorationPK);
+        //        List<RestoredItem> restoredItems = db.RestoredItems.Where(unit => unit.RestorationPK);
+        //        result = db.Restorations.ToList();
+
+        //        return Content(HttpStatusCode.OK, result);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+        //    }
+        //}
 
         public class Client_RestoredItemPK_RestoredQuantity
         {
@@ -859,13 +1159,47 @@ namespace StoreManagement.Controllers
         //    }
         //}
 
+        public class Client_Restoration
+        {
+            public Client_Restoration(Restoration restoration, string userName)
+            {
+                RestorationPK = restoration.RestorationPK;
+                RestorationID = restoration.RestorationID;
+                DateCreated = restoration.DateCreated;
+                IsReceived = restoration.IsReceived;
+                UserID = restoration.UserID;
+                UserName = userName;
+                Comment = restoration.Comment;
+            }
+
+            public int RestorationPK { get; set; }
+
+            public string RestorationID { get; set; }
+
+            public DateTime DateCreated { get; set; }
+
+            public bool IsReceived { get; set; }
+
+            public string UserID { get; set; }
+
+            public string UserName { get; set; }
+
+            public string Comment { get; set; }
+        }
+
         [Route("api/IssuingController/GetRestorationNotReceived")]
         [HttpGet]
         public IHttpActionResult GetRestorationNotReceived()
         {
             try
             {
-                List<Restoration> result = db.Restorations.Where(unit => unit.IsReceived == false).ToList();
+                List<Client_Restoration> result = new List<Client_Restoration>();
+                List<Restoration> restorations = db.Restorations.Where(unit => unit.IsReceived == false).ToList();
+                foreach (var restoration in restorations)
+                {
+                    SystemUser systemUser = db.SystemUsers.Find(restoration.UserID);
+                    result.Add(new Client_Restoration(restoration, systemUser.Name));
+                }
                 return Content(HttpStatusCode.OK, result);
             }
             catch (Exception e)
@@ -876,7 +1210,7 @@ namespace StoreManagement.Controllers
 
         public class Client_RestoredItem_Identify
         {
-            public Client_RestoredItem_Identify(int restoredItemPK, double restoredQuantity, string accessoryID, string accessoryDescription, string item, string art, string color)
+            public Client_RestoredItem_Identify(int restoredItemPK, double restoredQuantity, string accessoryID, string accessoryDescription, string item, string art, string color, string typeName)
             {
                 RestoredItemPK = restoredItemPK;
                 RestoredQuantity = restoredQuantity;
@@ -885,6 +1219,7 @@ namespace StoreManagement.Controllers
                 Item = item;
                 Art = art;
                 Color = color;
+                TypeName = typeName;
             }
 
             public int RestoredItemPK { get; set; }
@@ -900,6 +1235,8 @@ namespace StoreManagement.Controllers
             public string Art { get; set; }
 
             public string Color { get; set; }
+
+            public string TypeName { get; set; }
         }
 
         [Route("api/IssuingController/GetRestoredItemByRestoration")]
@@ -917,8 +1254,9 @@ namespace StoreManagement.Controllers
                 foreach (var item in restoredItems)
                 {
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     result.Add(new Client_RestoredItem_Identify(item.RestoredItemPK, item.RestoredQuantity,
-                        accessory.AccessoryID, accessory.AccessoryDescription, accessory.Image, accessory.Art, accessory.Color));
+                        accessory.AccessoryID, accessory.AccessoryDescription, accessory.Item, accessory.Art, accessory.Color, accessoryType.Name));
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -952,7 +1290,7 @@ namespace StoreManagement.Controllers
             if (new ValidationBeforeCommandDAO().IsValidUser(userID, "Staff"))
             {
                 IssuingDAO issuingDAO = new IssuingDAO();
-                ReceivingSession receivingSession = new ReceivingSession();
+                ReceivingSession receivingSession = null;
                 try
                 {
                     receivingSession = issuingDAO.CreateReceivingSession(restorationPK, userID);
@@ -962,11 +1300,16 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
+                    if (receivingSession != null)
+                    {
+                        issuingDAO.DeleteReceivingSession(receivingSession.ReceivingSessionPK);
+                    }
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
             }
             else
             {
+
                 return Content(HttpStatusCode.Conflict, "BẠN KHÔNG CÓ QUYỀN ĐỂ THỰC HIỆN VIỆC NÀY!");
             }
         }

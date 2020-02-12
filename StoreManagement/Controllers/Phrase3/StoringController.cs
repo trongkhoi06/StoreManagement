@@ -156,6 +156,47 @@ namespace StoreManagement.Controllers
 
         }
 
+        public class Client_GroupItem_Store
+        {
+            public Client_GroupItem_Store()
+            {
+            }
+
+            public Client_GroupItem_Store(int itemPK, bool isRestored, Accessory accessory, string typeName, string containerID, double quantity)
+            {
+                ItemPK = itemPK;
+                IsRestored = isRestored;
+                AccessoryID = accessory.AccessoryID;
+                AccessoryDescription = accessory.AccessoryDescription;
+                Item = accessory.Item;
+                Art = accessory.Art;
+                Color = accessory.Color;
+                TypeName = typeName;
+                PackID = containerID;
+                ActualQuantity = quantity;
+            }
+
+            public int ItemPK { get; set; }
+
+            public bool IsRestored { get; set; }
+
+            public string PackID { get; set; }
+
+            public double ActualQuantity { get; set; }
+
+            public string AccessoryID { get; set; }
+
+            public string AccessoryDescription { get; set; }
+
+            public string Item { get; set; }
+
+            public string Art { get; set; }
+
+            public string Color { get; set; }
+
+            public string TypeName { get; set; }
+        }
+
         [Route("api/StoringController/GetGroupItemByBoxID")]
         [HttpGet]
         public IHttpActionResult GetGroupItemByBoxID(string boxID)
@@ -177,8 +218,10 @@ namespace StoreManagement.Controllers
                     PackedItem packedItem = db.PackedItems.Find(item.PackedItemPK);
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                    result.Add(new Client_GroupItem_Store(item.IdentifiedItemPK, false, accessory.AccessoryID,
-                        accessory.AccessoryDescription, accessory.Item, accessory.Art, accessory.Color));
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                    Pack pack = db.Packs.Find(packedItem.PackPK);
+                    result.Add(new Client_GroupItem_Store(item.IdentifiedItemPK, false, accessory, accessoryType.Name,
+                        pack.PackID, new IdentifyItemDAO().ActualQuantity(item.IdentifiedItemPK)));
                 }
 
                 // list of restoredGroups
@@ -187,8 +230,10 @@ namespace StoreManagement.Controllers
                 {
                     RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
                     Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
-                    result.Add(new Client_GroupItem_Store(item.RestoredGroupPK, true, accessory.AccessoryID,
-                        accessory.AccessoryDescription, accessory.Item, accessory.Art, accessory.Color));
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+                    Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+                    result.Add(new Client_GroupItem_Store(item.RestoredGroupPK, true, accessory, accessoryType.Name,
+                        restoration.RestorationID, restoredItem.RestoredQuantity));
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -241,36 +286,21 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
         }
-        public class Client_GroupItem_Store
+        public class Client_GroupItem_Store2
         {
-            public Client_GroupItem_Store()
+            public Client_GroupItem_Store2()
             {
             }
 
-            public Client_GroupItem_Store(int itemPK, bool isRestored, string accessoryID, string accessoryDescription, string item, string art, string color)
+            public Client_GroupItem_Store2(int itemPK, bool isRestored)
             {
                 ItemPK = itemPK;
                 IsRestored = isRestored;
-                AccessoryID = accessoryID;
-                AccessoryDescription = accessoryDescription;
-                Item = item;
-                Art = art;
-                Color = color;
             }
 
             public int ItemPK { get; set; }
 
             public bool IsRestored { get; set; }
-
-            public string AccessoryID { get; set; }
-
-            public string AccessoryDescription { get; set; }
-
-            public string Item { get; set; }
-
-            public string Art { get; set; }
-
-            public string Color { get; set; }
         }
 
         [Route("api/StoringController/StoreItemBusiness")]

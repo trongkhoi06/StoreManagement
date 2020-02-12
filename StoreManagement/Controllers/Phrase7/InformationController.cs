@@ -53,7 +53,7 @@ namespace StoreManagement.Controllers
                 AccessoryTypePK = accessory.AccessoryTypePK;
                 SupplierPK = accessory.SupplierPK;
                 CustomerPK = accessory.CustomerPK;
-                AccessoryTypeName = accessoryTypeName;
+                TypeName = accessoryTypeName;
             }
 
             public int AccessoryPK { get; set; }
@@ -76,7 +76,7 @@ namespace StoreManagement.Controllers
 
             public int AccessoryTypePK { get; set; }
 
-            public string AccessoryTypeName { get; set; }
+            public string TypeName { get; set; }
 
             public int SupplierPK { get; set; }
 
@@ -790,8 +790,8 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
-                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    //return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
                 return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
             }
@@ -881,8 +881,8 @@ namespace StoreManagement.Controllers
                 }
                 catch (Exception e)
                 {
-                    //return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-                    return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
+                    return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+                    //return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
                 return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
             }

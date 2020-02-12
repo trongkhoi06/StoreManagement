@@ -23,15 +23,28 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByBoxIDCounted(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
+            List<RestoredGroup> restoredGroups;
             List<Client_IdentifiedItemCounted> client_IdentifiedItems = new List<Client_IdentifiedItemCounted>();
-            BoxDAO boxController = new BoxDAO();
+            BoxDAO boxDAO = new BoxDAO();
             try
             {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+
+                if (!boxDAO.IsUnstoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ");
+                }
+
+                UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+
+                // identifieditem of box
                 identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                    where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                    select iI).ToList();
+
+                // restoredGroup of box
+                restoredGroups = db.RestoredGroups.OrderByDescending(unit => unit.RestoredGroupPK)
+                                                    .Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
 
                 foreach (var identifiedItem in identifiedItems)
                 {
@@ -47,11 +60,23 @@ namespace StoreManagement.Controllers
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                select oI).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                    client_IdentifiedItems.Add(new Client_IdentifiedItemCounted(identifiedItem, accessory, pack, packedItem));
+                    client_IdentifiedItems.Add(new Client_IdentifiedItemCounted(identifiedItem, accessory, pack, packedItem, accessoryType.Name));
+                }
+
+                foreach (var restoredGroup in restoredGroups)
+                {
+                    RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+
+                    // lấy restorationID
+                    Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+
+                    Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                    client_IdentifiedItems.Add(new Client_IdentifiedItemCounted(restoredGroup, accessory, restoration, accessoryType.Name));
                 }
 
             }
@@ -95,11 +120,10 @@ namespace StoreManagement.Controllers
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                select oI).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                    client_CountingSessions.Add(new Client_CountingSessionDetail(accessory, pack, countingSession, identifiedItems, box, packedItem));
+                    client_CountingSessions.Add(new Client_CountingSessionDetail(accessory, pack, countingSession, identifiedItems, box, packedItem, accessoryType.Name));
                 }
             }
             catch (Exception e)
@@ -280,12 +304,17 @@ namespace StoreManagement.Controllers
         {
             List<IdentifiedItem> identifiedItems;
             List<Client_IdentifiedItemChecked> client_IdentifiedItems = new List<Client_IdentifiedItemChecked>();
-            BoxDAO boxController = new BoxDAO();
+            BoxDAO boxDAO = new BoxDAO();
             try
             {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxController.IsStored(box.BoxPK)))
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+                if (!boxDAO.IsUnstoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+
+                UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                if (!(boxDAO.IsStored(box.BoxPK)))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
@@ -302,20 +331,15 @@ namespace StoreManagement.Controllers
                                      select p).FirstOrDefault();
 
                         // lấy phụ liệu tương ứng
-                        OrderedItem orderedItem = (from oI in db.OrderedItems
-                                                   where oI.OrderedItemPK == packedItem.OrderedItemPK
-                                                   select oI).FirstOrDefault();
-
-                        Accessory accessory = (from a in db.Accessories
-                                               where a.AccessoryPK == orderedItem.AccessoryPK
-                                               select a).FirstOrDefault();
+                        OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
+                        Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
 
                         client_IdentifiedItems.Add(new Client_IdentifiedItemChecked(identifiedItem, accessory, pack, packedItem));
                     }
                 }
                 else
                 {
-                    return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO HOẶC CHƯA GHI NHẬN");
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
                 }
             }
             catch (Exception e)

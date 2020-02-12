@@ -12,14 +12,14 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItem(Accessory accessory, PackedItem packedItem, string accessoryTypeName)
+        public Client_PackedItem(Accessory accessory, PackedItem packedItem, string typeName)
         {
             PackedItemPK = packedItem.PackedItemPK;
             PackedQuantity = packedItem.PackedQuantity;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Comment = packedItem.Comment;
-            AccessoryTypeName = accessoryTypeName;
+            TypeName = typeName;
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
@@ -39,7 +39,7 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public string AccessoryTypeName { get; set; }
+        public string TypeName { get; set; }
 
         public string Comment { get; set; }
     }

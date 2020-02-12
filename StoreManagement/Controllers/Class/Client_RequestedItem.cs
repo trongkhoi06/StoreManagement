@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_DemandedItem(DemandedItem demandedItem, Accessory accessory, double? issuedQuantity, List<Client_Box_Shelf_Row> itemPosition)
+        public Client_DemandedItem(DemandedItem demandedItem, Accessory accessory, double? issuedQuantity, List<Client_Box_Shelf_Row> itemPosition, string typeName)
         {
             DemandedItemPK = demandedItem.DemandedItemPK;
             DemandedQuantity = demandedItem.DemandedQuantity;
@@ -41,6 +41,8 @@ namespace StoreManagement.Class
         public string Color { get; set; }
 
         public string Item { get; set; }
+
+        public string TypeName { get; set; }
 
         public double? IssuedQuantity { get; set; }
 

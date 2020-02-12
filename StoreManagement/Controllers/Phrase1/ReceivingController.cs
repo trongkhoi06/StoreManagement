@@ -831,7 +831,9 @@ namespace StoreManagement.Controllers
 
                         Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
 
-                        client_IdentifiedItems.Add(new Client_IdentifiedItemArranged(identifiedItem, accessory, pack.PackID));
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                        client_IdentifiedItems.Add(new Client_IdentifiedItemArranged(identifiedItem, accessory, pack.PackID, accessoryType.Name));
                     }
                 }
                 else
@@ -1037,7 +1039,7 @@ namespace StoreManagement.Controllers
                     arrangingSession = identifyItemDAO.createArrangingSession(uBoxFrom.UnstoredBoxPK, uBoxTo.UnstoredBoxPK, userID);
 
                     // Arrange item
-                    identifyItemDAO.ArrangeItem(items,uBoxFrom,uBoxTo,arrangingSession);
+                    identifyItemDAO.ArrangeItem(items, uBoxFrom, uBoxTo, arrangingSession);
 
                 }
                 catch (Exception e)

@@ -10,6 +10,18 @@ namespace StoreManagement.Class
     {
         public int IdentifiedItemPK { get; set; }
 
+        public double IdentifiedQuantity { get; set; }
+
+        public bool? IsCounted { get; set; }
+
+        public string PackID { get; set; }
+
+        public bool? IsOpened { get; set; }
+
+        public bool? IsClassified { get; set; }
+
+        public bool IsRestored { get; set; }
+
         public string AccessoryID { get; set; }
 
         public string AccessoryDescription { get; set; }
@@ -20,18 +32,11 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public double IdentifiedQuantity { get; set; }
+        public string TypeName { get; set; }
 
-        public string PackID { get; set; }
-
-        public bool IsCounted { get; set; }
-
-        public bool IsOpened { get; set; }
-
-        public bool IsClassified { get; set; }
-
-        public Client_IdentifiedItemCounted(IdentifiedItem identifiedItem, Accessory accessory, Pack pack, PackedItem packedItem)
+        public Client_IdentifiedItemCounted(IdentifiedItem identifiedItem, Accessory accessory, Pack pack, PackedItem packedItem, string typeName)
         {
+            IsRestored = false;
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
@@ -43,6 +48,23 @@ namespace StoreManagement.Class
             IsCounted = identifiedItem.IsCounted;
             IsOpened = pack.IsOpened;
             IsClassified = packedItem.IsClassified;
+            TypeName = typeName;
+        }
+        public Client_IdentifiedItemCounted(RestoredGroup restoredGroup, Accessory accessory, Restoration restoration, string typeName)
+        {
+            IsRestored = true;
+            IdentifiedItemPK = restoredGroup.RestoredGroupPK;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
+            IdentifiedQuantity = restoredGroup.GroupQuantity;
+            PackID = restoration.RestorationID;
+            IsCounted = null;
+            IsOpened = null;
+            IsClassified = null;
+            TypeName = typeName;
         }
     }
 }

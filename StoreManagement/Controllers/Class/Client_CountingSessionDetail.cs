@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem, Box box, PackedItem packedItem)
+        public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem, Box box, PackedItem packedItem,string typeName)
         {
             CountingSessionPK = countingSession.CountingSessionPK;
             ExecutedDate = countingSession.ExecutedDate;
@@ -26,6 +26,7 @@ namespace StoreManagement.Class
             PackID = pack.PackID;
             BoxID = box.BoxID;
             IsClassified = packedItem.IsClassified;
+            TypeName = typeName;
         }
 
         public int CountingSessionPK { get; set; }
@@ -51,5 +52,7 @@ namespace StoreManagement.Class
         public string BoxID { get; set; }
 
         public bool IsClassified { get; set; }
+
+        public string TypeName { get; set; }
     }
 }
