@@ -13,7 +13,7 @@ namespace StoreManagement.Class
 
         }
 
-        public Client_FailedItemDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, IdentifiedItem identifiedItem, FailedItem failedItem, SystemUser systemUser, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, HashSet<string> boxIDs)
+        public Client_FailedItemDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, IdentifiedItem identifiedItem, FailedItem failedItem, SystemUser systemUser, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, HashSet<string> boxIDs, string typeName)
         {
             FailedItemPK = failedItem.FailedItemPK;
             ExecutedDate = classifyingSession.ExecutedDate;
@@ -25,6 +25,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
+            TypeName = typeName;
             PackID = pack.PackID;
             PackedQuantity = packedItem.PackedQuantity;
             Sample = sample;
@@ -55,6 +56,8 @@ namespace StoreManagement.Class
         public string Color { get; set; }
 
         public string Item { get; set; }
+
+        public string TypeName { get; set; }
 
         public string PackID { get; set; }
 

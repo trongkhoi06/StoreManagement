@@ -20,6 +20,8 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
+        public string TypeName { get; set; }
+
         public double IdentifiedQuantity { get; set; }
 
         public string PackID { get; set; }
@@ -28,7 +30,7 @@ namespace StoreManagement.Class
 
         public double SumCheckedQuantity { get; set; }
 
-        public Client_IdentifiedItemCheckedDetail(IdentifiedItem identifiedItem, Accessory accessory, string packID, double sample, double sumCheckedQuantity)
+        public Client_IdentifiedItemCheckedDetail(IdentifiedItem identifiedItem, Accessory accessory, string packID, double sample, double sumCheckedQuantity, string typeName)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -40,6 +42,7 @@ namespace StoreManagement.Class
             PackID = packID;
             Sample = sample;
             SumCheckedQuantity = sumCheckedQuantity;
+            TypeName = typeName;
         }
     }
 }

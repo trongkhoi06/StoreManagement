@@ -221,6 +221,28 @@ namespace StoreManagement.Controllers
             public string NewBoxID { get; set; }
         }
 
+        [Route("api/IssuingController/GetIsBoxEmpty")]
+        [HttpGet]
+        public IHttpActionResult GetIsBoxEmpty(string boxID)
+        {
+            try
+            {
+                bool result = false;
+                BoxDAO boxDAO = new BoxDAO();
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+                if (boxDAO.IsEmptyCase(box.BoxPK))
+                {
+                    result = true;
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
         [Route("api/IssuingController/CollectStoredItemForIssue")]
         [HttpPost]
         public IHttpActionResult CollectStoredItemForIssue(int demandPK, string userID, List<StoredItemForIssue> input)

@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItemClassified2(Accessory accessory, Pack pack, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity)
+        public Client_PackedItemClassified2(Accessory accessory, Pack pack, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, string typeName)
         {
             PackedItemPK = packedItem.PackedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -20,6 +20,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
+            TypeName = typeName;
             PackID = pack.PackID;
             PackedQuantity = packedItem.PackedQuantity;
             Sample = sample;
@@ -41,6 +42,8 @@ namespace StoreManagement.Class
         public string Color { get; set; }
 
         public string Item { get; set; }
+
+        public string TypeName { get; set; }
 
         public string PackID { get; set; }
 

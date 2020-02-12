@@ -111,7 +111,7 @@ namespace StoreManagement.Controllers
         public double ActualQuantity(int identifiedItemPK)
         {
             double result = 0;
-            int numCase = 0;
+            //int numCase = 0;
             try
             {
                 IdentifiedItem item = db.IdentifiedItems.Find(identifiedItemPK);
@@ -121,35 +121,38 @@ namespace StoreManagement.Controllers
                 CountingSession countingSession = (from countss in db.CountingSessions
                                                    where countss.IdentifiedItemPK == item.IdentifiedItemPK
                                                    select countss).FirstOrDefault();
-                if (item.IsChecked == false && item.IsCounted == false) numCase = 1;
-                if (item.IsChecked == false && item.IsCounted == true) numCase = 2;
-                if (item.IsChecked == true && item.IsCounted == false) numCase = 3;
-                if (item.IsChecked == true && item.IsCounted == true)
-                {
+                //if (item.IsChecked == false && item.IsCounted == false) numCase = 1;
+                //if (item.IsChecked == false && item.IsCounted == true) numCase = 2;
+                //if (item.IsChecked == true && item.IsCounted == false) numCase = 3;
+                //if (item.IsChecked == true && item.IsCounted == true)
+                //{
 
-                    if (checkingSession.ExecutedDate < countingSession.ExecutedDate) numCase = 4;
-                    else numCase = 5;
-                }
-                switch (numCase)
-                {
-                    case 1:
-                        result += item.IdentifiedQuantity;
-                        break;
-                    case 2:
-                        result += countingSession.CountedQuantity;
-                        break;
-                    case 3:
-                        result += item.IdentifiedQuantity - checkingSession.UnqualifiedQuantity;
-                        break;
-                    case 4:
-                        result += countingSession.CountedQuantity;
-                        break;
-                    case 5:
-                        result += countingSession.CountedQuantity - checkingSession.UnqualifiedQuantity;
-                        break;
-                    default:
-                        break;
-                }
+                //    if (checkingSession.ExecutedDate < countingSession.ExecutedDate) numCase = 4;
+                //    else numCase = 5;
+                //}
+                //switch (numCase)
+                //{
+                //    case 1:
+                //        result += item.IdentifiedQuantity;
+                //        break;
+                //    case 2:
+                //        result += countingSession.CountedQuantity;
+                //        break;
+                //    case 3:
+                //        result += item.IdentifiedQuantity - checkingSession.UnqualifiedQuantity;
+                //        break;
+                //    case 4:
+                //        result += countingSession.CountedQuantity;
+                //        break;
+                //    case 5:
+                //        result += countingSession.CountedQuantity - checkingSession.UnqualifiedQuantity;
+                //        break;
+                //    default:
+                //        break;
+                //}
+
+                if (item.IsCounted) result = countingSession.CountedQuantity;
+                else result = item.IdentifiedQuantity;
             }
             catch (Exception e)
             {

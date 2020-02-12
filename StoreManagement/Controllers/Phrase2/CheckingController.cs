@@ -303,6 +303,7 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByBoxIDChecked(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
+            List<RestoredGroup> restoredGroups;
             List<Client_IdentifiedItemChecked> client_IdentifiedItems = new List<Client_IdentifiedItemChecked>();
             BoxDAO boxDAO = new BoxDAO();
             try
@@ -320,6 +321,11 @@ namespace StoreManagement.Controllers
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                        select iI).ToList();
 
+                    // restoredGroup of box
+                    restoredGroups = db.RestoredGroups.OrderByDescending(unit => unit.RestoredGroupPK)
+                                                        .Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
+
+
                     foreach (var identifiedItem in identifiedItems)
                     {
                         PackedItem packedItem = (from pI in db.PackedItems
@@ -333,8 +339,23 @@ namespace StoreManagement.Controllers
                         // lấy phụ liệu tương ứng
                         OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                         Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                        client_IdentifiedItems.Add(new Client_IdentifiedItemChecked(identifiedItem, accessory, pack, packedItem));
+                        client_IdentifiedItems.Add(new Client_IdentifiedItemChecked(identifiedItem, accessory, pack, packedItem, accessoryType.Name));
+                    }
+
+
+                    foreach (var restoredGroup in restoredGroups)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+
+                        // lấy restorationID
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                        client_IdentifiedItems.Add(new Client_IdentifiedItemChecked(restoredGroup, accessory, restoration, accessoryType.Name));
                     }
                 }
                 else
@@ -373,12 +394,12 @@ namespace StoreManagement.Controllers
                                            where oI.OrderedItemPK == packedItem.OrderedItemPK
                                            select oI).FirstOrDefault();
 
-                Accessory accessory = (from a in db.Accessories
-                                       where a.AccessoryPK == orderedItem.AccessoryPK
-                                       select a).FirstOrDefault();
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                 client_IdentifiedItems.Add(new Client_IdentifiedItemCheckedDetail(identifiedItem, accessory, pack.PackID,
-                    packedItemsController.Sample, packedItemsController.SumOfCheckedQuantity));
+                    packedItemsController.Sample, packedItemsController.SumOfCheckedQuantity, accessoryType.Name));
 
             }
             catch (Exception e)
@@ -419,12 +440,13 @@ namespace StoreManagement.Controllers
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                select oI).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                     PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
-                    client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession, box, packedItem, packedItemsController.Sample));
+                    client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession,
+                        box, packedItem, packedItemsController.Sample, accessoryType.Name));
 
 
                 }
@@ -611,11 +633,17 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetPackedItemByBoxIDUserID(string boxID, string userID)
         {
             List<Client_PackedItemClassified> client_PackedItemClassifieds = new List<Client_PackedItemClassified>();
-            BoxDAO boxController = new BoxDAO();
+            BoxDAO boxDAO = new BoxDAO();
             try
             {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+
+                if (box == null || !boxDAO.IsUnstoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+
+                UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
                 List<IdentifiedItem> identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                                         where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                                         select iI).ToList();
@@ -696,9 +724,8 @@ namespace StoreManagement.Controllers
                                            where oI.OrderedItemPK == packedItem.OrderedItemPK
                                            select oI).FirstOrDefault();
 
-                Accessory accessory = (from a in db.Accessories
-                                       where a.AccessoryPK == orderedItem.AccessoryPK
-                                       select a).FirstOrDefault();
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
                 // lấy sum identified quantity, sample, defectlimit
                 // lấy sum counted quantity, sum checked quantity
@@ -706,7 +733,8 @@ namespace StoreManagement.Controllers
                 client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
                 packedItemsController.Sample, packedItemsController.DefectLimit,
                 packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity,
+                accessoryType.Name));
             }
             catch (Exception e)
             {
@@ -919,14 +947,15 @@ namespace StoreManagement.Controllers
                                            where oI.OrderedItemPK == packedItem.OrderedItemPK
                                            select oI).FirstOrDefault();
 
-                Accessory accessory = (from a in db.Accessories
-                                       where a.AccessoryPK == orderedItem.AccessoryPK
-                                       select a).FirstOrDefault();
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                 client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
                 packedItemsController.Sample, packedItemsController.DefectLimit,
                 packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity));
+                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity,
+                accessoryType.Name));
 
 
             }
@@ -1082,9 +1111,8 @@ namespace StoreManagement.Controllers
                                            where oI.OrderedItemPK == packedItem.OrderedItemPK
                                            select oI).FirstOrDefault();
 
-                Accessory accessory = (from a in db.Accessories
-                                       where a.AccessoryPK == orderedItem.AccessoryPK
-                                       select a).FirstOrDefault();
+                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
                 // init all caculate
                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
@@ -1103,7 +1131,8 @@ namespace StoreManagement.Controllers
                 client_FailedItems.Add(new Client_FailedItemDetail(accessory, pack, classifyingSession, identifiedItems[0], failedItem, systemUser,
                     packedItem, packedItemsController.Sample, packedItemsController.DefectLimit,
                     packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity, boxIDs));
+                    packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity, boxIDs,
+                    accessoryType.Name));
 
             }
             catch (Exception e)

@@ -738,7 +738,7 @@ namespace StoreManagement.Controllers
                     if (tempStr.Length == 3) tempStr = "00" + tempStr;
                     if (tempStr.Length == 4) tempStr = "0" + tempStr;
 
-                    restorationID = "AST-PT" + tempStr;
+                    restorationID = "AST-PT-" + tempStr;
                 }
                 else
                 {
@@ -1054,6 +1054,20 @@ namespace StoreManagement.Controllers
                 restoration.IsReceived = true;
                 db.Entry(restoration).State = EntityState.Modified;
 
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void DeleteReceivingSession(int receivingSessionPK)
+        {
+            try
+            {
+                ReceivingSession receivingSession = db.ReceivingSessions.Find(receivingSessionPK);
+                db.ReceivingSessions.Remove(receivingSession);
                 db.SaveChanges();
             }
             catch (Exception e)

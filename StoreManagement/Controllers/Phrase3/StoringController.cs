@@ -21,18 +21,28 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByBoxID(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
-            List<Client_IdentifiedItemStored> client_IdentifiedItems = new List<Client_IdentifiedItemStored>();
-            BoxDAO boxController = new BoxDAO();
+            List<RestoredGroup> restoredGroups;
+            List<Client_IdentifiedItemStored> result = new List<Client_IdentifiedItemStored>();
+            BoxDAO boxDAO = new BoxDAO();
             IdentifyItemDAO identifyItemDAO = new IdentifyItemDAO();
             try
             {
-                Box box = boxController.GetBoxByBoxID(boxID);
-                UnstoredBox uBox = boxController.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!boxController.IsStored(box.BoxPK))
+                Box box = boxDAO.GetBoxByBoxID(boxID);
+
+                if (box == null || boxDAO.IsUnstoredCase(box.BoxPK))
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                }
+
+                UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
+                if (!boxDAO.IsStored(box.BoxPK))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                        select iI).ToList();
+
+                    restoredGroups = db.RestoredGroups.OrderByDescending(unit => unit.RestoredGroupPK)
+                                                    .Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
 
                     foreach (var identifiedItem in identifiedItems)
                     {
@@ -57,12 +67,11 @@ namespace StoreManagement.Controllers
                                                            where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                            select oI).FirstOrDefault();
 
-                                Accessory accessory = (from a in db.Accessories
-                                                       where a.AccessoryPK == orderedItem.AccessoryPK
-                                                       select a).FirstOrDefault();
+                                Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryPK);
 
-                                client_IdentifiedItems.Add(new Client_IdentifiedItemStored(identifiedItem, accessory, pack,
-                                    identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK)));
+                                result.Add(new Client_IdentifiedItemStored(identifiedItem, accessory, pack,
+                                    identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), accessoryType.Name));
                             }
                             else
                             {
@@ -74,10 +83,23 @@ namespace StoreManagement.Controllers
                             return Content(HttpStatusCode.Conflict, "TỒN TẠI ÍT NHẤT MỘT CỤM PHỤ LIỆU KHÔNG ĐẠT!");
                         }
                     }
+
+                    foreach (var restoredGroup in restoredGroups)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+
+                        // lấy restorationID
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                        result.Add(new Client_IdentifiedItemStored(restoredGroup, accessory, restoration, accessoryType.Name));
+                    }
                 }
                 else
                 {
-                    return Content(HttpStatusCode.Conflict, "BOX ĐÃ ĐƯỢC STORE HOẶC CHƯA IDENTIFIED !");
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
                 }
             }
             catch (Exception e)
@@ -85,7 +107,7 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
-            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+            return Content(HttpStatusCode.OK, result);
         }
 
         [Route("api/StoringController/GetShelfByShelfID")]
