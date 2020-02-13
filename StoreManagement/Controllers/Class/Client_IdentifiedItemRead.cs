@@ -10,6 +10,14 @@ namespace StoreManagement.Class
     {
         public int IdentifiedItemPK { get; set; }
 
+        public double IdentifiedQuantity { get; set; }
+
+        public string PackID { get; set; }
+
+        public int? QualityState { get; set; }
+
+        public bool IsRestored { get; set; }
+
         public string AccessoryID { get; set; }
 
         public string AccessoryDescription { get; set; }
@@ -20,14 +28,11 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
-        public double IdentifiedQuantity { get; set; }
+        public string TypeName { get; set; }
 
-        public string PackID { get; set; }
-
-        public int? QualityState { get; set; }
-
-        public Client_IdentifiedItemRead(IdentifiedItem identifiedItem, Accessory accessory, string packID, int? qualityState)
+        public Client_IdentifiedItemRead(IdentifiedItem identifiedItem, Accessory accessory, string packID, int? qualityState, string typeName)
         {
+            IsRestored = false;
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
@@ -37,6 +42,22 @@ namespace StoreManagement.Class
             IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
             PackID = packID;
             QualityState = qualityState;
+            TypeName = typeName;
+        }
+
+        public Client_IdentifiedItemRead(RestoredGroup restoredGroup, Accessory accessory, string restorationID,string typeName)
+        {
+            IsRestored = true;
+            IdentifiedItemPK = restoredGroup.RestoredGroupPK;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
+            IdentifiedQuantity = restoredGroup.GroupQuantity;
+            PackID = restorationID;
+            QualityState = null;
+            TypeName = typeName;
         }
     }
 }

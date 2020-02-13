@@ -53,16 +53,24 @@ namespace StoreManagement.Controllers
             List<string> result = new List<string>();
             try
             {
-                SqlParameter userID = new SqlParameter("@userID", userClient.Username);
-                SqlParameter Password = new SqlParameter("@Password", userClient.Password);
-                string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
-                if (db.Roles.Find(roleName) == null) return NotFound();
+                //SqlParameter userID = new SqlParameter("@userID", userClient.Username);
+                //SqlParameter Password = new SqlParameter("@Password", userClient.Password);
+                //string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
+                SystemUser systemUser = db.SystemUsers.Find(userClient.Username);
+                if (systemUser.Password == userClient.Password)
+                {
+                    if (db.Roles.Find(systemUser.RoleName) == null) return NotFound();
+                    else
+                    {
+                        string hash = Base64Encode(userClient.Username + "~!~" + DateTime.Now.ToString());
+                        result.Add(hash);
+                        result.Add(systemUser.RoleName);
+                        return Content(HttpStatusCode.OK, result);
+                    }
+                }
                 else
                 {
-                    string hash = Base64Encode(userClient.Username + "~!~" + DateTime.Now.ToString());
-                    result.Add(hash);
-                    result.Add(roleName);
-                    return Content(HttpStatusCode.OK, result);
+                    return Content(HttpStatusCode.Conflict, "SAI MẬT KHẨU!");
                 }
 
             }

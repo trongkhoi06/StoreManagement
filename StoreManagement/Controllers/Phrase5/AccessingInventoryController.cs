@@ -32,11 +32,16 @@ namespace StoreManagement.Controllers
                     // nếu box chưa được store
                     if (boxDAO.IsUnstoredCase(box.BoxPK))
                     {
-                        List<Client_IdentifiedItemRead> client_IdentifiedItems = new List<Client_IdentifiedItemRead>();
+                        List<Client_IdentifiedItemRead> result = new List<Client_IdentifiedItemRead>();
                         List<IdentifiedItem> identifiedItems;
+                        List<RestoredGroup> restoredGroups;
+
                         identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                            where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                            select iI).ToList();
+
+                        restoredGroups = db.RestoredGroups.OrderByDescending(unit => unit.RestoredGroupPK)
+                                                        .Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
 
                         foreach (var identifiedItem in identifiedItems)
                         {
@@ -46,17 +51,32 @@ namespace StoreManagement.Controllers
 
                             // lấy phụ liệu tương ứng
                             OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-
                             Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                            AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                             // lấy qualityState
                             ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
                                                              where cI.PackedItemPK == packedItem.PackedItemPK
                                                              select cI).FirstOrDefault();
                             int? qualityState = null;
                             if (classifiedItem != null) qualityState = classifiedItem.QualityState;
-                            client_IdentifiedItems.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState));
+                            result.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState, accessoryType.Name));
                         }
-                        return Content(HttpStatusCode.OK, client_IdentifiedItems);
+
+                        foreach (var restoredGroup in restoredGroups)
+                        {
+                            RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+
+                            // lấy restorationID
+                            Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+
+                            Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                            AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                            result.Add(new Client_IdentifiedItemRead(restoredGroup, accessory, restoration.RestorationID, accessoryType.Name));
+                        }
+
+                        return Content(HttpStatusCode.OK, result);
                     }
                     else if (boxDAO.IsStoredCase(box.BoxPK))
                     {
@@ -117,14 +137,18 @@ namespace StoreManagement.Controllers
                         result = new Client_InBoxItems_Shelf<Client_Shelf>(client_Shelf, client_InBoxItems);
                         return Content(HttpStatusCode.OK, result);
                     }
+                    else if (boxDAO.IsEmptyCase(box.BoxPK))
+                    {
+                        return Content(HttpStatusCode.OK, "ĐƠN VỊ TRỐNG!");
+                    }
                     else
                     {
-                        return Content(HttpStatusCode.OK, "");
+                        return Content(HttpStatusCode.OK, "ĐƠN VỊ ĐANG ĐƯỢC XUẤT!");
                     }
                 }
                 else
                 {
-                    return Content(HttpStatusCode.Conflict, "ĐỐI TƯỢNG KHÔNG TỒN TẠI");
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG TỒN TẠI");
                 }
             }
             catch (Exception e)
