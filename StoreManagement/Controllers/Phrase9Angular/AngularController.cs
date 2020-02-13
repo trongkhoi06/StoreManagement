@@ -3131,19 +3131,9 @@ namespace StoreManagement.Controllers
                 {
                     StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                     UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
-                    if (boxDAO.IsUnstoredCase(box.BoxPK))
+                    if (boxDAO.IsEmptyCase(box.BoxPK))
                     {
-                        List<IdentifiedItem> identifiedItems;
-                        identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
-                                           where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
-                                           select iI).ToList();
-
-                        List<RestoredGroup> restoredGroups;
-                        restoredGroups = db.RestoredGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK)
-                                                            .OrderByDescending(unit => unit.RestoredGroupPK).ToList();
-
-                        result.Add(new Client_Box_Information_Angular(box, "THÙNG NGOÀI KHO", identifiedItems.Count + restoredGroups.Count));
-
+                        result.Add(new Client_Box_Information_Angular(box, "THÙNG TRỐNG", 0));
                     }
                     else if (boxDAO.IsStoredCase(box.BoxPK))
                     {
@@ -3169,9 +3159,19 @@ namespace StoreManagement.Controllers
 
                         result.Add(new Client_Box_Information_Angular(box, "THÙNG TRONG KHO", count));
                     }
-                    else if (boxDAO.IsEmptyCase(box.BoxPK))
+                    else if (boxDAO.IsUnstoredCase(box.BoxPK))
                     {
-                        result.Add(new Client_Box_Information_Angular(box, "THÙNG TRỐNG", 0));
+                        List<IdentifiedItem> identifiedItems;
+                        identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
+                                           where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
+                                           select iI).ToList();
+
+                        List<RestoredGroup> restoredGroups;
+                        restoredGroups = db.RestoredGroups.Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK)
+                                                            .OrderByDescending(unit => unit.RestoredGroupPK).ToList();
+
+                        result.Add(new Client_Box_Information_Angular(box, "THÙNG NGOÀI KHO", identifiedItems.Count + restoredGroups.Count));
+
                     }
                 }
             }
