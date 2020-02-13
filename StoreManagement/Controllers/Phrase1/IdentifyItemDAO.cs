@@ -301,7 +301,7 @@ namespace StoreManagement.Controllers
 
                         // Map session with item
                         GroupItem_ArrangingSession groupItem_ArrangingSession = new GroupItem_ArrangingSession(
-                            identifiedItem.IdentifiedItemPK, item.IsRestored, arrangingSession.ArrangingSessionPK);
+                            identifiedItem.IdentifiedItemPK, false, arrangingSession.ArrangingSessionPK);
 
                         db.GroupItem_ArrangingSession.Add(groupItem_ArrangingSession);
                     }
@@ -317,7 +317,7 @@ namespace StoreManagement.Controllers
 
                         // Map session with item
                         GroupItem_ArrangingSession groupItem_ArrangingSession = new GroupItem_ArrangingSession(
-                            restoredGroup.RestoredGroupPK, item.IsRestored, arrangingSession.ArrangingSessionPK);
+                            restoredGroup.RestoredGroupPK, true, arrangingSession.ArrangingSessionPK);
 
                         db.GroupItem_ArrangingSession.Add(groupItem_ArrangingSession);
                     }

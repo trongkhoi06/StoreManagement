@@ -19,7 +19,7 @@ namespace StoreManagement.Controllers
             try
             {
                 // create customer
-                Customer customer = new Customer(name, code, address, phoneNumber);
+                Customer customer = new Customer(code, name, address, phoneNumber);
                 db.Customers.Add(customer);
 
                 // lưu activity create
@@ -210,7 +210,7 @@ namespace StoreManagement.Controllers
             try
             {
                 // create supplier
-                Supplier supplier = new Supplier(name, address, phoneNumber, supplierCode);
+                Supplier supplier = new Supplier(supplierCode, name, address, phoneNumber);
                 db.Suppliers.Add(supplier);
 
                 // lưu activity create
