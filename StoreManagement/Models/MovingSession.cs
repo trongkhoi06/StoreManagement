@@ -19,6 +19,7 @@ namespace StoreManagement.Models
             DestinationShelfPK = shelf.ShelfPK;
             StoredBoxPK = storedBox.StoredBoxPK;
             UserID = userID;
+            ExecutedDate = DateTime.Now;
         }
 
         [Key]

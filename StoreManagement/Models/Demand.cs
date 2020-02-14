@@ -22,6 +22,7 @@ namespace StoreManagement.Models
             IsOpened = true;
             UserID = userID;
             WorkplacePK = workplacePK;
+            DateCreated = DateTime.Now;
         }
 
         [Key]

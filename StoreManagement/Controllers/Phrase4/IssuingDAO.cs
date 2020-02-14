@@ -180,9 +180,7 @@ namespace StoreManagement.Controllers
                 {
                     if (PrimitiveType.isValidQuantity(item.DemandedQuantity))
                     {
-                        Accessory accessory = (from a in db.Accessories
-                                               where a.AccessoryID == item.AccessoryID
-                                               select a).FirstOrDefault();
+                        Accessory accessory = db.Accessories.Where(unit => unit.AccessoryID == item.AccessoryID).FirstOrDefault();
 
                         Conception conception = db.Conceptions.Find(conceptionPK);
 

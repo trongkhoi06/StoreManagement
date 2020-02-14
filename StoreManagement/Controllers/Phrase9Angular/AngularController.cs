@@ -1375,7 +1375,7 @@ namespace StoreManagement.Controllers
                 // if start <= 1900 then select all
                 else
                 {
-                    demands = db.Demands.ToList();
+                    demands = db.Demands.OrderByDescending(unit => unit.DemandPK).ToList();
                 }
 
                 foreach (var demand in demands)
@@ -3500,6 +3500,20 @@ namespace StoreManagement.Controllers
             }
         }
 
+        [Route("api/AngularController/GetAllWorkplaces")]
+        [HttpGet]
+        public IHttpActionResult GetAllWorkplaces()
+        {
+            try
+            {
+                List<Workplace> result = db.Workplaces.ToList();
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
 
         // QR CODE GENERATOR
 

@@ -14,6 +14,12 @@ namespace StoreManagement.Models
 
         }
 
+        public Workplace(string workplaceID, bool isHost)
+        {
+            WorkplaceID = workplaceID;
+            IsHost = isHost;
+        }
+
         [Key]
         public int WorkplacePK { get; set; }
 
