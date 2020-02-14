@@ -1048,6 +1048,11 @@ namespace StoreManagement.Controllers
 
                 foreach (var item in temp)
                 {
+                    if (temp.Count != db.RestoredItems.Where(unit => unit.RestorationPK == restorationPK)
+                        .ToList().Count)
+                    {
+                        throw new Exception("SỐ LƯỢNG GHI NHẬN KHÔNG GIỐNG VỚI ĐƠN TRẢ");
+                    }
                     RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
                     if (item.GroupQuantity != restoredItem.RestoredQuantity)
                     {

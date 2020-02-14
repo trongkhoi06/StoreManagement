@@ -1325,6 +1325,11 @@ namespace StoreManagement.Controllers
                 ReceivingSession receivingSession = null;
                 try
                 {
+                    if (input.Count == 0)
+                    {
+                        return Content(HttpStatusCode.Conflict, "DỮ LIỆU GỬI TỚI KHÔNG ĐÚNG ĐỊNH DẠNG!");
+                    }
+
                     receivingSession = issuingDAO.CreateReceivingSession(restorationPK, userID);
                     issuingDAO.CreateRestoredGroup(restorationPK, userID, receivingSession, input);
 
