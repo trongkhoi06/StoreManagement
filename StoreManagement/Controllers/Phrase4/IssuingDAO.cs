@@ -833,8 +833,15 @@ namespace StoreManagement.Controllers
                 foreach (var item in list)
                 {
                     RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
-                    restoredItem.RestoredQuantity = item.RestoredQuantity;
-                    db.Entry(restoredItem).State = EntityState.Modified;
+                    if (item.RestoredQuantity > 0)
+                    {
+                        restoredItem.RestoredQuantity = item.RestoredQuantity;
+                        db.Entry(restoredItem).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        db.RestoredItems.Remove(restoredItem);
+                    }
                 }
                 db.SaveChanges();
             }
@@ -1055,9 +1062,12 @@ namespace StoreManagement.Controllers
                 db.Entry(restoration).State = EntityState.Modified;
 
                 db.SaveChanges();
+
             }
             catch (Exception e)
             {
+                db.Dispose();
+                db = new UserModel();
                 throw e;
             }
         }

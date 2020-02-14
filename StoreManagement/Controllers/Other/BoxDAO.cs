@@ -59,30 +59,30 @@ namespace StoreManagement.Controllers
                     select sh).FirstOrDefault();
         }
 
-        public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
-        {
-            if (boxIDs != null)
-            {
-                foreach (var boxID in boxIDs)
-                {
-                    Box box = GetBoxByBoxID(boxID);
+        //public void ChangeIsActiveBoxes(List<string> boxIDs, bool isActive)
+        //{
+        //    if (boxIDs != null)
+        //    {
+        //        foreach (var boxID in boxIDs)
+        //        {
+        //            Box box = GetBoxByBoxID(boxID);
 
-                    // kiểm box empty
-                    StoredBox storedBox = GetStoredBoxbyBoxPK(box.BoxPK);
+        //            // kiểm box empty
+        //            StoredBox storedBox = GetStoredBoxbyBoxPK(box.BoxPK);
 
-                    List<Entry> entries = db.Entries.Where(e => e.StoredBoxPK == storedBox.StoredBoxPK).ToList();
-                    double quantity = 0;
-                    foreach (var entry in entries)
-                    {
-                        quantity += new StoringDAO().EntryQuantity(entry);
-                    }
-                    if (quantity != 0) throw new Exception("THÙNG CHƯA TRỐNG~AST-ERR~");
-                    box.IsActive = isActive;
-                    db.Entry(box).State = EntityState.Modified;
-                }
-            }
-            db.SaveChanges();
-        }
+        //            List<Entry> entries = db.Entries.Where(e => e.StoredBoxPK == storedBox.StoredBoxPK).ToList();
+        //            double quantity = 0;
+        //            foreach (var entry in entries)
+        //            {
+        //                quantity += new StoringDAO().EntryQuantity(entry);
+        //            }
+        //            if (quantity != 0) throw new Exception("THÙNG CHƯA TRỐNG~AST-ERR~");
+        //            box.IsActive = isActive;
+        //            db.Entry(box).State = EntityState.Modified;
+        //        }
+        //    }
+        //    db.SaveChanges();
+        //}
 
         public Box CreateBox()
         {

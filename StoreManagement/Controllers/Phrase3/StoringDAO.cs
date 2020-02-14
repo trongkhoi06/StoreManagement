@@ -135,7 +135,7 @@ namespace StoreManagement.Controllers
 
                 foreach (var item in input)
                 {
-                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item.ItemPK);
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(item.PK);
                     if (!item.IsRestored)
                     {
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
@@ -174,7 +174,7 @@ namespace StoreManagement.Controllers
                     }
                     else
                     {
-                        RestoredGroup restoredGroup = db.RestoredGroups.Find(item.ItemPK);
+                        RestoredGroup restoredGroup = db.RestoredGroups.Find(item.PK);
                         RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
                         // lấy accessory
                         Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);

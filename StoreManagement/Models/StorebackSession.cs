@@ -6,7 +6,7 @@ namespace StoreManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("RestoringSession")]
+    [Table("StorebackSession")]
     public partial class StorebackSession
     {
         public StorebackSession()

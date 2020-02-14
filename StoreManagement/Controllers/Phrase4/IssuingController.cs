@@ -1189,7 +1189,7 @@ namespace StoreManagement.Controllers
 
         public class Client_Restoration
         {
-            public Client_Restoration(Restoration restoration, string userName)
+            public Client_Restoration(Restoration restoration, string userName, Workplace workplace)
             {
                 RestorationPK = restoration.RestorationPK;
                 RestorationID = restoration.RestorationID;
@@ -1198,6 +1198,7 @@ namespace StoreManagement.Controllers
                 UserID = restoration.UserID;
                 UserName = userName;
                 Comment = restoration.Comment;
+                WorkplaceID = workplace.WorkplaceID;
             }
 
             public int RestorationPK { get; set; }
@@ -1213,6 +1214,8 @@ namespace StoreManagement.Controllers
             public string UserName { get; set; }
 
             public string Comment { get; set; }
+
+            public string WorkplaceID { get; set; }
         }
 
         [Route("api/IssuingController/GetRestorationNotReceived")]
@@ -1226,7 +1229,8 @@ namespace StoreManagement.Controllers
                 foreach (var restoration in restorations)
                 {
                     SystemUser systemUser = db.SystemUsers.Find(restoration.UserID);
-                    result.Add(new Client_Restoration(restoration, systemUser.Name));
+                    Workplace workplace = db.Workplaces.Find(systemUser.WorkplacePK);
+                    result.Add(new Client_Restoration(restoration, systemUser.Name,workplace));
                 }
                 return Content(HttpStatusCode.OK, result);
             }

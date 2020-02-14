@@ -186,7 +186,7 @@ namespace StoreManagement.Controllers
 
             public Client_GroupItem_Store(int itemPK, bool isRestored, Accessory accessory, string typeName, string containerID, double quantity, int? qualityState)
             {
-                ItemPK = itemPK;
+                PK = itemPK;
                 IsRestored = isRestored;
                 AccessoryID = accessory.AccessoryID;
                 AccessoryDescription = accessory.AccessoryDescription;
@@ -199,7 +199,7 @@ namespace StoreManagement.Controllers
                 QualityState = qualityState;
             }
 
-            public int ItemPK { get; set; }
+            public int PK { get; set; }
 
             public bool IsRestored { get; set; }
 
@@ -264,7 +264,7 @@ namespace StoreManagement.Controllers
                     AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
                     result.Add(new Client_GroupItem_Store(item.RestoredGroupPK, true, accessory, accessoryType.Name,
-                        restoration.RestorationID, restoredItem.RestoredQuantity, null));
+                        restoration.RestorationID, item.GroupQuantity, null));
                 }
 
                 return Content(HttpStatusCode.OK, result);
