@@ -1301,18 +1301,18 @@ namespace StoreManagement.Controllers
 
         public class RestoredGroupItem
         {
-            public RestoredGroupItem(int restoredItemPK, double groupQuantity, int unstoredBoxPK)
+            public RestoredGroupItem(int restoredItemPK, double groupQuantity, string boxID)
             {
                 RestoredItemPK = restoredItemPK;
                 GroupQuantity = groupQuantity;
-                UnstoredBoxPK = unstoredBoxPK;
+                BoxID = boxID;
             }
 
             public int RestoredItemPK { get; set; }
 
             public double GroupQuantity { get; set; }
 
-            public int UnstoredBoxPK { get; set; }
+            public string BoxID { get; set; }
         }
 
         [Route("api/IssuingController/IdentifyRestoredGroupItems")]

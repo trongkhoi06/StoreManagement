@@ -1023,14 +1023,16 @@ namespace StoreManagement.Controllers
                 List<RestoredGroup> temp = new List<RestoredGroup>();
                 foreach (var item in input)
                 {
-                    UnstoredBox uBox = db.UnstoredBoxes.Find(item.UnstoredBoxPK);
-                    Box box = db.Boxes.Find(uBox.BoxPK);
+
+                    Box box = db.Boxes.Where(unit => unit.BoxID == item.BoxID).FirstOrDefault();
+
+                    UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                     StoredBox sBox = new BoxDAO().GetStoredBoxbyBoxPK(box.BoxPK);
                     if (!new BoxDAO().IsUnstoredCase(box.BoxPK))
                     {
                         throw new Exception("ĐƠN VỊ KHÔNG HỌP LỆ!");
                     }
-                    RestoredGroup restoredGroup = new RestoredGroup(item.GroupQuantity, item.RestoredItemPK, item.UnstoredBoxPK);
+                    RestoredGroup restoredGroup = new RestoredGroup(item.GroupQuantity, item.RestoredItemPK, uBox.UnstoredBoxPK);
                     db.RestoredGroups.Add(restoredGroup);
 
                     sBox.ShelfPK = null;
