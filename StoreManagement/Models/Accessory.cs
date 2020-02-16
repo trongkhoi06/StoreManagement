@@ -26,7 +26,7 @@ namespace StoreManagement.Models
             SupplierPK = supplierPK;
             CustomerPK = customerPK;
             IsActive = true;
-            Image = "";
+            Image = null;
         }
 
         [Key]

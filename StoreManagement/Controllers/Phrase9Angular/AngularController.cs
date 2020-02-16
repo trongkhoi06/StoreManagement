@@ -1328,11 +1328,11 @@ namespace StoreManagement.Controllers
             {
             }
 
-            public Client_Demand_Angular2(Demand demand, Conception conception)
+            public Client_Demand_Angular2(Demand demand, Conception conception, Workplace workplace)
             {
                 DemandPK = demand.DemandPK;
                 DemandID = demand.DemandID;
-                //ReceiveDivision = demand.ReceiveDivision;
+                WorkplaceID = workplace.WorkplaceID;
                 ConceptionCode = conception.ConceptionCode;
                 DateCreated = demand.DateCreated;
                 IsOpened = demand.IsOpened;
@@ -1343,7 +1343,7 @@ namespace StoreManagement.Controllers
 
             public string DemandID { get; set; }
 
-            public string ReceiveDivision { get; set; }
+            public string WorkplaceID { get; set; }
 
             public string ConceptionCode { get; set; }
 
@@ -1381,7 +1381,8 @@ namespace StoreManagement.Controllers
                 foreach (var demand in demands)
                 {
                     Conception conception = db.Conceptions.Find(demand.ConceptionPK);
-                    result.Add(new Client_Demand_Angular2(demand, conception));
+                    Workplace workplace = db.Workplaces.Find(demand.WorkplacePK);
+                    result.Add(new Client_Demand_Angular2(demand, conception, workplace));
                 }
             }
             catch (Exception e)
