@@ -1731,7 +1731,7 @@ namespace StoreManagement.Controllers
                 // if start <= 1900 then select all
                 else
                 {
-                    result = db.Restorations.ToList();
+                    result = db.Restorations.OrderByDescending(unit => unit.RestorationPK).ToList();
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -3028,13 +3028,18 @@ namespace StoreManagement.Controllers
 
                 foreach (var item in identifiedItems)
                 {
+                    string boxID = "ĐÃ LƯUbox";
                     IdentifyingSession ss = db.IdentifyingSessions.Find(item.IdentifyingSessionPK);
-                    UnstoredBox uBox = db.UnstoredBoxes.Find(item.UnstoredBoxPK);
-                    Box box = db.Boxes.Find(uBox.BoxPK);
+                    if (item.UnstoredBoxPK != null)
+                    {
+                        UnstoredBox uBox = db.UnstoredBoxes.Find(item.UnstoredBoxPK);
+                        Box box = db.Boxes.Find(uBox.BoxPK);
+                        boxID = box.BoxID;
+                    }
 
                     SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
 
-                    Client_IdentifiedItem_Receiving_Angular tempItem = new Client_IdentifiedItem_Receiving_Angular(box.BoxID, systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, item);
+                    Client_IdentifiedItem_Receiving_Angular tempItem = new Client_IdentifiedItem_Receiving_Angular(boxID, systemUser.Name + " (" + ss.UserID + ")", ss.ExecutedDate, item);
 
                     CountingSession countingSession = db.CountingSessions.Where(unit => unit.IdentifiedItemPK == item.IdentifiedItemPK).FirstOrDefault();
                     if (countingSession != null)

@@ -41,7 +41,7 @@ namespace StoreManagement.Controllers
             try
             {
                 accessories = (from a in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
-                               where a.SupplierPK == supplierPK
+                               where a.SupplierPK == supplierPK && a.IsActive == true
                                select a).ToList();
             }
             catch (Exception e)
@@ -788,11 +788,10 @@ namespace StoreManagement.Controllers
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                select oI).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory));
+                    client_IdentifiedItems.Add(new Client_IdentifiedItem(identifiedItem, accessory, accessoryType.Name));
                 }
             }
             catch (Exception e)

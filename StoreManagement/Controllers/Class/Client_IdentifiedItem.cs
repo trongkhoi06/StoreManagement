@@ -20,9 +20,11 @@ namespace StoreManagement.Class
 
         public string Item { get; set; }
 
+        public string TypeName { get; set; }
+
         public double IdentifiedQuantity { get; set; }
 
-        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory)
+        public Client_IdentifiedItem(IdentifiedItem identifiedItem, Accessory accessory, string typeName)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -31,6 +33,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
+            TypeName = typeName;
         }
     }
 }
