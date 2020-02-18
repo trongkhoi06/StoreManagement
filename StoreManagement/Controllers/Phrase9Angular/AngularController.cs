@@ -846,77 +846,66 @@ namespace StoreManagement.Controllers
             public double SumIssuedQuantity { get; set; }
         }
 
-        //[Route("api/AngularController/GetAccessoriesWithFilterIssuing")]
-        //[HttpGet]
-        //public IHttpActionResult GetAccessoriesWithFilterIssuing(DateTime start, DateTime end)
-        //{
-        //    List<Client_Accessories_Issuing_Angular> result = new List<Client_Accessories_Issuing_Angular>();
-        //    // make it one more day to make sure < end will be right answer
-        //    end = end.AddDays(1);
-        //    try
-        //    {
-        //        List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
-        //        foreach (var accessory in accessories)
-        //        {
-        //            List<DemandedItem> demandedItems = new List<DemandedItem>();
-        //            // if start > 1900 then select query
-        //            if (start.Year > 1900)
-        //            {
+        [Route("api/AngularController/GetAccessoriesWithFilterIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoriesWithFilterIssuing(DateTime start, DateTime end)
+        {
+            List<Client_Accessories_Issuing_Angular> result = new List<Client_Accessories_Issuing_Angular>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            // make it one more day to make sure < end will be right answer
+            end = end.AddDays(1);
+            try
+            {
+                List<Accessory> accessories = db.Accessories.OrderByDescending(unit => unit.AccessoryPK).ToList();
+                foreach (var accessory in accessories)
+                {
+                    List<DemandedItem> demandedItems = new List<DemandedItem>();
+                    // if start > 1900 then select query
+                    if (start.Year > 1900)
+                    {
 
-        //                List<DemandedItem> tempList = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
-        //                                               where oI.AccessoryPK == accessory.AccessoryPK
-        //                                               select oI).ToList();
+                        List<DemandedItem> tempList = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
+                                                       where oI.AccessoryPK == accessory.AccessoryPK
+                                                       select oI).ToList();
 
-        //                foreach (var demandedItem in tempList)
-        //                {
-        //                    if (db.Demands.Find(demandedItem.DemandPK).DateCreated >= start
-        //                        && db.Demands.Find(demandedItem.DemandPK).DateCreated < end)
-        //                    {
-        //                        demandedItems.Add(demandedItem);
-        //                    }
-        //                }
-        //            }
-        //            // if start <= 1900 then select all
-        //            else
-        //            {
-        //                demandedItems = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
-        //                                 where oI.AccessoryPK == accessory.AccessoryPK
-        //                                 select oI).ToList();
-        //            }
-        //            if (demandedItems.Count > 0)
-        //            {
-        //                double demandedQuantity = 0;
-        //                double issuedQuantity = 0;
-        //                foreach (var demandedItem in demandedItems)
-        //                {
-        //                    // tổng các demanded quantity
-        //                    demandedQuantity += demandedItem.DemandedQuantity;
-        //                    List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-        //                                                          where rI.DemandedItemPK == demandedItem.DemandedItemPK
-        //                                                          select rI).ToList();
+                        foreach (var demandedItem in tempList)
+                        {
+                            if (db.Demands.Find(demandedItem.DemandPK).DateCreated >= start
+                                && db.Demands.Find(demandedItem.DemandPK).DateCreated < end)
+                            {
+                                demandedItems.Add(demandedItem);
+                            }
+                        }
+                    }
+                    // if start <= 1900 then select all
+                    else
+                    {
+                        demandedItems = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
+                                         where oI.AccessoryPK == accessory.AccessoryPK
+                                         select oI).ToList();
+                    }
+                    if (demandedItems.Count > 0)
+                    {
+                        double demandedQuantity = 0;
+                        double issuedQuantity = 0;
+                        foreach (var demandedItem in demandedItems)
+                        {
+                            // tổng các demanded quantity
+                            demandedQuantity += demandedItem.DemandedQuantity;
+                            issuedQuantity += issuingDAO.IssuedQuantity(demandedItem.DemandedItemPK);
+                        }
+                        result.Add(new Client_Accessories_Issuing_Angular(accessory, demandedQuantity, issuedQuantity));
+                    }
+                }
 
-        //                    foreach (var item in requestedItems)
-        //                    {
-        //                        Request request = db.Requests.Find(item.RequestPK);
-        //                        // tổng các issuedQuantity quantity theo list demandeditem
-        //                        if (request.IsIssued)
-        //                        {
-        //                            issuedQuantity += item.RequestedQuantity;
-        //                        }
-        //                    }
-        //                }
-        //                result.Add(new Client_Accessories_Issuing_Angular(accessory, demandedQuantity, issuedQuantity));
-        //            }
-        //        }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
 
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-
-        //    return Content(HttpStatusCode.OK, result);
-        //}
+            return Content(HttpStatusCode.OK, result);
+        }
 
 
         [Route("api/AngularController/GetAccessoryByPKReceiving")]
@@ -1209,52 +1198,41 @@ namespace StoreManagement.Controllers
             return Content(HttpStatusCode.OK, result);
         }
 
-        //[Route("api/AngularController/GetAccessoryByPKIssuing")]
-        //[HttpGet]
-        //public IHttpActionResult GetAccessoryByPKIssuing(int accessoryPK)
-        //{
-        //    Client_Accessories_Issuing_Angular result = new Client_Accessories_Issuing_Angular();
-        //    try
-        //    {
-        //        Accessory accessory = db.Accessories.Find(accessoryPK);
-        //        List<DemandedItem> demandedItems = new List<DemandedItem>();
-        //        demandedItems = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
-        //                         where oI.AccessoryPK == accessory.AccessoryPK
-        //                         select oI).ToList();
-        //        if (demandedItems.Count > 0)
-        //        {
-        //            double demandedQuantity = 0;
-        //            double issuedQuantity = 0;
-        //            foreach (var demandedItem in demandedItems)
-        //            {
-        //                // tổng các demanded quantity
-        //                demandedQuantity += demandedItem.DemandedQuantity;
-        //                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-        //                                                      where rI.DemandedItemPK == demandedItem.DemandedItemPK
-        //                                                      select rI).ToList();
-
-        //                foreach (var item in requestedItems)
-        //                {
-        //                    Request request = db.Requests.Find(item.RequestPK);
-        //                    // tổng các issuedQuantity quantity theo list demandeditem
-        //                    if (request.IsIssued)
-        //                    {
-        //                        issuedQuantity += item.RequestedQuantity;
-        //                    }
-        //                }
-        //            }
-        //            result = new Client_Accessories_Issuing_Angular(accessory, demandedQuantity, issuedQuantity);
-        //        }
+        [Route("api/AngularController/GetAccessoryByPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetAccessoryByPKIssuing(int accessoryPK)
+        {
+            Client_Accessories_Issuing_Angular result = new Client_Accessories_Issuing_Angular();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                Accessory accessory = db.Accessories.Find(accessoryPK);
+                List<DemandedItem> demandedItems = new List<DemandedItem>();
+                demandedItems = (from oI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
+                                 where oI.AccessoryPK == accessory.AccessoryPK
+                                 select oI).ToList();
+                if (demandedItems.Count > 0)
+                {
+                    double demandedQuantity = 0;
+                    double issuedQuantity = 0;
+                    foreach (var demandedItem in demandedItems)
+                    {
+                        // tổng các demanded quantity
+                        demandedQuantity += demandedItem.DemandedQuantity;
+                        issuedQuantity += issuingDAO.IssuedQuantity(demandedItem.DemandedItemPK);
+                    }
+                    result = new Client_Accessories_Issuing_Angular(accessory, demandedQuantity, issuedQuantity);
+                }
 
 
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
 
-        //    return Content(HttpStatusCode.OK, result);
-        //}
+            return Content(HttpStatusCode.OK, result);
+        }
 
         public class Client_Demand_Angular
         {
@@ -1283,44 +1261,34 @@ namespace StoreManagement.Controllers
 
         }
 
-        //[Route("api/AngularController/GetDemandsByAccessoryPKIssuing")]
-        //[HttpGet]
-        //public IHttpActionResult GetDemandsByAccessoryPKIssuing(int accessoryPK)
-        //{
-        //    List<Client_Demand_Angular> result = new List<Client_Demand_Angular>();
-        //    try
-        //    {
-        //        List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
-        //                                            where dI.AccessoryPK == accessoryPK
-        //                                            select dI).ToList();
-        //        foreach (var demandedItem in demandedItems)
-        //        {
-        //            double demandedQuantity = 0;
-        //            double issuedQuantity = 0;
-        //            demandedQuantity += demandedItem.DemandedQuantity;
-        //            List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-        //                                                  where rI.DemandedItemPK == demandedItem.DemandedItemPK
-        //                                                  select rI).ToList();
-        //            Demand demand = db.Demands.Find(demandedItem.DemandPK);
+        [Route("api/AngularController/GetDemandsByAccessoryPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetDemandsByAccessoryPKIssuing(int accessoryPK)
+        {
+            List<Client_Demand_Angular> result = new List<Client_Demand_Angular>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
+                                                    where dI.AccessoryPK == accessoryPK
+                                                    select dI).ToList();
+                foreach (var demandedItem in demandedItems)
+                {
+                    double demandedQuantity = 0;
+                    double issuedQuantity = issuingDAO.IssuedQuantity(demandedItem.DemandedItemPK);
+                    demandedQuantity = demandedItem.DemandedQuantity;
+                    Demand demand = db.Demands.Find(demandedItem.DemandPK);
 
-        //            foreach (var item in requestedItems)
-        //            {
-        //                Request request = db.Requests.Find(item.RequestPK);
-        //                if (request.IsIssued)
-        //                {
-        //                    issuedQuantity += item.RequestedQuantity;
-        //                }
-        //            }
-        //            result.Add(new Client_Demand_Angular(demand, demandedQuantity, issuedQuantity));
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
+                    result.Add(new Client_Demand_Angular(demand, demandedQuantity, issuedQuantity));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
 
-        //    return Content(HttpStatusCode.OK, result);
-        //}
+            return Content(HttpStatusCode.OK, result);
+        }
 
         public class Client_Demand_Angular2
         {
@@ -1431,50 +1399,37 @@ namespace StoreManagement.Controllers
             public double IssuedQuantity { get; set; }
         }
 
-        //[Route("api/AngularController/GetDemandedItemsByDemandPKIssuing")]
-        //[HttpGet]
-        //public IHttpActionResult GetDemandedItemsByDemandPKIssuing(int demandPK)
-        //{
-        //    List<Client_DemandedItem_Issued_Angular> result = new List<Client_DemandedItem_Issued_Angular>();
-        //    try
-        //    {
-        //        Demand demand = db.Demands.Find(demandPK);
-        //        if (demand == null)
-        //        {
-        //            return Content(HttpStatusCode.Conflict, "PHIẾU CẤP PHÁT KHÔNG TỒN TẠI");
-        //        }
-        //        List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
-        //                                            where dI.DemandPK == demand.DemandPK
+        [Route("api/AngularController/GetDemandedItemsByDemandPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetDemandedItemsByDemandPKIssuing(int demandPK)
+        {
+            List<Client_DemandedItem_Issued_Angular> result = new List<Client_DemandedItem_Issued_Angular>();
+            IssuingDAO issuingDAO = new IssuingDAO();
+            try
+            {
+                Demand demand = db.Demands.Find(demandPK);
+                if (demand == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "PHIẾU CẤP PHÁT KHÔNG TỒN TẠI");
+                }
+                List<DemandedItem> demandedItems = (from dI in db.DemandedItems.OrderByDescending(unit => unit.DemandedItemPK)
+                                                    where dI.DemandPK == demand.DemandPK
 
-        //                                            select dI).ToList();
-        //        foreach (var demandedItem in demandedItems)
-        //        {
-        //            double demandedQuantity = 0;
-        //            double issuedQuantity = 0;
-        //            demandedQuantity += demandedItem.DemandedQuantity;
-        //            List<RequestedItem> requestedItems = (from rI in db.RequestedItems.OrderByDescending(unit => unit.RequestedItemPK)
-        //                                                  where rI.DemandedItemPK == demandedItem.DemandedItemPK
-        //                                                  select rI).ToList();
-        //            Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                                                    select dI).ToList();
+                foreach (var demandedItem in demandedItems)
+                {
+                    Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+                    result.Add(new Client_DemandedItem_Issued_Angular(demandedItem, accessory,
+                        demandedItem.DemandedQuantity, issuingDAO.IssuedQuantity(demandedItem.DemandedItemPK)));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
 
-        //            foreach (var item in requestedItems)
-        //            {
-        //                Request request = db.Requests.Find(item.RequestPK);
-        //                if (request.IsIssued)
-        //                {
-        //                    issuedQuantity += item.RequestedQuantity;
-        //                }
-        //            }
-        //            result.Add(new Client_DemandedItem_Issued_Angular(demandedItem, accessory, demandedQuantity, issuedQuantity));
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-
-        //    return Content(HttpStatusCode.OK, result);
-        //}
+            return Content(HttpStatusCode.OK, result);
+        }
 
         public class Client_Demand_Angular3
         {
@@ -1482,12 +1437,12 @@ namespace StoreManagement.Controllers
             {
             }
 
-            public Client_Demand_Angular3(Demand demand, Conception conception, Customer customer, SystemUser systemUser)
+            public Client_Demand_Angular3(Demand demand, Conception conception, Customer customer, SystemUser systemUser, Workplace workplace)
             {
                 DemandPK = demand.DemandPK;
                 DemandID = demand.DemandID;
                 CustomerName = customer.CustomerName;
-                //ReceiveDivision = demand.ReceiveDivision;
+                WorkplaceID = workplace.WorkplaceID;
                 ConceptionCode = conception.ConceptionCode;
                 DateCreated = demand.DateCreated;
                 IsOpened = demand.IsOpened;
@@ -1500,7 +1455,7 @@ namespace StoreManagement.Controllers
 
             public string DemandID { get; set; }
 
-            public string ReceiveDivision { get; set; }
+            public string WorkplaceID { get; set; }
 
             public string ConceptionCode { get; set; }
 
@@ -1528,7 +1483,8 @@ namespace StoreManagement.Controllers
                 Conception conception = db.Conceptions.Find(demand.ConceptionPK);
                 Customer customer = db.Customers.Find(conception.CustomerPK);
                 SystemUser systemUser = db.SystemUsers.Find(demand.UserID);
-                result = new Client_Demand_Angular3(demand, conception, customer, systemUser);
+                Workplace workplace = db.Workplaces.Find(demand.WorkplacePK);
+                result = new Client_Demand_Angular3(demand, conception, customer, systemUser, workplace);
             }
             catch (Exception e)
             {
@@ -1570,69 +1526,76 @@ namespace StoreManagement.Controllers
             public double IssuedQuantity { get; set; }
         }
 
-        //[Route("api/AngularController/GetDemandedItemByConceptionPK")]
-        //[HttpGet]
-        //public IHttpActionResult GetDemandedItemByConceptionPK(int conceptionPK)
-        //{
-        //    List<Client_DemandedItem_Issued_Angular2> result = new List<Client_DemandedItem_Issued_Angular2>();
-        //    try
-        //    {
-        //        Dictionary<int, Client_DemandedItem_Issued_Angular2> tempDictionary = new Dictionary<int, Client_DemandedItem_Issued_Angular2>();
-        //        Conception conception = db.Conceptions.Find(conceptionPK);
-        //        if (conception == null)
-        //        {
-        //            return Content(HttpStatusCode.Conflict, "MÃ HÀNG KHÔNG TỒN TẠI");
-        //        }
-        //        List<Demand> demands = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
-        //                                where de.ConceptionPK == conception.ConceptionPK
-        //                                select de).ToList();
-        //        foreach (var demand in demands)
-        //        {
-        //            List<DemandedItem> demandedItems = (from dI in db.DemandedItems
-        //                                                where dI.DemandPK == demand.DemandPK
-        //                                                select dI).ToList();
-        //            foreach (var demandedItem in demandedItems)
-        //            {
-        //                double demandedQuantity = 0;
-        //                double issuedQuantity = 0;
-        //                demandedQuantity += demandedItem.DemandedQuantity;
-        //                List<RequestedItem> requestedItems = (from rI in db.RequestedItems
-        //                                                      where rI.DemandedItemPK == demandedItem.DemandedItemPK
-        //                                                      select rI).ToList();
-        //                Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
+        [Route("api/AngularController/GetIssuesByDemandPKIssuing")]
+        [HttpGet]
+        public IHttpActionResult GetIssuesByDemandPKIssuing(int demandPK)
+        {
+            List<Issue> result;
+            try
+            {
+                result = db.Issues.Where(unit => unit.DemandPK == demandPK).ToList();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
 
-        //                foreach (var item in requestedItems)
-        //                {
-        //                    Request request = db.Requests.Find(item.RequestPK);
-        //                    if (request.IsIssued)
-        //                    {
-        //                        issuedQuantity += item.RequestedQuantity;
-        //                    }
-        //                }
-        //                if (!tempDictionary.Keys.Contains(accessory.AccessoryPK))
-        //                {
-        //                    tempDictionary.Add(accessory.AccessoryPK, new Client_DemandedItem_Issued_Angular2(accessory, demandedQuantity, issuedQuantity));
-        //                }
-        //                else
-        //                {
-        //                    tempDictionary[accessory.AccessoryPK].DemandedQuantity += demandedQuantity;
-        //                    tempDictionary[accessory.AccessoryPK].IssuedQuantity += issuedQuantity;
-        //                }
-        //            }
+            return Content(HttpStatusCode.OK, result);
+        }
 
-        //        }
-        //        foreach (var item in tempDictionary)
-        //        {
-        //            result.Add(item.Value);
-        //        }
+        [Route("api/AngularController/GetDemandedItemByConceptionPK")]
+        [HttpGet]
+        public IHttpActionResult GetDemandedItemByConceptionPK(int conceptionPK)
+        {
+            List<Client_DemandedItem_Issued_Angular2> result = new List<Client_DemandedItem_Issued_Angular2>();
+            try
+            {
+                Dictionary<int, Client_DemandedItem_Issued_Angular2> tempDictionary = new Dictionary<int, Client_DemandedItem_Issued_Angular2>();
+                IssuingDAO issuingDAO = new IssuingDAO();
+                Conception conception = db.Conceptions.Find(conceptionPK);
+                if (conception == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "MÃ HÀNG KHÔNG TỒN TẠI");
+                }
+                List<Demand> demands = (from de in db.Demands.OrderByDescending(unit => unit.DemandPK)
+                                        where de.ConceptionPK == conception.ConceptionPK
+                                        select de).ToList();
+                foreach (var demand in demands)
+                {
+                    List<DemandedItem> demandedItems = (from dI in db.DemandedItems
+                                                        where dI.DemandPK == demand.DemandPK
+                                                        select dI).ToList();
+                    foreach (var demandedItem in demandedItems)
+                    {
+                        double demandedQuantity = 0;
+                        double issuedQuantity = issuingDAO.IssuedQuantity(demandedItem.DemandedItemPK);
+                        demandedQuantity += demandedItem.DemandedQuantity;
+                        Accessory accessory = db.Accessories.Find(demandedItem.AccessoryPK);
 
-        //        return Content(HttpStatusCode.OK, result);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-        //}
+                        if (!tempDictionary.Keys.Contains(accessory.AccessoryPK))
+                        {
+                            tempDictionary.Add(accessory.AccessoryPK, new Client_DemandedItem_Issued_Angular2(accessory, demandedQuantity, issuedQuantity));
+                        }
+                        else
+                        {
+                            tempDictionary[accessory.AccessoryPK].DemandedQuantity += demandedQuantity;
+                            tempDictionary[accessory.AccessoryPK].IssuedQuantity += issuedQuantity;
+                        }
+                    }
+
+                }
+                foreach (var item in tempDictionary)
+                {
+                    result.Add(item.Value);
+                }
+
+                return Content(HttpStatusCode.OK, result);
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
 
         public class Client_PackedItem_Angular2
         {

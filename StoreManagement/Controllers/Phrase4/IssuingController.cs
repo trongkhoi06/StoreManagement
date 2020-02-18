@@ -1230,7 +1230,7 @@ namespace StoreManagement.Controllers
                 {
                     SystemUser systemUser = db.SystemUsers.Find(restoration.UserID);
                     Workplace workplace = db.Workplaces.Find(systemUser.WorkplacePK);
-                    result.Add(new Client_Restoration(restoration, systemUser.Name,workplace));
+                    result.Add(new Client_Restoration(restoration, systemUser.Name, workplace));
                 }
                 return Content(HttpStatusCode.OK, result);
             }
