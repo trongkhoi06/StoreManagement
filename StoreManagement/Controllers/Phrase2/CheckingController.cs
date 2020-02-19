@@ -312,13 +312,13 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = boxDAO.GetBoxByBoxID(boxID);
-                if (!boxDAO.IsUnstoredCase(box.BoxPK))
-                {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
-                }
+                //if (!boxDAO.IsUnstoredCase(box.BoxPK))
+                //{
+                //    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                //}
 
                 UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxDAO.IsStored(box.BoxPK)))
+                if (boxDAO.IsUnstoredCase(box.BoxPK))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
