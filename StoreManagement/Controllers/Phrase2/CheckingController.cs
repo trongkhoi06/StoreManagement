@@ -312,10 +312,6 @@ namespace StoreManagement.Controllers
             try
             {
                 Box box = boxDAO.GetBoxByBoxID(boxID);
-                //if (!boxDAO.IsUnstoredCase(box.BoxPK))
-                //{
-                //    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
-                //}
 
                 UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
                 if (boxDAO.IsUnstoredCase(box.BoxPK))

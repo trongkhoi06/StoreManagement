@@ -2016,12 +2016,11 @@ namespace StoreManagement.Controllers
 
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
                 // query box
-                string boxID = "ĐÃ LƯU";
+                string boxID = "ĐÃ LƯUbox";
                 if (identifiedItem.UnstoredBoxPK != null)
                 {
                     UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
                     Box box = db.Boxes.Find(uBox.BoxPK);
-                    boxID = box.BoxID.Substring(0, box.BoxID.Length - 3);
                 }
 
                 // query pack
@@ -2196,9 +2195,15 @@ namespace StoreManagement.Controllers
                 foreach (var ss in tempCheckingSessions)
                 {
                     IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
-                    // query box
-                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
-                    Box box = db.Boxes.Find(uBox.BoxPK);
+
+                    string boxID = "ĐÃ LƯUbox";
+                    // lấy box tương ứng
+                    if (identifiedItem.UnstoredBoxPK != null)
+                    {
+                        UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                        Box box = db.Boxes.Find(uBox.BoxPK);
+                        boxID = box.BoxID;
+                    }
 
                     // query pack
                     PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
@@ -2208,7 +2213,7 @@ namespace StoreManagement.Controllers
                     OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
 
-                    result.Add(new Client_CheckingSession_Angular(ss, accessory, pack.PackID, box.BoxID));
+                    result.Add(new Client_CheckingSession_Angular(ss, accessory, pack.PackID, boxID));
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -2229,10 +2234,15 @@ namespace StoreManagement.Controllers
                 CheckingSession ss = db.CheckingSessions.Find(checkingSessionPK);
 
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(ss.IdentifiedItemPK);
-                // query box
-                UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
-                Box box = db.Boxes.Find(uBox.BoxPK);
-                string boxID = box.BoxID.Substring(0, box.BoxID.Length - 3);
+
+                string boxID = "ĐÃ LƯUbox";
+                // lấy box tương ứng
+                if (identifiedItem.UnstoredBoxPK != null)
+                {
+                    // query box
+                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                    Box box = db.Boxes.Find(uBox.BoxPK);
+                }
 
                 // query pack
                 PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
@@ -2244,7 +2254,7 @@ namespace StoreManagement.Controllers
 
                 SystemUser systemUser = db.SystemUsers.Find(ss.UserID);
 
-                result = new Client_CheckingSession_Angular(ss, accessory, pack.PackID, box.BoxID, systemUser.Name, identifiedItem.IdentifiedQuantity);
+                result = new Client_CheckingSession_Angular(ss, accessory, pack.PackID, boxID, systemUser.Name, identifiedItem.IdentifiedQuantity);
 
                 return Content(HttpStatusCode.OK, result);
             }
