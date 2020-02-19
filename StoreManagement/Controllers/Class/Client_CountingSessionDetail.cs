@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem, Box box, PackedItem packedItem,string typeName)
+        public Client_CountingSessionDetail(Accessory accessory, Pack pack, CountingSession countingSession, IdentifiedItem identifiedItem, string boxID, PackedItem packedItem,string typeName)
         {
             CountingSessionPK = countingSession.CountingSessionPK;
             ExecutedDate = countingSession.ExecutedDate;
@@ -24,7 +24,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
-            BoxID = box.BoxID;
+            BoxID = boxID;
             IsClassified = packedItem.IsClassified;
             TypeName = typeName;
         }

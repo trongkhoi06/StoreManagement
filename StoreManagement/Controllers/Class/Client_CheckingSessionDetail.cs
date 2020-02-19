@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession, Box box, PackedItem packedItem, double sample, string typeName)
+        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession, string boxID, PackedItem packedItem, double sample, string typeName)
         {
             CheckingSessionPK = checkingSession.CheckingSessionPK;
             ExecutedDate = checkingSession.ExecutedDate;
@@ -25,7 +25,7 @@ namespace StoreManagement.Class
             Color = accessory.Color;
             Item = accessory.Item;
             PackID = pack.PackID;
-            BoxID = box.BoxID;
+            BoxID = boxID;
             IsClassified = packedItem.IsClassified;
             Sample = sample;
             TypeName = typeName;

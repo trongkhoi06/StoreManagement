@@ -101,16 +101,19 @@ namespace StoreManagement.Controllers
                                                           select ss).ToList();
                 foreach (var countingSession in countingSessions)
                 {
-                    IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
-                                                      where iI.IdentifiedItemPK == countingSession.IdentifiedItemPK
-                                                      select iI).FirstOrDefault();
+                    IdentifiedItem identifiedItem = db.IdentifiedItems.Find(countingSession.IdentifiedItemPK);
 
+                    string boxID = "ĐÃ LƯUbox";
                     // lấy box tương ứng
-                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItems.UnstoredBoxPK);
-                    Box box = db.Boxes.Find(uBox.BoxPK);
+                    if (identifiedItem.UnstoredBoxPK != null)
+                    {
+                        UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                        Box box = db.Boxes.Find(uBox.BoxPK);
+                        boxID = box.BoxID;
+                    }
 
                     // lấy pack tương ứng
-                    PackedItem packedItem = db.PackedItems.Find(identifiedItems.PackedItemPK);
+                    PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
                     Pack pack = (from p in db.Packs
                                  where p.PackPK == packedItem.PackPK
                                  select p).FirstOrDefault();
@@ -123,7 +126,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                     AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                    client_CountingSessions.Add(new Client_CountingSessionDetail(accessory, pack, countingSession, identifiedItems, box, packedItem, accessoryType.Name));
+                    client_CountingSessions.Add(new Client_CountingSessionDetail(accessory, pack, countingSession, identifiedItem, boxID, packedItem, accessoryType.Name));
                 }
             }
             catch (Exception e)
@@ -422,15 +425,21 @@ namespace StoreManagement.Controllers
                                                           select ss).ToList();
                 foreach (var checkingSession in checkingSessions)
                 {
-                    IdentifiedItem identifiedItems = (from iI in db.IdentifiedItems
-                                                      where iI.IdentifiedItemPK == checkingSession.IdentifiedItemPK
-                                                      select iI).FirstOrDefault();
+                    IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
+                                                     where iI.IdentifiedItemPK == checkingSession.IdentifiedItemPK
+                                                     select iI).FirstOrDefault();
+                    string boxID = "ĐÃ LƯUbox";
                     // lấy box tương ứng
-                    UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItems.UnstoredBoxPK);
-                    Box box = db.Boxes.Find(uBox.BoxPK);
+                    if (identifiedItem.UnstoredBoxPK != null)
+                    {
+                        UnstoredBox uBox = db.UnstoredBoxes.Find(identifiedItem.UnstoredBoxPK);
+                        Box box = db.Boxes.Find(uBox.BoxPK);
+                        boxID = box.BoxID;
+                    }
+
                     // lấy packID tương ứng
                     PackedItem packedItem = (from pI in db.PackedItems
-                                             where pI.PackedItemPK == identifiedItems.PackedItemPK
+                                             where pI.PackedItemPK == identifiedItem.PackedItemPK
                                              select pI).FirstOrDefault();
                     Pack pack = (from p in db.Packs
                                  where p.PackPK == packedItem.PackPK
@@ -446,7 +455,7 @@ namespace StoreManagement.Controllers
                     PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                     client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession,
-                        box, packedItem, packedItemsController.Sample, accessoryType.Name));
+                        boxID, packedItem, packedItemsController.Sample, accessoryType.Name));
 
 
                 }
