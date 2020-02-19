@@ -813,7 +813,7 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxDAO.GetBoxByBoxID(boxID);
                 UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!(boxDAO.IsUnstoredCase(box.BoxPK)))
+                if (boxDAO.IsUnstoredCase(box.BoxPK))
                 {
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
