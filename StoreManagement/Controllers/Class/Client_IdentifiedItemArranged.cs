@@ -10,6 +10,8 @@ namespace StoreManagement.Class
     {
         public int IdentifiedItemPK { get; set; }
 
+        public bool IsRestored { get; set; }
+
         public string AccessoryID { get; set; }
 
         public string AccessoryDescription { get; set; }
@@ -29,6 +31,7 @@ namespace StoreManagement.Class
         public Client_IdentifiedItemArranged(IdentifiedItem identifiedItem, Accessory accessory, string packID, string typeName)
         {
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
+            IsRestored = false;
             AccessoryID = accessory.AccessoryID;
             AccessoryDescription = accessory.AccessoryDescription;
             Art = accessory.Art;
@@ -36,6 +39,20 @@ namespace StoreManagement.Class
             Item = accessory.Item;
             IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
             PackID = packID;
+            TypeName = typeName;
+        }
+
+        public Client_IdentifiedItemArranged(RestoredGroup restoredGroup, Accessory accessory, string restorationID, string typeName)
+        {
+            IdentifiedItemPK = restoredGroup.RestoredGroupPK;
+            IsRestored = true;
+            AccessoryID = accessory.AccessoryID;
+            AccessoryDescription = accessory.AccessoryDescription;
+            Art = accessory.Art;
+            Color = accessory.Color;
+            Item = accessory.Item;
+            IdentifiedQuantity = restoredGroup.GroupQuantity;
+            PackID = restorationID;
             TypeName = typeName;
         }
     }

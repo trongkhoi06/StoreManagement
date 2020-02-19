@@ -807,7 +807,8 @@ namespace StoreManagement.Controllers
         public IHttpActionResult GetIdentifyItemByBoxID(string boxID)
         {
             List<IdentifiedItem> identifiedItems;
-            List<Client_IdentifiedItemArranged> client_IdentifiedItems = new List<Client_IdentifiedItemArranged>();
+            List<RestoredGroup> restoredGroups;
+            List<Client_IdentifiedItemArranged> result = new List<Client_IdentifiedItemArranged>();
             BoxDAO boxDAO = new BoxDAO();
             try
             {
@@ -819,6 +820,9 @@ namespace StoreManagement.Controllers
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                        select iI).ToList();
 
+                    restoredGroups = db.RestoredGroups.OrderByDescending(unit => unit.RestoredGroupPK)
+                                        .Where(unit => unit.UnstoredBoxPK == uBox.UnstoredBoxPK).ToList();
+
                     foreach (var identifiedItem in identifiedItems)
                     {
                         PackedItem packedItem = db.PackedItems.Find(identifiedItem.PackedItemPK);
@@ -827,12 +831,21 @@ namespace StoreManagement.Controllers
 
                         // lấy phụ liệu tương ứng
                         OrderedItem orderedItem = db.OrderedItems.Find(packedItem.OrderedItemPK);
-
                         Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-
                         AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
-                        client_IdentifiedItems.Add(new Client_IdentifiedItemArranged(identifiedItem, accessory, pack.PackID, accessoryType.Name));
+                        result.Add(new Client_IdentifiedItemArranged(identifiedItem, accessory, pack.PackID, accessoryType.Name));
+                    }
+
+                    foreach (var restoredGroup in restoredGroups)
+                    {
+                        RestoredItem restoredItem = db.RestoredItems.Find(restoredGroup.RestoredItemPK);
+                        Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
+
+                        Accessory accessory = db.Accessories.Find(restoredItem.AccessoryPK);
+                        AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
+                        result.Add(new Client_IdentifiedItemArranged(restoredGroup, accessory, restoration.RestorationID, accessoryType.Name));
                     }
                 }
                 else
@@ -845,7 +858,7 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
-            return Content(HttpStatusCode.OK, client_IdentifiedItems);
+            return Content(HttpStatusCode.OK, result);
         }
 
         [Route("api/ReceivingController/GetIsBoxStoredOrIdentified")]
