@@ -115,15 +115,27 @@ namespace StoreManagement.Controllers
                 {
                     if (address == "undefined") address = "";
                     if (phoneNumber == "undefined") phoneNumber = "";
-                    if (PrimitiveType.isValidName(name) && PrimitiveType.isValidCode(code)
-                        && PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    if (!PrimitiveType.isValidName(name))
                     {
-                        informationDAO.CreateCustomer(name, code, address, phoneNumber, userID);
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidCustomerName);
                     }
-                    else
+                    if (!PrimitiveType.isValidCode(code))
                     {
-                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidCustomerCode1);
                     }
+                    if (!PrimitiveType.isValidAddress(address))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidAddress);
+                    }
+                    if (!PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidPhone);
+                    }
+                    if (db.Customers.Where(unit => unit.CustomerCode == code).FirstOrDefault() != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidCustomerCode2);
+                    }
+                    informationDAO.CreateCustomer(name, code, address, phoneNumber, userID);
                 }
                 catch (Exception e)
                 {
@@ -350,15 +362,28 @@ namespace StoreManagement.Controllers
                 {
                     if (address == "undefined") address = "";
                     if (phoneNumber == "undefined") phoneNumber = "";
-                    if (PrimitiveType.isValidName(name) && PrimitiveType.isValidCode(code)
-                        && PrimitiveType.isValidAddress(address) && PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    if (!PrimitiveType.isValidName(name))
                     {
-                        informationDAO.CreateSupplier(name, address, phoneNumber, code, userID);
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidSupplierName);
                     }
-                    else
+                    if (!PrimitiveType.isValidCode(code))
                     {
-                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidSupplierCode1);
                     }
+                    if (!PrimitiveType.isValidAddress(address))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidAddress);
+                    }
+                    if (!PrimitiveType.isValidPhoneNumber(phoneNumber))
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidPhone);
+                    }
+                    if (db.Suppliers.Where(unit => unit.SupplierCode == code).FirstOrDefault() != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, SystemMessage.InvalidSupplierCode2);
+                    }
+
+                    informationDAO.CreateSupplier(name, address, phoneNumber, code, userID);
                 }
                 catch (Exception e)
                 {

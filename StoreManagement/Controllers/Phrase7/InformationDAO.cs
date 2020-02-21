@@ -23,7 +23,7 @@ namespace StoreManagement.Controllers
                 db.Customers.Add(customer);
 
                 // lưu activity create
-                Activity activity = new Activity("create", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("create", customer.CustomerCode, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -46,7 +46,7 @@ namespace StoreManagement.Controllers
 
 
                 // lưu activity update
-                Activity activity = new Activity("update", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("update", customer.CustomerCode, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -66,7 +66,7 @@ namespace StoreManagement.Controllers
                 db.Customers.Remove(customer);
 
                 // lưu activity update
-                Activity activity = new Activity("delete", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("delete", customer.CustomerCode, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -87,7 +87,7 @@ namespace StoreManagement.Controllers
                 db.Entry(customer).State = EntityState.Modified;
 
                 // lưu activity update
-                Activity activity = new Activity("deactive", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("deactive", customer.CustomerCode, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -108,7 +108,7 @@ namespace StoreManagement.Controllers
                 db.Entry(customer).State = EntityState.Modified;
 
                 // lưu activity update
-                Activity activity = new Activity("reactive", customer.CustomerName, "Customer", userID);
+                Activity activity = new Activity("reactive", customer.CustomerCode, "Customer", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -214,7 +214,7 @@ namespace StoreManagement.Controllers
                 db.Suppliers.Add(supplier);
 
                 // lưu activity create
-                Activity activity = new Activity("create", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("create", supplier.SupplierCode, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -236,7 +236,7 @@ namespace StoreManagement.Controllers
                 db.Entry(supplier).State = EntityState.Modified;
 
                 // lưu activity update
-                Activity activity = new Activity("update", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("update", supplier.SupplierCode, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -260,7 +260,7 @@ namespace StoreManagement.Controllers
                 db.Suppliers.Remove(supplier);
 
                 // lưu activity delete
-                Activity activity = new Activity("delete", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("delete", supplier.SupplierCode, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -281,7 +281,7 @@ namespace StoreManagement.Controllers
                 db.Entry(supplier).State = EntityState.Modified;
 
                 // lưu activity deactive
-                Activity activity = new Activity("deactive", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("deactive", supplier.SupplierCode, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();
@@ -302,7 +302,7 @@ namespace StoreManagement.Controllers
                 db.Entry(supplier).State = EntityState.Modified;
 
                 // lưu activity active
-                Activity activity = new Activity("reactive", supplier.SupplierName, "Supplier", userID);
+                Activity activity = new Activity("reactive", supplier.SupplierCode, "Supplier", userID);
                 db.Activities.Add(activity);
 
                 db.SaveChanges();

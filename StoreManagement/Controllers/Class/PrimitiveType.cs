@@ -81,7 +81,7 @@ namespace StoreManagement.Class
 
         public static bool isValidCode(string code)
         {
-            if (code != null && code.Length <= 3 && code != "")
+            if (code != null && code.Length <= 3 && code != "" && isNotNumeric(code))
             {
                 return true;
             }
@@ -103,5 +103,17 @@ namespace StoreManagement.Class
             }
         }
 
+        public static bool isNotNumeric(string code)
+        {
+            foreach (var item in code)
+            {
+                if (item >= '0' && item <= '9')
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
     }
 }
