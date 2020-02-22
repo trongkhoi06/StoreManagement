@@ -28,6 +28,8 @@ namespace StoreManagement.Controllers
         public double SumOfCountedQuantity { get; set; }
 
         public double SumOfIdentifiedQuantity { get; set; }
+        
+        public double SumOfIdentifiedQuantityCounted { get; set; }
 
         public bool IsPackedItemCreated(int PackPK, List<Client_OrderedItemPK_PackedQuantity_Comment> list, int orderPK)
         {
@@ -197,6 +199,10 @@ namespace StoreManagement.Controllers
                     tempSample += item.IdentifiedQuantity;
                     tempDefectLimit += item.IdentifiedQuantity;
                     SumOfIdentifiedQuantity += item.IdentifiedQuantity;
+                    if (item.IsCounted)
+                    {
+                        SumOfIdentifiedQuantityCounted += item.IdentifiedQuantity;
+                    }
                     if (countingSession != null)
                     {
                         SumOfCountedQuantity += countingSession.CountedQuantity;

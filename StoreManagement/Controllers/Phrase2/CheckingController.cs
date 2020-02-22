@@ -419,6 +419,12 @@ namespace StoreManagement.Controllers
                 List<CheckingSession> checkingSessions = (from ss in db.CheckingSessions.OrderByDescending(unit => unit.CheckingSessionPK)
                                                           where ss.UserID == userID
                                                           select ss).ToList();
+
+                double sumCheckedQuantity = 0;
+                foreach (var checkingSession in checkingSessions)
+                {
+                    sumCheckedQuantity += checkingSession.CheckedQuantity;
+                }
                 foreach (var checkingSession in checkingSessions)
                 {
                     IdentifiedItem identifiedItem = (from iI in db.IdentifiedItems
@@ -450,8 +456,10 @@ namespace StoreManagement.Controllers
 
                     PackedItemsDAO packedItemsController = new PackedItemsDAO();
                     packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
+
                     client_CheckingSessions.Add(new Client_CheckingSessionDetail(accessory, pack, checkingSession,
-                        boxID, packedItem, packedItemsController.Sample, accessoryType.Name));
+                        boxID, packedItem, packedItemsController.Sample, accessoryType.Name, identifiedItem,
+                        sumCheckedQuantity - checkingSession.CheckedQuantity));
 
 
                 }
@@ -673,9 +681,8 @@ namespace StoreManagement.Controllers
                                                where oI.OrderedItemPK == packedItem.OrderedItemPK
                                                select oI).FirstOrDefault();
 
-                    Accessory accessory = (from a in db.Accessories
-                                           where a.AccessoryPK == orderedItem.AccessoryPK
-                                           select a).FirstOrDefault();
+                    Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
                     // lấy classifiedItem
                     ClassifiedItem classifiedItem = (from cI in db.ClassifiedItems
@@ -691,11 +698,11 @@ namespace StoreManagement.Controllers
                         {
                             isEditable = true;
                         }
-                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem, isEditable, classifiedItem));
+                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem, isEditable, classifiedItem, accessoryType.Name));
                     }
                     else
                     {
-                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem));
+                        client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem, accessoryType.Name));
                     }
 
                 }
@@ -737,9 +744,9 @@ namespace StoreManagement.Controllers
                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                 client_PackedItemClassifieds.Add(new Client_PackedItemClassified2(accessory, pack, packedItem,
                 packedItemsController.Sample, packedItemsController.DefectLimit,
-                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity,
-                accessoryType.Name));
+                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfIdentifiedQuantityCounted,
+                packedItemsController.SumOfCountedQuantity, packedItemsController.SumOfCheckedQuantity,
+                packedItemsController.SumOfUnqualifiedQuantity, accessoryType.Name));
             }
             catch (Exception e)
             {
@@ -900,6 +907,8 @@ namespace StoreManagement.Controllers
                     Accessory accessory = (from a in db.Accessories
                                            where a.AccessoryPK == orderedItem.AccessoryPK
                                            select a).FirstOrDefault();
+                    AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
+
                     bool isStoredOrReturn = false;
                     if (classifiedItem.QualityState == 2)
                     {
@@ -915,7 +924,7 @@ namespace StoreManagement.Controllers
                                                  select fI).FirstOrDefault();
                         isStoredOrReturn = failedItem.IsReturned;
                     }
-                    client_ClassifyingSessions.Add(new Client_ClassifyingSession(accessory, pack, classifyingSession, classifiedItem, isStoredOrReturn));
+                    client_ClassifyingSessions.Add(new Client_ClassifyingSession(accessory, pack, classifyingSession, classifiedItem, isStoredOrReturn, accessoryType.Name));
                 }
 
             }
@@ -955,12 +964,28 @@ namespace StoreManagement.Controllers
                 Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
                 AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
+                bool isStoredOrReturn = false;
+                if (classifiedItem.QualityState == 2)
+                {
+                    PassedItem passedItem = (from pI in db.PassedItems
+                                             where pI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                             select pI).FirstOrDefault();
+                    isStoredOrReturn = passedItem.IsStored;
+                }
+                else if (classifiedItem.QualityState == 3)
+                {
+                    FailedItem failedItem = (from fI in db.FailedItems
+                                             where fI.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
+                                             select fI).FirstOrDefault();
+                    isStoredOrReturn = failedItem.IsReturned;
+                }
+
                 packedItemsController.IsInitAllCalculate(packedItem.PackedItemPK);
                 client_ClassifyingSessions.Add(new Client_ClassifyingSessionDetail(accessory, pack, classifyingSession, classifiedItem, packedItem,
                 packedItemsController.Sample, packedItemsController.DefectLimit,
-                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfCountedQuantity,
-                packedItemsController.SumOfCheckedQuantity, packedItemsController.SumOfUnqualifiedQuantity,
-                accessoryType.Name));
+                packedItemsController.SumOfIdentifiedQuantity, packedItemsController.SumOfIdentifiedQuantityCounted,
+                packedItemsController.SumOfCountedQuantity, packedItemsController.SumOfCheckedQuantity,
+                packedItemsController.SumOfUnqualifiedQuantity, accessoryType.Name, isStoredOrReturn));
 
 
             }

@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItemClassified2(Accessory accessory, Pack pack, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, string typeName)
+        public Client_PackedItemClassified2(Accessory accessory, Pack pack, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumIdentifiedQuantityCounted, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, string typeName)
         {
             PackedItemPK = packedItem.PackedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -26,6 +26,7 @@ namespace StoreManagement.Class
             Sample = sample;
             DefectLimit = defectLimit;
             SumIdentifiedQuantity = sumIdentifiedQuantity;
+            SumIdentifiedQuantityCounted = sumIdentifiedQuantityCounted;
             SumCountedQuantity = sumCountedQuantity;
             SumCheckedQuantity = sumCheckedQuantity;
             SumUnqualifiedQuantity = sumUnqualifiedQuantity;
@@ -54,6 +55,8 @@ namespace StoreManagement.Class
         public double DefectLimit { get; set; }
 
         public double SumIdentifiedQuantity { get; set; }
+
+        public double SumIdentifiedQuantityCounted { get; set; }
 
         public double SumCountedQuantity { get; set; }
 

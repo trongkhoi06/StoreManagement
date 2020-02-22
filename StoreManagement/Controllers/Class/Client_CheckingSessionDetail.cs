@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession, string boxID, PackedItem packedItem, double sample, string typeName)
+        public Client_CheckingSessionDetail(Accessory accessory, Pack pack, CheckingSession checkingSession, string boxID, PackedItem packedItem, double sample, string typeName, IdentifiedItem identifiedItem, double sumCheckedQuantity)
         {
             CheckingSessionPK = checkingSession.CheckingSessionPK;
             ExecutedDate = checkingSession.ExecutedDate;
@@ -29,6 +29,9 @@ namespace StoreManagement.Class
             IsClassified = packedItem.IsClassified;
             Sample = sample;
             TypeName = typeName;
+
+            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
+            SumCheckedQuantity = sumCheckedQuantity;
         }
 
         public int CheckingSessionPK { get; set; }
@@ -45,6 +48,8 @@ namespace StoreManagement.Class
 
         public string TypeName { get; set; }
 
+        public double IdentifiedQuantity { get; set; }
+
         public string PackID { get; set; }
 
         public DateTime ExecutedDate { get; set; }
@@ -52,6 +57,8 @@ namespace StoreManagement.Class
         public double CheckedQuantity { get; set; }
 
         public double UnqualifiedQuantity { get; set; }
+
+        public double SumCheckedQuantity { get; set; }
 
         public string Comment { get; set; }
 

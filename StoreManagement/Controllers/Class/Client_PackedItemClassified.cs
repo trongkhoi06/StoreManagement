@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem)
+        public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem, string typeName)
         {
             PackedItemPK = packedItem.PackedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -20,13 +20,14 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
+            TypeName = typeName;
             PackID = pack.PackID;
             IsOpened = pack.IsOpened;
             QualityState = null;
             IsEditable = null;
         }
 
-        public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem, bool isEditable, ClassifiedItem classifiedItem)
+        public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem, bool isEditable, ClassifiedItem classifiedItem, string typeName)
         {
             PackedItemPK = packedItem.PackedItemPK;
             AccessoryID = accessory.AccessoryID;
@@ -34,6 +35,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
+            TypeName = typeName;
             PackID = pack.PackID;
             IsOpened = pack.IsOpened;
             QualityState = classifiedItem.QualityState;
@@ -51,6 +53,8 @@ namespace StoreManagement.Class
         public string Color { get; set; }
 
         public string Item { get; set; }
+
+        public string TypeName { get; set; }
 
         public string PackID { get; set; }
 

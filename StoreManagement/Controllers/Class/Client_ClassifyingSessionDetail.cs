@@ -13,7 +13,8 @@ namespace StoreManagement.Class
 
         }
 
-        public Client_ClassifyingSessionDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, ClassifiedItem classifiedItem, PackedItem packedItem, double sample, double defectLimit, double sumIdentifiedQuantity, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, string typeName)
+        public Client_ClassifyingSessionDetail(Accessory accessory, Pack pack, ClassifyingSession classifyingSession, ClassifiedItem classifiedItem, PackedItem packedItem, double sample, double defectLimit,
+            double sumIdentifiedQuantity, double sumIdentifiedQuantityCounted, double sumCountedQuantity, double sumCheckedQuantity, double sumUnqualifiedQuantity, string typeName, bool isStoredOrReturn)
         {
             ClassifyingSessionPK = classifyingSession.ClassifyingSessionPK;
             ExecutedDate = classifyingSession.ExecutedDate;
@@ -30,9 +31,11 @@ namespace StoreManagement.Class
             Sample = sample;
             DefectLimit = defectLimit;
             SumIdentifiedQuantity = sumIdentifiedQuantity;
+            SumIdentifiedQuantityCounted = sumIdentifiedQuantityCounted;
             SumCountedQuantity = sumCountedQuantity;
             SumCheckedQuantity = sumCheckedQuantity;
             SumUnqualifiedQuantity = sumUnqualifiedQuantity;
+            IsStoredOrReturn = isStoredOrReturn;
         }
 
         public int ClassifyingSessionPK { get; set; }
@@ -65,10 +68,14 @@ namespace StoreManagement.Class
 
         public double SumIdentifiedQuantity { get; set; }
 
+        public double SumIdentifiedQuantityCounted { get; set; }
+
         public double SumCountedQuantity { get; set; }
 
         public double SumCheckedQuantity { get; set; }
 
         public double SumUnqualifiedQuantity { get; set; }
+
+        public bool IsStoredOrReturn { get; set; }
     }
 }
