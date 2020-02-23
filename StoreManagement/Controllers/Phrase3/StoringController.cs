@@ -29,14 +29,14 @@ namespace StoreManagement.Controllers
             {
                 Box box = boxDAO.GetBoxByBoxID(boxID);
 
-                if (box == null || boxDAO.IsUnstoredCase(box.BoxPK))
+                if (box == null || !boxDAO.IsUnstoredCase(box.BoxPK))
                 {
                     return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
                 }
 
                 UnstoredBox uBox = boxDAO.GetUnstoredBoxbyBoxPK(box.BoxPK);
-                if (!boxDAO.IsStored(box.BoxPK))
-                {
+                //if (!boxDAO.IsStored(box.BoxPK))
+                //{
                     identifiedItems = (from iI in db.IdentifiedItems.OrderByDescending(unit => unit.PackedItemPK)
                                        where iI.UnstoredBoxPK == uBox.UnstoredBoxPK
                                        select iI).ToList();
@@ -68,7 +68,7 @@ namespace StoreManagement.Controllers
                                                            select oI).FirstOrDefault();
 
                                 Accessory accessory = db.Accessories.Find(orderedItem.AccessoryPK);
-                                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryPK);
+                                AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
 
                                 result.Add(new Client_IdentifiedItemStored(identifiedItem, accessory, pack,
                                     identifyItemDAO.ActualQuantity(identifiedItem.IdentifiedItemPK), accessoryType.Name));
@@ -96,11 +96,11 @@ namespace StoreManagement.Controllers
 
                         result.Add(new Client_IdentifiedItemStored(restoredGroup, accessory, restoration, accessoryType.Name));
                     }
-                }
-                else
-                {
-                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
-                }
+                //}
+                //else
+                //{
+                //    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ KHÔNG HỢP LỆ!");
+                //}
             }
             catch (Exception e)
             {
