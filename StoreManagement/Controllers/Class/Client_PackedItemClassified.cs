@@ -24,7 +24,7 @@ namespace StoreManagement.Class
             PackID = pack.PackID;
             IsOpened = pack.IsOpened;
             QualityState = null;
-            IsEditable = null;
+            IsEditable = true;
         }
 
         public Client_PackedItemClassified(Accessory accessory, Pack pack, PackedItem packedItem, bool isEditable, ClassifiedItem classifiedItem, string typeName)

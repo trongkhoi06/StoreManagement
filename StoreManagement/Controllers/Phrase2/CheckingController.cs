@@ -693,10 +693,15 @@ namespace StoreManagement.Controllers
                         ClassifyingSession classifyingSession = (from Css in db.ClassifyingSessions
                                                                  where Css.ClassifiedItemPK == classifiedItem.ClassifiedItemPK
                                                                  select Css).FirstOrDefault();
+                        PassedItem passedItem = db.PassedItems.Where(unit => unit.ClassifiedItemPK == classifiedItem.ClassifiedItemPK).FirstOrDefault();
                         bool isEditable = false;
                         if (classifyingSession.UserID == userID)
                         {
                             isEditable = true;
+                        }
+                        if (passedItem != null && passedItem.IsStored == true)
+                        {
+                            isEditable = false;
                         }
                         client_PackedItemClassifieds.Add(new Client_PackedItemClassified(accessory, pack, packedItem, isEditable, classifiedItem, accessoryType.Name));
                     }
