@@ -55,7 +55,7 @@ namespace StoreManagement.Controllers
         public Shelf GetShelfByShelfID(string shelfID)
         {
             return (from sh in db.Shelves
-                    where sh.ShelfID == shelfID && sh.ShelfID != "InvisibleShelf"
+                    where sh.ShelfID == shelfID
                     select sh).FirstOrDefault();
         }
 
