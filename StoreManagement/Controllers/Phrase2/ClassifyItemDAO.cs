@@ -217,13 +217,16 @@ namespace StoreManagement.Controllers
             return true;
         }
 
-        public void DeleteClassification(ClassifyingSession classifyingSession, ClassifiedItem classifiedItem, PackedItem packedItem)
+        public void DeleteClassification(int classifyingSessionPK, int classifiedItemPK)
         {
             try
             {
+                ClassifyingSession classifyingSession = db.ClassifyingSessions.Find(classifyingSessionPK);
+                ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifiedItemPK);
+                PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                 // delete classifying ss
                 db.ClassifyingSessions.Remove(classifyingSession);
-
+                db.SaveChanges();
                 // delete passeditem or faileditem
                 switch (classifiedItem.QualityState)
                 {
@@ -245,7 +248,7 @@ namespace StoreManagement.Controllers
 
                 // delete classifiedItem
                 db.ClassifiedItems.Remove(classifiedItem);
-
+                
                 // change packeditem
                 packedItem.IsClassified = false;
                 db.Entry(packedItem).State = EntityState.Modified;

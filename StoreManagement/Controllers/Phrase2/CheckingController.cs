@@ -1014,12 +1014,12 @@ namespace StoreManagement.Controllers
                     if (userID.Equals(classifyingSession.UserID))
                     {
                         ClassifiedItem classifiedItem = db.ClassifiedItems.Find(classifyingSession.ClassifiedItemPK);
-                        PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
+                        //PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
 
                         if (classifyItemDAO.isNotStoredOrReturned(classifiedItem.ClassifiedItemPK))
                         {
                             // delete
-                            classifyItemDAO.DeleteClassification(classifyingSession, classifiedItem, packedItem);
+                            classifyItemDAO.DeleteClassification(classifyingSession.ClassifyingSessionPK, classifiedItem.ClassifiedItemPK);
 
                             //classifyItemDAO.deleteClassifyingSession(classifyingSession.ClassifyingSessionPK);
                             //classifyItemDAO.deleteItemByQualityState(classifiedItem.ClassifiedItemPK, classifiedItem.QualityState);
