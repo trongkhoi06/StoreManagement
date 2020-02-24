@@ -328,6 +328,12 @@ namespace StoreManagement.Controllers
                     throw new Exception("THÔNG TIN PHỤ LIỆU KHÔNG HỢP LỆ");
                 }
 
+                if (art.Length <= 20 && color.Length <= 20 && description.Length <= 50
+                        && !PrimitiveType.isValidComment(comment) && item.Length <= 20 && item != null && item != "")
+                {
+                    throw new Exception(SystemMessage.NotPassPrimitiveType);
+                }
+
                 // tạo ID cho phụ liệu
                 List<Accessory> accessories = (from acc in db.Accessories.OrderByDescending(unit => unit.AccessoryPK)
                                                where acc.AccessoryTypePK == accessoryTypePK && acc.CustomerPK == customerPK
@@ -385,8 +391,8 @@ namespace StoreManagement.Controllers
                 foreach (var a in inputAccessories)
                 {
                     if (a.Color == null) a.Color = "";
-                    if (a.Art.Length <= 25 && a.Color.Length <= 25 && a.AccessoryDescription.Length <= 25
-                        && !PrimitiveType.isValidComment(a.Comment) && a.Item.Length <= 25 && a.Item != null && a.Item != "")
+                    if (a.Art.Length <= 20 && a.Color.Length <= 20 && a.AccessoryDescription.Length <= 50
+                        && !PrimitiveType.isValidComment(a.Comment) && a.Item.Length <= 20 && a.Item != null && a.Item != "")
                     {
                         throw new Exception(SystemMessage.NotPassPrimitiveType);
                     }
