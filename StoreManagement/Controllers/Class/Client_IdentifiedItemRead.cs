@@ -30,7 +30,7 @@ namespace StoreManagement.Class
 
         public string TypeName { get; set; }
 
-        public Client_IdentifiedItemRead(IdentifiedItem identifiedItem, Accessory accessory, string packID, int? qualityState, string typeName)
+        public Client_IdentifiedItemRead(IdentifiedItem identifiedItem, Accessory accessory, string packID, int? qualityState, string typeName, double actualQuantity)
         {
             IsRestored = false;
             IdentifiedItemPK = identifiedItem.IdentifiedItemPK;
@@ -39,7 +39,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
-            IdentifiedQuantity = identifiedItem.IdentifiedQuantity;
+            IdentifiedQuantity = actualQuantity;
             PackID = packID;
             QualityState = qualityState;
             TypeName = typeName;

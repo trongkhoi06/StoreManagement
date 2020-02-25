@@ -123,7 +123,8 @@ namespace StoreManagement.Controllers
                                                              select cI).FirstOrDefault();
                             int? qualityState = null;
                             if (classifiedItem != null) qualityState = classifiedItem.QualityState;
-                            result.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState, accessoryType.Name));
+                            double actualQuantity = new IdentifyItemDAO().ActualQuantity(identifiedItem.IdentifiedItemPK);
+                            result.Add(new Client_IdentifiedItemRead(identifiedItem, accessory, pack.PackID, qualityState, accessoryType.Name, actualQuantity));
                         }
 
                         foreach (var restoredGroup in restoredGroups)
