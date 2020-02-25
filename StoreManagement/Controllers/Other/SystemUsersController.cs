@@ -166,7 +166,7 @@ namespace StoreManagement.Controllers
                 UserID = user.UserID,
                 RoleName = user.RoleName,
                 Name = user.Name,
-                DateCreated = user.DateCreated,
+                DateCreated = DateTime.Now,
                 Password = "PDG@123"
             };
             if (!ModelState.IsValid)

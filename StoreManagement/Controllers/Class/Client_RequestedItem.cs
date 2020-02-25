@@ -22,6 +22,7 @@ namespace StoreManagement.Class
             Art = accessory.Art;
             Color = accessory.Color;
             Item = accessory.Item;
+            TypeName = typeName;
             IssuedQuantity = issuedQuantity;
             ItemPosition = itemPosition;
         }
