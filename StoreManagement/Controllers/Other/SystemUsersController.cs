@@ -146,6 +146,54 @@ namespace StoreManagement.Controllers
             return Ok("RESET MẬT KHẨU THÀNH CÔNG!");
         }
 
+        [Route("api/SystemUsers/ChangePassword")]
+        [HttpPut]
+        public IHttpActionResult ChangePassword(string oldPassword, string newPassword, string userID)
+        {
+            try
+            {
+                SystemUser systemUser = db.SystemUsers.Find(userID);
+                if (systemUser.Password != oldPassword)
+                {
+                    return Content(HttpStatusCode.Conflict, "SAI MẬT KHẨU!");
+                }
+                systemUser.Password = newPassword;
+                db.Entry(systemUser).State = EntityState.Modified;
+                db.SaveChanges();
+
+                return Ok("ĐỔI MẬT KHẨU THÀNH CÔNG!");
+            }
+            catch (Exception e)
+            {
+
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        [Route("api/SystemUsers/ChangeName")]
+        [HttpPut]
+        public IHttpActionResult ChangeName(string name, string password, string userID)
+        {
+            try
+            {
+                SystemUser systemUser = db.SystemUsers.Find(userID);
+                if (systemUser.Password != password)
+                {
+                    return Content(HttpStatusCode.Conflict, "SAI MẬT KHẨU!");
+                }
+                systemUser.Name = name;
+                db.Entry(systemUser).State = EntityState.Modified;
+                db.SaveChanges();
+
+                return Ok("ĐỔI TÊN THÀNH CÔNG!");
+            }
+            catch (Exception e)
+            {
+
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
         [Route("api/SystemUsers/Recover")]
         [HttpPut]
         public IHttpActionResult RecoverUser(string userID)
@@ -235,11 +283,11 @@ namespace StoreManagement.Controllers
         // POST: api/SystemUsers
         [Route("api/SystemUsers/InsertWorkplace")]
         [HttpPost]
-        public IHttpActionResult InsertWorkplace(string workplaceID,string userID)
+        public IHttpActionResult InsertWorkplace(string workplaceID, string userID)
         {
             try
             {
-                Workplace workplace = new Workplace(workplaceID,false);
+                Workplace workplace = new Workplace(workplaceID, false);
                 if (db.SystemUsers.Find(userID).RoleName != "Administrator")
                 {
                     return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN TẠO WORKPLACE");
@@ -279,28 +327,33 @@ namespace StoreManagement.Controllers
             }
         }
 
-        //// POST: api/SystemUsers
-        //[Route("api/SystemUsers/ChangeUserWorkplace")]
-        //[HttpPut]
-        //public IHttpActionResult ChangeUserWorkplace(string userIDChanging,string workplaceID, string userID)
-        //{
-        //    try
-        //    {
-        //        SystemUser admin = db.SystemUsers.Find(userID)
-        //        SystemUser systemUser = db.SystemUsers.Find(userIDChanging);
-        //        if (db.SystemUsers.Find(userID).RoleName != "Administrator")
-        //        {
-        //            return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN TẠO WORKPLACE");
-        //        }
-        //        db.Workplaces.Add(workplace);
-        //        db.SaveChanges();
-        //        return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
-        //    }
-        //}
+
+        [Route("api/SystemUsers/ChangeUserWorkplace")]
+        [HttpPut]
+        public IHttpActionResult ChangeUserWorkplace(string userIDChanging, int workplacePK, string userID)
+        {
+            try
+            {
+                SystemUser systemUser = db.SystemUsers.Find(userIDChanging);
+                if (db.SystemUsers.Find(userID).RoleName != "Administrator")
+                {
+                    return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN TẠO WORKPLACE");
+                }
+                Workplace workplace = db.Workplaces.Find(workplacePK);
+                if (workplace == null)
+                {
+                    return Content(HttpStatusCode.Conflict, "WORKPLACE KHÔNG TỒN TẠI");
+                }
+                systemUser.WorkplacePK = workplace.WorkplacePK;
+                db.Entry(systemUser).State = EntityState.Modified;
+                db.SaveChanges();
+                return Ok("ĐỔI ĐƠN VỊ CỦA NHÂN VIÊN THÀNH CÔNG!");
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
 
         protected override void Dispose(bool disposing)
         {
