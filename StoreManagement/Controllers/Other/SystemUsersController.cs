@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
+using StoreManagement.Class;
 using StoreManagement.Models;
 
 namespace StoreManagement.Controllers
@@ -21,11 +22,29 @@ namespace StoreManagement.Controllers
 
         public class Client_User
         {
+            public Client_User(SystemUser systemUser)
+            {
+                UserID = systemUser.UserID;
+                RoleName = systemUser.RoleName;
+                Name = systemUser.Name;
+                DateCreated = systemUser.DateCreated;
+                IsDeleted = systemUser.IsDeleted;
+                WorkplacePK = systemUser.WorkplacePK;
+            }
+
             public string UserID { get; set; }
+
             public string RoleName { get; set; }
+
             public string Name { get; set; }
+
             public DateTime DateCreated { get; set; }
+
             public bool IsDeleted { get; set; }
+
+            public int WorkplacePK { get; set; }
+
+            public string WorkplaceName { get; set; }
         }
 
         [HttpGet]
@@ -33,12 +52,18 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                List<Client_User> systemUsers = db.Database.SqlQuery<Client_User>("exec GetUsers").ToList();
-                return Ok(systemUsers);
+                //List<Client_User> systemUsers = db.Database.SqlQuery<Client_User>("exec GetUsers").ToList();
+                List<Client_User> result = new List<Client_User>();
+                List<SystemUser> systemUsers = db.SystemUsers.Where(unit => unit.RoleName != "Administrator").ToList();
+                foreach (var user in systemUsers)
+                {
+                    result.Add(new Client_User(user));
+                }
+                return Ok(result);
             }
             catch (Exception e)
             {
-                return Content(HttpStatusCode.Conflict, e.Message);
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
         }
 
@@ -157,39 +182,32 @@ namespace StoreManagement.Controllers
         [HttpPost]
         public IHttpActionResult InsertSystemUser(Client_User user)
         {
-            if (db.Roles.Find(user.RoleName) == null)
-            {
-                return Conflict();
-            }
-            SystemUser systemUser = new SystemUser
-            {
-                UserID = user.UserID,
-                RoleName = user.RoleName,
-                Name = user.Name,
-                DateCreated = DateTime.Now,
-                Password = "PDG@123"
-            };
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.SystemUsers.Add(systemUser);
-
             try
             {
-                db.SaveChanges();
-            }
-            catch (DbUpdateException)
-            {
-                if (SystemUserExists(systemUser.UserID))
+                if (db.Roles.Find(user.RoleName) == null)
                 {
                     return Conflict();
                 }
-                else
+                SystemUser systemUser = new SystemUser
                 {
-                    throw;
+                    UserID = user.UserID,
+                    RoleName = user.RoleName,
+                    Name = user.Name,
+
+                    DateCreated = DateTime.Now,
+                    Password = "PDG@123"
+                };
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
                 }
+
+                db.SystemUsers.Add(systemUser);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
             }
 
             return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
@@ -201,9 +219,11 @@ namespace StoreManagement.Controllers
         {
             try
             {
-                SqlParameter userID = new SqlParameter("@userID", id);
-                // use execsqlcommand when there is 0 thing in return
-                db.Database.ExecuteSqlCommand("exec DeleteUsers @userID", userID);
+                //SqlParameter userID = new SqlParameter("@userID", id);
+                //// use execsqlcommand when there is 0 thing in return
+                //db.Database.ExecuteSqlCommand("exec DeleteUsers @userID", userID);
+                db.SystemUsers.Remove(db.SystemUsers.Find(id));
+                db.SaveChanges();
                 return Ok("XÓA NHÂN VIÊN THÀNH CÔNG!");
             }
             catch (Exception e)
@@ -211,6 +231,76 @@ namespace StoreManagement.Controllers
                 return Content(HttpStatusCode.Conflict, e.Message);
             }
         }
+
+        // POST: api/SystemUsers
+        [Route("api/SystemUsers/InsertWorkplace")]
+        [HttpPost]
+        public IHttpActionResult InsertWorkplace(string workplaceID,string userID)
+        {
+            try
+            {
+                Workplace workplace = new Workplace(workplaceID,false);
+                if (db.SystemUsers.Find(userID).RoleName != "Administrator")
+                {
+                    return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN TẠO WORKPLACE");
+                }
+                db.Workplaces.Add(workplace);
+                db.SaveChanges();
+                return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+            }
+        }
+
+        // DELETE: api/SystemUsers/5
+        [Route("api/SystemUsers/DeleteWorkplace")]
+        [HttpDelete]
+        public IHttpActionResult DeleteWorkplace(int workplacePK)
+        {
+            try
+            {
+                Workplace workplace = db.Workplaces.Find(workplacePK);
+                SystemUser systemUser = db.SystemUsers.Where(unit => unit.WorkplacePK == workplace.WorkplacePK).FirstOrDefault();
+                Demand demand = db.Demands.Where(unit => unit.WorkplacePK == workplace.WorkplacePK).FirstOrDefault();
+                if (systemUser != null || demand != null)
+                {
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ ĐÃ CÓ NHÂN VIÊN HOẶC ĐƠN CẤP PHÁT!");
+                }
+
+                db.Workplaces.Remove(workplace);
+                db.SaveChanges();
+                return Ok("THAO TÁC THÀNH CÔNG!");
+            }
+            catch (Exception e)
+            {
+                return Content(HttpStatusCode.Conflict, e.Message);
+            }
+        }
+
+        //// POST: api/SystemUsers
+        //[Route("api/SystemUsers/ChangeUserWorkplace")]
+        //[HttpPut]
+        //public IHttpActionResult ChangeUserWorkplace(string userIDChanging,string workplaceID, string userID)
+        //{
+        //    try
+        //    {
+        //        SystemUser admin = db.SystemUsers.Find(userID)
+        //        SystemUser systemUser = db.SystemUsers.Find(userIDChanging);
+        //        if (db.SystemUsers.Find(userID).RoleName != "Administrator")
+        //        {
+        //            return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN TẠO WORKPLACE");
+        //        }
+        //        db.Workplaces.Add(workplace);
+        //        db.SaveChanges();
+        //        return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
+        //    }
+        //}
 
         protected override void Dispose(bool disposing)
         {

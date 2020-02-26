@@ -508,15 +508,9 @@ namespace StoreManagement.Controllers
                     if (art == "undefined") art = "";
                     if (comment == "undefined") comment = "";
                     if (color == "undefined") color = "";
-                    if (art.Length <= 25 && color.Length <= 25 && description.Length <= 25
-                        && PrimitiveType.isValidComment(comment) && item.Length <= 25 && item != null && item != "")
-                    {
-                        informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
-                    }
-                    else
-                    {
-                        return Content(HttpStatusCode.Conflict, SystemMessage.NotPassPrimitiveType);
-                    }
+
+                    informationDAO.CreateAccessory(item, art, description, comment, color, customerPK, supplierPK, accessoryTypePK, userID);
+                    
                 }
                 catch (Exception e)
                 {
