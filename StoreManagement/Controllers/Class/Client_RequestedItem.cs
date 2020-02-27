@@ -12,7 +12,7 @@ namespace StoreManagement.Class
         {
         }
 
-        public Client_DemandedItem(DemandedItem demandedItem, Accessory accessory, double? issuedQuantity, List<Client_Box_Shelf_Row> itemPosition, string typeName)
+        public Client_DemandedItem(DemandedItem demandedItem, Accessory accessory, double? issuedQuantity, List<Client_Box_Shelf_Row> itemPosition, string typeName, Demand demand)
         {
             DemandedItemPK = demandedItem.DemandedItemPK;
             DemandedQuantity = demandedItem.DemandedQuantity;
@@ -25,6 +25,7 @@ namespace StoreManagement.Class
             TypeName = typeName;
             IssuedQuantity = issuedQuantity;
             ItemPosition = itemPosition;
+            DateCreated = demand.DateCreated;
         }
 
         public int DemandedItemPK { get; set; }
@@ -48,6 +49,8 @@ namespace StoreManagement.Class
         public double? IssuedQuantity { get; set; }
 
         public List<Client_Box_Shelf_Row> ItemPosition { get; set; }
+
+        public DateTime DateCreated { get; set; }
     }
 
     //public class Client_RequestedItem2

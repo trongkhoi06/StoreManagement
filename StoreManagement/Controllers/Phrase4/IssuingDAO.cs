@@ -946,7 +946,7 @@ namespace StoreManagement.Controllers
             try
             {
                 // generate IssueID
-                string issueID = db.Demands.Find(demandPK).DemandID;
+                string issueID = db.Demands.Find(demandPK).DemandID + "#";
                 int issuePos = db.Issues.Where(unit => unit.DemandPK == demandPK).Count() + 1;
                 if (issuePos < 10) issueID += "0" + issuePos;
                 else issueID += issuePos;
@@ -985,7 +985,8 @@ namespace StoreManagement.Controllers
                 {
                     Box box = new BoxDAO().GetBoxByBoxID(item.OldBoxID);
                     StoredBox sBox = new BoxDAO().GetStoredBoxbyBoxPK(box.BoxPK);
-                    UnstoredBox uBox = new BoxDAO().GetUnstoredBoxbyBoxPK(box.BoxPK);
+                    Box boxIssuing = new BoxDAO().GetBoxByBoxID(item.NewBoxID);
+                    UnstoredBox uBox = new BoxDAO().GetUnstoredBoxbyBoxPK(boxIssuing.BoxPK);
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
                     Entry entry = new Entry(sBox, "Issuing", issue.IssuePK, item.IsRestored, item.IssuedQuantity, item.ItemPK, accessory);
                     db.Entries.Add(entry);

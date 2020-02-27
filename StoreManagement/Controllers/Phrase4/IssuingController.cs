@@ -160,7 +160,8 @@ namespace StoreManagement.Controllers
                 List<Demand> demands = db.Demands.Where(unit => unit.IsOpened).ToList();
                 foreach (var demand in demands)
                 {
-                    result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode));
+                    Workplace workplace = db.Workplaces.Find(demand.WorkplacePK);
+                    result.Add(new Client_Demand_IssueItems(demand, db.Conceptions.Find(demand.ConceptionPK).ConceptionCode, workplace));
                 }
 
                 return Content(HttpStatusCode.OK, result);
@@ -187,7 +188,7 @@ namespace StoreManagement.Controllers
                     Accessory accessory = db.Accessories.Find(item.AccessoryPK);
                     AccessoryType accessoryType = db.AccessoryTypes.Find(accessory.AccessoryTypePK);
                     List<Client_Box_Shelf_Row> client_Boxes = issuingDAO.StoredBox_ItemPK_IsRestoredOfEntries(accessory);
-                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes, accessoryType.Name));
+                    result.Add(new Client_DemandedItem(item, accessory, issuingDAO.IssuedQuantity(item.DemandedItemPK), client_Boxes, accessoryType.Name,demand));
                 }
             }
             catch (Exception e)
@@ -1142,7 +1143,7 @@ namespace StoreManagement.Controllers
 
         public class Client_Demand_IssueItems
         {
-            public Client_Demand_IssueItems(Demand demand, string conceptionCode)
+            public Client_Demand_IssueItems(Demand demand, string conceptionCode, Workplace workplace)
             {
                 DemandPK = demand.DemandPK;
                 DemandID = demand.DemandID;
@@ -1150,6 +1151,7 @@ namespace StoreManagement.Controllers
                 DateCreated = demand.DateCreated;
                 ConceptionCode = conceptionCode;
                 UserID = demand.UserID;
+                WorkplaceID = workplace.WorkplaceID;
             }
 
             public int DemandPK { get; set; }
@@ -1163,6 +1165,8 @@ namespace StoreManagement.Controllers
             public string ConceptionCode { get; set; }
 
             public string UserID { get; set; }
+
+            public string WorkplaceID { get; set; }
         }
 
         //[Route("api/IssuingController/GetDemandsByWorkplaceByUserID")]
