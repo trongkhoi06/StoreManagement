@@ -47,6 +47,18 @@ namespace StoreManagement.Controllers
             public string WorkplaceName { get; set; }
         }
 
+        public class Client_User_Create
+        {
+
+            public string UserID { get; set; }
+
+            public string RoleName { get; set; }
+
+            public string Name { get; set; }
+
+            public int WorkplacePK { get; set; }
+        }
+
         [HttpGet]
         public IHttpActionResult GetSystemUsers()
         {
@@ -228,27 +240,32 @@ namespace StoreManagement.Controllers
 
         // POST: api/SystemUsers
         [HttpPost]
-        public IHttpActionResult InsertSystemUser(Client_User user)
+        public IHttpActionResult InsertSystemUser(Client_User_Create user)
         {
             try
             {
+                //SystemUser admin = db.SystemUsers.Find(userID);
+                //if (admin.RoleName != "Administrator")
+                //{
+                //    return Content(HttpStatusCode.Conflict,"BẠN KHÔNG PHẢI LÀ ADMIN");
+                //}
                 if (db.Roles.Find(user.RoleName) == null)
                 {
-                    return Conflict();
+                    return Content(HttpStatusCode.Conflict, "QUYỀN CỦA USER KHÔNG HỢP LỆ!");
+                }
+                if (user.Name.Length > 30)
+                {
+                    return Content(HttpStatusCode.Conflict, "TÊN CỦA NHÂN VIÊN KHÔNG ĐƯỢC QUÁ 30 KÍ TỰ!");
                 }
                 SystemUser systemUser = new SystemUser
                 {
                     UserID = user.UserID,
                     RoleName = user.RoleName,
                     Name = user.Name,
-
+                    WorkplacePK = user.WorkplacePK,
                     DateCreated = DateTime.Now,
                     Password = "PDG@123"
                 };
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
 
                 db.SystemUsers.Add(systemUser);
                 db.SaveChanges();
@@ -270,7 +287,9 @@ namespace StoreManagement.Controllers
                 //SqlParameter userID = new SqlParameter("@userID", id);
                 //// use execsqlcommand when there is 0 thing in return
                 //db.Database.ExecuteSqlCommand("exec DeleteUsers @userID", userID);
-                db.SystemUsers.Remove(db.SystemUsers.Find(id));
+                SystemUser systemUser = db.SystemUsers.Find(id);
+                systemUser.IsDeleted = true;
+                db.Entry(systemUser).State = EntityState.Modified;
                 db.SaveChanges();
                 return Ok("XÓA NHÂN VIÊN THÀNH CÔNG!");
             }
@@ -281,9 +300,9 @@ namespace StoreManagement.Controllers
         }
 
         // POST: api/SystemUsers
-        [Route("api/SystemUsers/InsertWorkplace")]
+        [Route("api/SystemUsers/CreateWorkplace")]
         [HttpPost]
-        public IHttpActionResult InsertWorkplace(string workplaceID, string userID)
+        public IHttpActionResult CreateWorkplace(string workplaceID, string userID)
         {
             try
             {
@@ -294,7 +313,7 @@ namespace StoreManagement.Controllers
                 }
                 db.Workplaces.Add(workplace);
                 db.SaveChanges();
-                return Ok("THÊM MỚI NHÂN VIÊN THÀNH CÔNG!");
+                return Ok("THAO TÁC THÀNH CÔNG!");
             }
             catch (Exception e)
             {
@@ -305,11 +324,15 @@ namespace StoreManagement.Controllers
         // DELETE: api/SystemUsers/5
         [Route("api/SystemUsers/DeleteWorkplace")]
         [HttpDelete]
-        public IHttpActionResult DeleteWorkplace(int workplacePK)
+        public IHttpActionResult DeleteWorkplace(int workplacePK, string userID)
         {
             try
             {
                 Workplace workplace = db.Workplaces.Find(workplacePK);
+                if (db.SystemUsers.Find(userID).RoleName != "Administrator")
+                {
+                    return Content(HttpStatusCode.Conflict, "PHẢI LÀ ADMIN MỚI CÓ QUYỀN XÓA WORKPLACE");
+                }
                 SystemUser systemUser = db.SystemUsers.Where(unit => unit.WorkplacePK == workplace.WorkplacePK).FirstOrDefault();
                 Demand demand = db.Demands.Where(unit => unit.WorkplacePK == workplace.WorkplacePK).FirstOrDefault();
                 if (systemUser != null || demand != null)
