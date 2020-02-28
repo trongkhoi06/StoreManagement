@@ -23,6 +23,13 @@ namespace StoreManagement.Controllers
             public string Password { get; set; }
         }
 
+        public class Client_SystemLogin_User
+        {
+            public string RoleName { get; set; }
+
+            public string Fullname { get; set; }
+        }
+
         [Route("api/SystemLogin")]
         [HttpPost]
         public IHttpActionResult SystemLogin([FromBody] UserClient userClient)
@@ -33,11 +40,15 @@ namespace StoreManagement.Controllers
                 //SqlParameter Password = new SqlParameter("@Password", userClient.Password);
                 //string roleName = db.Database.SqlQuery<string>("exec SystemLogin @userID, @Password", userID, Password).FirstOrDefault();
                 SystemUser systemUser = db.SystemUsers.Where(unit => unit.UserID == userClient.Username && unit.Password == userClient.Password).FirstOrDefault();
-
                 if (systemUser == null) return NotFound();
                 else
                 {
-                    return Ok(systemUser.RoleName);
+                    Client_SystemLogin_User result = new Client_SystemLogin_User()
+                    {
+                        RoleName = systemUser.RoleName,
+                        Fullname = systemUser.Name
+                    };
+                    return Ok(result);
                 }
             }
             catch (Exception e)
