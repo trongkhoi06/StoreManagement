@@ -634,7 +634,7 @@ namespace StoreManagement.Controllers
                         {
                             RestoredItem restoredItem = db.RestoredItems.Find(item.Key.ItemPK);
                             Restoration restoration = db.Restorations.Find(restoredItem.RestorationPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, restoration.RestorationID, item.Value.AvailableQuantity));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, restoration.RestorationID, item.Value.AvailableQuantity, restoration.DateCreated));
                         }
                         else
                         {
@@ -642,7 +642,7 @@ namespace StoreManagement.Controllers
                             ClassifiedItem classifiedItem = db.ClassifiedItems.Find(passedItem.ClassifiedItemPK);
                             PackedItem packedItem = db.PackedItems.Find(classifiedItem.PackedItemPK);
                             Pack pack = db.Packs.Find(packedItem.PackPK);
-                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, pack.PackID, item.Value.AvailableQuantity));
+                            result.Add(new Client_Box_Shelf_Row(box.BoxID, storedBox.StoredBoxPK, shelf.ShelfID, row.RowID, item.Key.ItemPK, item.Key.IsRestored, pack.PackID, item.Value.AvailableQuantity, pack.DateCreated));
                         }
 
                     }

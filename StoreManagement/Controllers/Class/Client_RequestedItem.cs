@@ -25,7 +25,6 @@ namespace StoreManagement.Class
             TypeName = typeName;
             IssuedQuantity = issuedQuantity;
             ItemPosition = itemPosition;
-            DateCreated = demand.DateCreated;
         }
 
         public int DemandedItemPK { get; set; }
@@ -49,8 +48,6 @@ namespace StoreManagement.Class
         public double? IssuedQuantity { get; set; }
 
         public List<Client_Box_Shelf_Row> ItemPosition { get; set; }
-
-        public DateTime DateCreated { get; set; }
     }
 
     //public class Client_RequestedItem2
