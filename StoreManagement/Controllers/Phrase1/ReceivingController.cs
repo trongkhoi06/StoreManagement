@@ -912,6 +912,7 @@ namespace StoreManagement.Controllers
                 {
                     if (Iss != null)
                     {
+                        Iss = db.IdentifyingSessions.Find(Iss.IdentifyingSessionPK);
                         db.IdentifyingSessions.Remove(Iss);
                         db.SaveChanges();
                     }

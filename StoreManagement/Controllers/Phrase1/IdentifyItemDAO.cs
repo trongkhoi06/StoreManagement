@@ -325,6 +325,7 @@ namespace StoreManagement.Controllers
             }
 
             StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == uBoxTo.BoxPK).FirstOrDefault();
+            sBox.ShelfPK = null;
             db.Entry(sBox).State = EntityState.Modified;
             db.SaveChanges();
         }

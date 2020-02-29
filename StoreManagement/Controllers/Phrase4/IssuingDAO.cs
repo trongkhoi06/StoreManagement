@@ -1028,7 +1028,7 @@ namespace StoreManagement.Controllers
                     Box box = db.Boxes.Where(unit => unit.BoxID == item.BoxID).FirstOrDefault();
 
                     UnstoredBox uBox = db.UnstoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
-                    StoredBox sBox = new BoxDAO().GetStoredBoxbyBoxPK(box.BoxPK);
+                    StoredBox sBox = db.StoredBoxes.Where(unit => unit.BoxPK == box.BoxPK).FirstOrDefault();
                     if (!new BoxDAO().IsUnstoredCase(box.BoxPK))
                     {
                         throw new Exception("ĐƠN VỊ KHÔNG HỌP LỆ!");
@@ -1054,7 +1054,7 @@ namespace StoreManagement.Controllers
                     if (temp.Count != db.RestoredItems.Where(unit => unit.RestorationPK == restorationPK)
                         .ToList().Count)
                     {
-                        throw new Exception("SỐ LƯỢNG GHI NHẬN KHÔNG GIỐNG VỚI ĐƠN TRẢ");
+                        throw new Exception("SỐ LƯỢNG HÀNG KHÔNG GIỐNG VỚI ĐƠN TRẢ");
                     }
                     RestoredItem restoredItem = db.RestoredItems.Find(item.RestoredItemPK);
                     if (item.GroupQuantity != restoredItem.RestoredQuantity)
