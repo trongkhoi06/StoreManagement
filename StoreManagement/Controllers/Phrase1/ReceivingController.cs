@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -850,7 +850,7 @@ namespace StoreManagement.Controllers
                 }
                 else
                 {
-                    return Content(HttpStatusCode.Conflict, "THÙNG ĐÃ ĐƯỢC LƯU KHO HOẶC CHƯA GHI NHẬN");
+                    return Content(HttpStatusCode.Conflict, "ĐƠN VỊ CHỨA ĐÃ ĐƯỢC LƯU KHO HOẶC CHƯA GHI NHẬN");
                 }
             }
             catch (Exception e)

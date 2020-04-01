@@ -1,4 +1,4 @@
-﻿using StoreManagement.Class;
+using StoreManagement.Class;
 using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace StoreManagement.Controllers
 
                 // update identifiedItem IsChecked
                 IdentifiedItem identifiedItem = db.IdentifiedItems.Find(identifiedItemPK);
-                identifiedItem.IsChecked = false;
+                identifiedItem.IsChecked = true;
                 db.Entry(identifiedItem).State = EntityState.Modified;
                 db.SaveChanges();
             }

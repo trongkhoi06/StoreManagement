@@ -1,4 +1,4 @@
-﻿using StoreManagement.Class;
+using StoreManagement.Class;
 using StoreManagement.Controllers.Class;
 using StoreManagement.Models;
 using System;
@@ -169,7 +169,7 @@ namespace StoreManagement.Controllers
                 }
 
 
-                return Content(HttpStatusCode.OK, "STORE THÙNG THÀNH CÔNG");
+                return Content(HttpStatusCode.OK, "LƯU KHO THÀNH CÔNG");
             }
             else
             {

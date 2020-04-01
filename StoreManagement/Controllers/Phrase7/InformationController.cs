@@ -1,4 +1,4 @@
-﻿using StoreManagement.Class;
+using StoreManagement.Class;
 using StoreManagement.Models;
 using System;
 using System.Collections.Generic;
@@ -731,7 +731,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "TẠO ĐƠN VỊ CHỨA THÀNH CÔNG!");
             }
             else
             {
@@ -759,7 +759,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                     //return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
-                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "XÓA ĐƠN VỊ THÀNH CÔNG!");
             }
             else
             {
@@ -787,7 +787,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "TẠO ĐƠN VỊ CHỨA THÀNH CÔNG!");
             }
             else
             {
@@ -812,7 +812,7 @@ namespace StoreManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                     //return Content(HttpStatusCode.Conflict, "ĐANG CÓ HÀNG TRONG THÙNG");
                 }
-                return Content(HttpStatusCode.OK, "XÓA THÙNG THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "XÓA ĐƠN VỊ CHỨA THÀNH CÔNG!");
             }
             else
             {
@@ -878,7 +878,7 @@ namespace StoreManagement.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, new Content_InnerException(e).InnerMessage());
                 }
-                return Content(HttpStatusCode.OK, "TẠO THÙNG THÀNH CÔNG!");
+                return Content(HttpStatusCode.OK, "TẠO ĐƠN VỊ CHỨA THÀNH CÔNG!");
             }
             else
             {
